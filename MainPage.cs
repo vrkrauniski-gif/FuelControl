@@ -1040,6 +1040,15 @@ public class MainPage : ContentPage
         return painel;
     }
 
+    // Calcula o raio médio: quilômetros divididos pelo número de viagens e por dois.
+    double CalcularRaioMedio(double km, int quantidadeViagens)
+    {
+        if (quantidadeViagens <= 0)
+            return 0;
+
+        return km / quantidadeViagens / 2.0;
+    }
+
     View TelaIndicadores()
     {
         DateTime hoje = DateTime.Today;
@@ -1068,6 +1077,7 @@ public class MainPage : ContentPage
 
             double litrosTotal = cg.Sum(x => x.LitrosConsumidos);
             double toneladas = cg.Sum(x => x.PesoLiquido) / 1000.0;
+            double raioMedio = CalcularRaioMedio(kmTotal, cg.Count);
 
             return new Border
             {
@@ -1081,6 +1091,10 @@ public class MainPage : ContentPage
                     {
                         Titulo(titulo),
                         Indicador($"Total de KM: {kmTotal:N0} km"),
+                        Indicador($"Viagens realizadas: {cg.Count}"),
+                        Indicador(cg.Count > 0
+                            ? $"Raio médio por viagem: {raioMedio:N2} km"
+                            : "Raio médio por viagem: --"),
                         Indicador($"Combustível consumido: {litrosTotal:N1} L"),
                         Indicador($"Toneladas líquidas: {toneladas:N2} t")
                     }
@@ -1101,6 +1115,8 @@ public class MainPage : ContentPage
             : 0;
 
         double totalViagens = viagens.Sum(x => x.LitrosConsumidos);
+        double toneladasGeral = viagens.Sum(x => x.PesoLiquido) / 1000.0;
+        double raioMedioGeral = CalcularRaioMedio(kmGeral, viagens.Count);
 
         double mediaEnergetica = viagens.Count > 0
             ? viagens.Average(x => x.ValorEnergetico)
@@ -1137,6 +1153,13 @@ public class MainPage : ContentPage
 
         painel.Children.Add(Cartao("Quantidade de viagens",
             Indicador(viagens.Count.ToString())));
+
+        painel.Children.Add(Cartao("Raio médio por viagem",
+            Indicador(viagens.Count > 0
+                ? $"{raioMedioGeral:N2} km" : "--")));
+
+        painel.Children.Add(Cartao("Tonelagem líquida total",
+            Indicador($"{toneladasGeral:N2} t")));
 
         painel.Children.Add(Cartao("Média km/l nas viagens",
             Indicador(mediaViagem > 0 ? $"{mediaViagem:N2} km/l" : "--")));
@@ -1184,6 +1207,9 @@ public class MainPage : ContentPage
             double toneladasVeiculo =
                 viVeiculo.Sum(x => x.PesoLiquido) / 1000.0;
 
+            double raioMedioVeiculo =
+                CalcularRaioMedio(kmVeiculo, viVeiculo.Count);
+
             painel.Children.Add(new Border
             {
                 BackgroundColor = Colors.White,
@@ -1202,6 +1228,13 @@ public class MainPage : ContentPage
                             TextColor = Color.FromArgb("#123B65")
                         },
                         new Label { Text = $"KM registrados: {kmVeiculo:N0} km" },
+                        new Label { Text = $"Viagens realizadas: {viVeiculo.Count}" },
+                        new Label
+                        {
+                            Text = viVeiculo.Count > 0
+                                ? $"Raio médio por viagem: {raioMedioVeiculo:N2} km"
+                                : "Raio médio por viagem: --"
+                        },
                         new Label { Text = $"Litros consumidos: {litrosVeiculo:N1} L" },
                         new Label { Text = $"Toneladas líquidas: {toneladasVeiculo:N2} t" }
                     }
@@ -1211,8 +1244,9 @@ public class MainPage : ContentPage
 
         painel.Children.Add(new Label
         {
-            Text = "KM calculados pela diferença entre KM atual e anterior nos abastecimentos. " +
-                   "Litros consumidos e toneladas líquidas somados pelos registros de viagens.",
+            Text = "Raio médio = KM registrados no período ÷ número de viagens ÷ 2. " +
+                   "Os KM vêm da diferença entre KM atual e anterior nos abastecimentos. " +
+                   "A quantidade de viagens e a tonelagem vêm dos registros de cargas.",
             TextColor = Colors.Gray,
             FontSize = 12
         });
@@ -1331,11 +1365,34 @@ public class MainPage : ContentPage
             return;
         }
 
+        double kmTotal = ab.Sum(x =>
+            Math.Max(0, x.KmAtual - x.KmAnterior));
+
+        double toneladasTotal = cg.Sum(x => x.PesoLiquido) / 1000.0;
+        double raioMedio = CalcularRaioMedio(kmTotal, cg.Count);
+
         lista.Children.Add(new Label
         {
             Text = $"Abastecimentos: {ab.Count} | Viagens: {cg.Count}",
             FontAttributes = FontAttributes.Bold,
             TextColor = Color.FromArgb("#123B65")
+        });
+
+        lista.Children.Add(new Label
+        {
+            Text = $"KM rodados: {kmTotal:N0} km"
+        });
+
+        lista.Children.Add(new Label
+        {
+            Text = cg.Count > 0
+                ? $"Raio médio por viagem: {raioMedio:N2} km"
+                : "Raio médio por viagem: --"
+        });
+
+        lista.Children.Add(new Label
+        {
+            Text = $"Tonelagem líquida total: {toneladasTotal:N2} t"
         });
 
         lista.Children.Add(new Label
@@ -1349,6 +1406,26 @@ public class MainPage : ContentPage
             Text = $"Litros consumidos nas viagens: " +
                    $"{cg.Sum(x => x.LitrosConsumidos):N1} L"
         });
+
+        // Soma de tonelagem líquida agrupada por dia.
+        var resumoDiario = cg
+            .GroupBy(x => x.Data.Date)
+            .OrderBy(x => x.Key);
+
+        foreach (var grupo in resumoDiario)
+        {
+            double toneladasDia =
+                grupo.Sum(x => x.PesoLiquido) / 1000.0;
+
+            lista.Children.Add(new Label
+            {
+                Text = $"{grupo.Key:dd/MM/yyyy} - " +
+                       $"Viagens: {grupo.Count()} | " +
+                       $"Tonelagem líquida: {toneladasDia:N2} t",
+                FontAttributes = FontAttributes.Bold,
+                TextColor = Color.FromArgb("#0F766E")
+            });
+        }
 
         foreach (var x in ab)
         {
@@ -1365,6 +1442,7 @@ public class MainPage : ContentPage
             lista.Children.Add(new Label
             {
                 Text = $"{x.Data:dd/MM/yyyy} | {x.Veiculo} | " +
+                       $"Líquido: {x.PesoLiquido:N0} kg | " +
                        $"Viagem: {x.LitrosConsumidos:N1} L | " +
                        $"{x.ConsumoKmL:N2} km/l | VE: {x.ValorEnergetico:N2}",
                 TextColor = Colors.Black
@@ -1414,6 +1492,14 @@ public class MainPage : ContentPage
                 AntiAlias = true
             };
 
+            AndroidPaint subtitulo = new()
+            {
+                Color = AndroidColor.Rgb(15, 118, 110),
+                TextSize = 11,
+                FakeBoldText = true,
+                AntiAlias = true
+            };
+
             AndroidPaint texto = new()
             {
                 Color = AndroidColor.Black,
@@ -1457,6 +1543,52 @@ public class MainPage : ContentPage
             }
 
             NovaPagina();
+
+            Linha("RESUMO DO RELATORIO");
+
+            double kmTotal = ab.Sum(x =>
+                Math.Max(0, x.KmAtual - x.KmAnterior));
+
+            double toneladasTotal =
+                cg.Sum(x => x.PesoLiquido) / 1000.0;
+
+            double raioMedio =
+                CalcularRaioMedio(kmTotal, cg.Count);
+
+            Linha($"Abastecimentos: {ab.Count}");
+            Linha($"Viagens realizadas: {cg.Count}");
+            Linha($"KM rodados: {kmTotal:N0} km");
+
+            Linha(cg.Count > 0
+                ? $"Raio medio por viagem: {raioMedio:N2} km"
+                : "Raio medio por viagem: --");
+
+            Linha($"Tonelagem liquida total: {toneladasTotal:N2} t");
+            Linha($"Litros abastecidos: {ab.Sum(x => x.Litros):N1} L");
+            Linha($"Litros consumidos nas viagens: {cg.Sum(x => x.LitrosConsumidos):N1} L");
+            Linha($"Total gasto: {ab.Sum(x => x.Valor):C2}");
+
+            y += 10;
+
+            // Resumo de tonelagem separado por dia.
+            Linha("TONELAGEM LIQUIDA POR DIA");
+
+            var resumoDiario = cg
+                .GroupBy(x => x.Data.Date)
+                .OrderBy(x => x.Key);
+
+            foreach (var grupo in resumoDiario)
+            {
+                double toneladasDia =
+                    grupo.Sum(x => x.PesoLiquido) / 1000.0;
+
+                Linha($"{grupo.Key:dd/MM/yyyy} | " +
+                      $"Viagens: {grupo.Count()} | " +
+                      $"Tonelagem liquida: {toneladasDia:N2} t");
+            }
+
+            y += 10;
+
             Linha("RELATORIO DE ABASTECIMENTOS");
 
             foreach (var x in ab)
