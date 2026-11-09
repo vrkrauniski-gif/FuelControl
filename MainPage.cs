@@ -62,7 +62,7 @@ public class MainPage : ContentPage
     Label lblEnergetico = new();
     Label lblComparacao = new();
 
-    string telaAtual = "Abastecimentos";
+    bool salvandoViagem;
 
     public MainPage()
     {
@@ -98,6 +98,7 @@ public class MainPage : ContentPage
         };
 
         p.ItemsSource = itens.ToList();
+
         if (itens.Length > 0)
             p.SelectedIndex = 0;
 
@@ -208,15 +209,20 @@ public class MainPage : ContentPage
         try
         {
             var json = Preferences.Default.Get(Chave, "");
+
             if (!string.IsNullOrWhiteSpace(json))
                 abastecimentos =
                     JsonSerializer.Deserialize<List<Abastecimento>>(json) ?? new();
         }
-        catch { abastecimentos = new(); }
+        catch
+        {
+            abastecimentos = new();
+        }
 
         try
         {
             var json = Preferences.Default.Get(ChaveVeiculos, "");
+
             if (!string.IsNullOrWhiteSpace(json))
                 veiculos =
                     JsonSerializer.Deserialize<Dictionary<string, DadosVeiculo>>(json)
@@ -230,11 +236,15 @@ public class MainPage : ContentPage
         try
         {
             var json = Preferences.Default.Get(ChaveCargas, "");
+
             if (!string.IsNullOrWhiteSpace(json))
                 viagens =
                     JsonSerializer.Deserialize<List<Viagem>>(json) ?? new();
         }
-        catch { viagens = new(); }
+        catch
+        {
+            viagens = new();
+        }
     }
 
     void SalvarDados()
@@ -254,25 +264,26 @@ public class MainPage : ContentPage
 
     void MostrarMenu(string menu)
     {
-        telaAtual = menu;
-
         var botoes = new HorizontalStackLayout
         {
-            Spacing = 5,
-            Children =
-            {
-                Botao("Abastecimentos"),
-                Botao("Cargas"),
-                Botao("Indicadores"),
-                Botao("Relatórios")
-            }
+            Spacing = 4
         };
 
-        foreach (var item in botoes.Children.OfType<Button>())
+        string[] nomes =
         {
-            item.FontSize = 11;
-            item.Padding = new Thickness(5, 0);
-            item.Clicked += (s, e) => MostrarMenu(item.Text);
+            "Abastecimentos",
+            "Cargas",
+            "Indicadores",
+            "Relatórios"
+        };
+
+        foreach (string nome in nomes)
+        {
+            var botao = Botao(nome);
+            botao.FontSize = 10;
+            botao.Padding = new Thickness(4, 0);
+            botao.Clicked += (s, e) => MostrarMenu(nome);
+            botoes.Children.Add(botao);
         }
 
         View conteudo = menu switch
@@ -324,26 +335,9 @@ public class MainPage : ContentPage
         tipoVeiculo = NovoPicker("Tipo de veículo", "Carro", "Caminhão");
         tipoCombustivel = NovoPicker("Combustível", "Etanol", "Gasolina");
 
-        tipoVeiculo.SelectedIndexChanged += (s, e) =>
-        {
-            bool caminhao = tipoVeiculo.SelectedItem?.ToString() == "Caminhão";
-
-            tipoCombustivel.ItemsSource = caminhao
-                ? new List<string> { "Diesel S10" }
-                : new List<string> { "Etanol", "Gasolina" };
-
-            tipoCombustivel.SelectedIndex = 0;
-            painelCarro.IsVisible = !caminhao;
-            usarArla.IsVisible = caminhao;
-            painelArla.IsVisible = caminhao && usarArla.IsChecked;
-            metaKmL.IsVisible = caminhao;
-
-            if (!caminhao)
-                usarArla.IsChecked = false;
-        };
-
         veiculo = Campo("Placa ou identificação do veículo");
         motorista = Campo("Nome do motorista");
+
         kmAnterior = Campo("Quilometragem anterior", Keyboard.Numeric);
         kmAtual = Campo("Quilometragem atual", Keyboard.Numeric);
         litros = Campo("Litros abastecidos", Keyboard.Numeric);
@@ -381,10 +375,30 @@ public class MainPage : ContentPage
         };
 
         usarArla = new CheckBox { IsVisible = false };
+
         usarArla.CheckedChanged += (s, e) =>
         {
             painelArla.IsVisible =
                 tipoVeiculo.SelectedItem?.ToString() == "Caminhão" && e.Value;
+        };
+
+        tipoVeiculo.SelectedIndexChanged += (s, e) =>
+        {
+            bool caminhao =
+                tipoVeiculo.SelectedItem?.ToString() == "Caminhão";
+
+            tipoCombustivel.ItemsSource = caminhao
+                ? new List<string> { "Diesel S10" }
+                : new List<string> { "Etanol", "Gasolina" };
+
+            tipoCombustivel.SelectedIndex = 0;
+            painelCarro.IsVisible = !caminhao;
+            usarArla.IsVisible = caminhao;
+            painelArla.IsVisible = caminhao && usarArla.IsChecked;
+            metaKmL.IsVisible = caminhao;
+
+            if (!caminhao)
+                usarArla.IsChecked = false;
         };
 
         litros.TextChanged += (s, e) => AtualizarTotal();
@@ -399,7 +413,7 @@ public class MainPage : ContentPage
         var ajustar = Botao("AJUSTAR NÍVEL ATUAL DO TANQUE", "#0F766E");
         ajustar.Clicked += AjustarTanque;
 
-        var layout = new VerticalStackLayout
+        return new VerticalStackLayout
         {
             Spacing = 5,
             Children =
@@ -429,7 +443,7 @@ public class MainPage : ContentPage
                 litros,
                 painelCarro,
                 painelArla,
-                Rotulo("Meta do caminhão em km/l"),
+                Rotulo("Meta de consumo do caminhão"),
                 metaKmL,
                 salvar,
                 lblResultado,
@@ -446,9 +460,6 @@ public class MainPage : ContentPage
                 lblTanque
             }
         };
-
-        AtualizarDashboard();
-        return layout;
     }
 
     void AtualizarTotal()
@@ -466,9 +477,6 @@ public class MainPage : ContentPage
             .Where(x => Id(x.Veiculo) == Id(nome) && x.Consumo > 0)
             .ToList();
 
-        if (dados.Count == 0)
-            return 0;
-
         double km = dados.Sum(x => x.KmAtual - x.KmAnterior);
         double l = dados.Sum(x => x.Litros);
 
@@ -477,178 +485,193 @@ public class MainPage : ContentPage
 
     async void SalvarAbastecimento(object? sender, EventArgs e)
     {
-        bool caminhao = tipoVeiculo.SelectedItem?.ToString() == "Caminhão";
-
-        if (string.IsNullOrWhiteSpace(veiculo.Text) ||
-            !Ler(kmAnterior.Text, out var anterior) ||
-            !Ler(kmAtual.Text, out var atual) ||
-            !Ler(litros.Text, out var quantidade) ||
-            anterior < 0 || atual <= anterior || quantidade <= 0)
+        try
         {
-            await DisplayAlert("Atenção",
-                "Informe veículo, KM anterior, KM atual e litros corretamente.",
-                "OK");
-            return;
-        }
+            bool caminhao =
+                tipoVeiculo.SelectedItem?.ToString() == "Caminhão";
 
-        double preco = 0;
-
-        if (!caminhao &&
-            (!Ler(precoLitro.Text, out preco) || preco <= 0))
-        {
-            await DisplayAlert("Atenção", "Informe o preço por litro.", "OK");
-            return;
-        }
-
-        bool temArla = caminhao && usarArla.IsChecked;
-        double arla = 0;
-
-        if (temArla &&
-            (!Ler(litrosArla.Text, out arla) || arla <= 0))
-        {
-            await DisplayAlert("Atenção", "Informe os litros de Arla.", "OK");
-            return;
-        }
-
-        double distancia = atual - anterior;
-        double consumo = distancia / quantidade;
-        double valor = caminhao ? 0 : quantidade * preco;
-        double custo = caminhao ? 0 : valor / distancia;
-
-        var dados = ObterVeiculo(veiculo.Text);
-
-        // No abastecimento, os litros entram no tanque.
-        if (dados.Capacidade > 0)
-        {
-            if (dados.LitrosAtuais + quantidade > dados.Capacidade)
+            if (string.IsNullOrWhiteSpace(veiculo.Text) ||
+                !Ler(kmAnterior.Text, out var anterior) ||
+                !Ler(kmAtual.Text, out var atual) ||
+                !Ler(litros.Text, out var quantidade) ||
+                anterior < 0 || atual <= anterior || quantidade <= 0)
             {
                 await DisplayAlert("Atenção",
-                    "O abastecimento ultrapassaria a capacidade cadastrada do tanque. Confira o nível atual.",
+                    "Informe veículo, quilometragens e litros corretamente.",
                     "OK");
                 return;
             }
 
-            dados.LitrosAtuais += quantidade;
+            double preco = 0;
+
+            if (!caminhao &&
+                (!Ler(precoLitro.Text, out preco) || preco <= 0))
+            {
+                await DisplayAlert("Atenção", "Informe o preço por litro.", "OK");
+                return;
+            }
+
+            bool temArla = caminhao && usarArla.IsChecked;
+            double arla = 0;
+
+            if (temArla &&
+                (!Ler(litrosArla.Text, out arla) || arla <= 0))
+            {
+                await DisplayAlert("Atenção", "Informe os litros de Arla.", "OK");
+                return;
+            }
+
+            double distancia = atual - anterior;
+            double consumo = distancia / quantidade;
+            double valor = caminhao ? 0 : quantidade * preco;
+            double custo = caminhao ? 0 : valor / distancia;
+
+            var dados = ObterVeiculo(veiculo.Text);
+
+            if (dados.Capacidade > 0 &&
+                dados.LitrosAtuais + quantidade > dados.Capacidade)
+            {
+                await DisplayAlert("Atenção",
+                    "O abastecimento ultrapassaria a capacidade do tanque. Confira o nível atual.",
+                    "OK");
+                return;
+            }
+
+            if (dados.Capacidade > 0)
+                dados.LitrosAtuais += quantidade;
+
+            if (caminhao && Ler(metaKmL.Text, out var meta) && meta > 0)
+                dados.MetaKmL = meta;
+
+            var registro = new Abastecimento
+            {
+                Data = DateTime.Now,
+                Veiculo = veiculo.Text.Trim(),
+                Motorista = motorista.Text?.Trim() ?? "",
+                TipoVeiculo = caminhao ? "Caminhão" : "Carro",
+                Combustivel = caminhao ? "Diesel S10" :
+                    tipoCombustivel.SelectedItem?.ToString() ?? "",
+                KmAnterior = anterior,
+                KmAtual = atual,
+                Litros = quantidade,
+                PrecoLitro = preco,
+                Valor = valor,
+                Consumo = consumo,
+                CustoKm = custo,
+                TemArla = temArla,
+                LitrosArla = arla,
+                ConsumoArlaKmL = temArla ? distancia / arla : 0,
+                ConsumoArla100 = temArla ? arla * 100 / distancia : 0,
+                MetaKmL = caminhao ? dados.MetaKmL : 0
+            };
+
+            abastecimentos.Insert(0, registro);
+            SalvarDados();
+
+            lblResultado.Text = $"Consumo automático: {consumo:N2} km/l";
+
+            lblCusto.Text = caminhao
+                ? $"Meta: {dados.MetaKmL:N2} km/l | " +
+                  (dados.MetaKmL > 0 && consumo >= dados.MetaKmL
+                    ? "META ATINGIDA" : "ABAIXO OU SEM META")
+                : $"Custo: {custo:C2}/km | " +
+                  (custo <= 0.50 ? "DENTRO DA META" : "ACIMA DA META");
+
+            AtualizarTanqueTexto(veiculo.Text);
+
+            await DisplayAlert("Salvo",
+                "Abastecimento registrado com sucesso.",
+                "OK");
+
+            kmAnterior.Text = atual.ToString("N0", pt);
+            kmAtual.Text = "";
+            litros.Text = "";
+            precoLitro.Text = "";
+            litrosArla.Text = "";
         }
-
-        if (caminhao && Ler(metaKmL.Text, out var meta) && meta > 0)
-            dados.MetaKmL = meta;
-
-        var registro = new Abastecimento
+        catch (Exception ex)
         {
-            Data = DateTime.Now,
-            Veiculo = veiculo.Text.Trim(),
-            Motorista = motorista.Text?.Trim() ?? "",
-            TipoVeiculo = caminhao ? "Caminhão" : "Carro",
-            Combustivel = caminhao ? "Diesel S10" :
-                tipoCombustivel.SelectedItem?.ToString() ?? "",
-            KmAnterior = anterior,
-            KmAtual = atual,
-            Litros = quantidade,
-            PrecoLitro = preco,
-            Valor = valor,
-            Consumo = consumo,
-            CustoKm = custo,
-            TemArla = temArla,
-            LitrosArla = arla,
-            ConsumoArlaKmL = temArla ? distancia / arla : 0,
-            ConsumoArla100 = temArla ? arla * 100 / distancia : 0,
-            MetaKmL = caminhao ? dados.MetaKmL : 0
-        };
-
-        abastecimentos.Insert(0, registro);
-        SalvarDados();
-
-        lblResultado.Text = $"Consumo automático: {consumo:N2} km/l";
-
-        lblCusto.Text = caminhao
-            ? $"Meta: {dados.MetaKmL:N2} km/l | " +
-              (dados.MetaKmL > 0 && consumo >= dados.MetaKmL
-                ? "META ATINGIDA" : "ABAIXO OU SEM META")
-            : $"Custo: {custo:C2}/km | " +
-              (custo <= 0.50 ? "DENTRO DA META" : "ACIMA DA META");
-
-        AtualizarTanqueTexto(veiculo.Text);
-        AtualizarDashboard();
-
-        await DisplayAlert("Salvo",
-            "Abastecimento registrado. Os litros foram adicionados ao tanque.",
-            "OK");
-
-        kmAnterior.Text = atual.ToString("N0", pt);
-        kmAtual.Text = "";
-        litros.Text = "";
-        precoLitro.Text = "";
-        litrosArla.Text = "";
+            await DisplayAlert("Erro ao salvar abastecimento",
+                ex.Message, "OK");
+        }
     }
 
     void SalvarConfiguracaoTanque(object? sender, EventArgs e)
     {
-        if (string.IsNullOrWhiteSpace(veiculo.Text))
+        try
         {
-            DisplayAlert("Atenção", "Informe o veículo.", "OK");
-            return;
+            if (string.IsNullOrWhiteSpace(veiculo.Text))
+            {
+                DisplayAlert("Atenção", "Informe o veículo.", "OK");
+                return;
+            }
+
+            if (!Ler(capacidadeTanque.Text, out var capacidade) ||
+                capacidade <= 0 ||
+                !Ler(combustivelAtual.Text, out var atual) ||
+                atual < 0 || atual > capacidade)
+            {
+                DisplayAlert("Atenção",
+                    "Informe capacidade e nível atual válidos.",
+                    "OK");
+                return;
+            }
+
+            var d = ObterVeiculo(veiculo.Text);
+            d.Capacidade = capacidade;
+            d.LitrosAtuais = atual;
+
+            if (Ler(limiteAlerta.Text, out var alerta) &&
+                alerta > 0 && alerta < 100)
+                d.AlertaPercentual = alerta;
+            else
+                d.AlertaPercentual = 20;
+
+            SalvarDados();
+            AtualizarTanqueTexto(veiculo.Text);
+
+            DisplayAlert("Salvo", "Configuração do tanque salva.", "OK");
         }
-
-        var d = ObterVeiculo(veiculo.Text);
-
-        if (!Ler(capacidadeTanque.Text, out var capacidade) ||
-            capacidade <= 0)
+        catch (Exception ex)
         {
-            DisplayAlert("Atenção", "Informe uma capacidade válida.", "OK");
-            return;
+            DisplayAlert("Erro", ex.Message, "OK");
         }
-
-        if (!Ler(combustivelAtual.Text, out var atual) ||
-            atual < 0 || atual > capacidade)
-        {
-            DisplayAlert("Atenção",
-                "O nível atual deve estar entre zero e a capacidade do tanque.",
-                "OK");
-            return;
-        }
-
-        d.Capacidade = capacidade;
-        d.LitrosAtuais = atual;
-
-        if (Ler(limiteAlerta.Text, out var alerta) &&
-            alerta > 0 && alerta < 100)
-            d.AlertaPercentual = alerta;
-        else
-            d.AlertaPercentual = 20;
-
-        SalvarDados();
-        AtualizarTanqueTexto(veiculo.Text);
-
-        DisplayAlert("Salvo", "Configuração do tanque salva.", "OK");
     }
 
     void AjustarTanque(object? sender, EventArgs e)
     {
-        if (string.IsNullOrWhiteSpace(veiculo.Text) ||
-            !Ler(combustivelAtual.Text, out var atual) || atual < 0)
+        try
         {
-            DisplayAlert("Atenção",
-                "Informe o veículo e os litros atuais.",
-                "OK");
-            return;
+            if (string.IsNullOrWhiteSpace(veiculo.Text) ||
+                !Ler(combustivelAtual.Text, out var atual) ||
+                atual < 0)
+            {
+                DisplayAlert("Atenção",
+                    "Informe veículo e litros atuais.",
+                    "OK");
+                return;
+            }
+
+            var d = ObterVeiculo(veiculo.Text);
+
+            if (d.Capacidade > 0 && atual > d.Capacidade)
+            {
+                DisplayAlert("Atenção",
+                    "O nível informado supera a capacidade do tanque.",
+                    "OK");
+                return;
+            }
+
+            d.LitrosAtuais = atual;
+            SalvarDados();
+            AtualizarTanqueTexto(veiculo.Text);
+
+            DisplayAlert("Salvo", "Nível do tanque ajustado.", "OK");
         }
-
-        var d = ObterVeiculo(veiculo.Text);
-
-        if (d.Capacidade > 0 && atual > d.Capacidade)
+        catch (Exception ex)
         {
-            DisplayAlert("Atenção",
-                "O nível informado supera a capacidade do tanque.",
-                "OK");
-            return;
+            DisplayAlert("Erro", ex.Message, "OK");
         }
-
-        d.LitrosAtuais = atual;
-        SalvarDados();
-        AtualizarTanqueTexto(veiculo.Text);
-
-        DisplayAlert("Salvo", "Nível do tanque ajustado.", "OK");
     }
 
     void AtualizarTanqueTexto(string nome)
@@ -663,7 +686,7 @@ public class MainPage : ContentPage
 
         if (d.Capacidade <= 0)
         {
-            lblTanque.Text = "Cadastre a capacidade e o nível atual do tanque.";
+            lblTanque.Text = "Cadastre a capacidade e o nível inicial.";
             return;
         }
 
@@ -674,7 +697,7 @@ public class MainPage : ContentPage
 
         lblTanque.Text =
             $"Tanque: {d.LitrosAtuais:N1}/{d.Capacidade:N1} L " +
-            $"({percentual:N1}%) | Autonomia estimada: " +
+            $"({percentual:N1}%) | Autonomia: " +
             (media > 0 ? $"{autonomia:N0} km" : "--") +
             (percentual <= alerta ? " | ABASTECER" : " | Nível normal");
     }
@@ -704,10 +727,11 @@ public class MainPage : ContentPage
         metaEnergetica = Campo("Meta energética (padrão 82)", Keyboard.Numeric);
 
         lblPeso = Indicador("Tara: -- | Peso líquido: --");
-        lblEnergetico = Indicador("Valor energético: --");
+        lblEnergetico = Indicador("Valor energético calculado: --");
 
         anoCarreta.TextChanged += (s, e) => AtualizarPeso();
         pesoBruto.TextChanged += (s, e) => AtualizarPeso();
+        consumoViagem.TextChanged += (s, e) => AtualizarPeso();
 
         var salvar = Botao("SALVAR VIAGEM E DESCONTAR DO TANQUE");
         salvar.Clicked += SalvarViagem;
@@ -731,28 +755,20 @@ public class MainPage : ContentPage
                 lblPeso,
                 Rotulo("Litros de combustível consumidos na viagem"),
                 litrosViagem,
-                Rotulo("Consumo médio km/l - informado manualmente"),
+                Rotulo("Consumo médio da viagem (km/l) - manual"),
                 consumoViagem,
-                Rotulo("Meta energética"),
-                metaEnergetica,
+                Rotulo("VALOR ENERGÉTICO CALCULADO AUTOMATICAMENTE"),
                 lblEnergetico,
+                Rotulo("Meta do valor energético"),
+                metaEnergetica,
                 salvar,
                 Titulo("HISTÓRICO DE VIAGENS")
             }
         };
 
-        var historico = CriarListaViagens();
-        layout.Children.Add(historico);
+        layout.Children.Add(CriarListaViagens());
 
         return layout;
-    }
-
-    double TaraAtual()
-    {
-        if (int.TryParse(anoCarreta.Text, out var ano))
-            return TaraPorAno(ano);
-
-        return 0;
     }
 
     void AtualizarPeso()
@@ -761,115 +777,162 @@ public class MainPage : ContentPage
 
         if (tara <= 0)
         {
-            lblPeso.Text = "Tara: não cadastrada para este ano.";
+            lblPeso.Text = "Tara não cadastrada para este ano.";
+            lblEnergetico.Text = "Valor energético calculado: --";
             return;
         }
 
         if (!Ler(pesoBruto.Text, out var bruto) || bruto <= tara)
         {
-            lblPeso.Text = $"Tara automática: {tara:N0} kg | Informe o peso bruto.";
+            lblPeso.Text =
+                $"Tara automática: {tara:N0} kg | Informe o peso bruto.";
+
+            lblEnergetico.Text = "Valor energético calculado: --";
             return;
         }
 
         double liquido = bruto - tara;
+
         lblPeso.Text =
             $"Tara: {tara:N0} kg | Peso líquido: {liquido:N0} kg";
 
         if (Ler(consumoViagem.Text, out var consumo) && consumo > 0)
         {
             double ve = consumo * liquido / 1000.0;
-            lblEnergetico.Text = $"Valor energético estimado: {ve:N2}";
+
+            double meta = 82;
+            if (Ler(metaEnergetica.Text, out var m) && m > 0)
+                meta = m;
+
+            lblEnergetico.Text =
+                $"Valor energético calculado: {ve:N2} | " +
+                $"Meta: {meta:N2} | " +
+                (ve >= meta ? "META ATINGIDA" : "ABAIXO DA META");
         }
+        else
+        {
+            lblEnergetico.Text =
+                "Valor energético: informe o consumo em km/l.";
+        }
+    }
+
+    double TaraAtual()
+    {
+        return int.TryParse(anoCarreta.Text, out var ano)
+            ? TaraPorAno(ano)
+            : 0;
     }
 
     async void SalvarViagem(object? sender, EventArgs e)
     {
-        string nomeVeiculo = cargaVeiculo.Text?.Trim() ?? "";
-
-        if (string.IsNullOrWhiteSpace(nomeVeiculo) ||
-            !int.TryParse(anoCarreta.Text, out var ano) ||
-            !Ler(pesoBruto.Text, out var bruto) ||
-            !Ler(litrosViagem.Text, out var litrosConsumidos) ||
-            !Ler(consumoViagem.Text, out var consumo) ||
-            bruto <= 0 || litrosConsumidos <= 0 || consumo <= 0)
-        {
-            await DisplayAlert("Atenção",
-                "Preencha caminhão, ano, peso bruto, litros consumidos e consumo km/l.",
-                "OK");
+        if (salvandoViagem)
             return;
-        }
 
-        double tara = TaraPorAno(ano);
+        salvandoViagem = true;
 
-        if (tara <= 0)
+        try
         {
-            await DisplayAlert("Ano sem tara cadastrada",
-                "Não há tara automática para esse ano de carreta. Não é possível calcular o peso líquido.",
+            string nomeVeiculo = cargaVeiculo.Text?.Trim() ?? "";
+
+            if (string.IsNullOrWhiteSpace(nomeVeiculo) ||
+                !int.TryParse(anoCarreta.Text, out var ano) ||
+                !Ler(pesoBruto.Text, out var bruto) ||
+                !Ler(litrosViagem.Text, out var litrosConsumidos) ||
+                !Ler(consumoViagem.Text, out var consumo) ||
+                bruto <= 0 || litrosConsumidos <= 0 || consumo <= 0)
+            {
+                await DisplayAlert("Atenção",
+                    "Preencha caminhão, ano, peso bruto, litros consumidos e consumo km/l.",
+                    "OK");
+                return;
+            }
+
+            double tara = TaraPorAno(ano);
+
+            if (tara <= 0)
+            {
+                await DisplayAlert("Ano sem tara",
+                    "Não existe tara cadastrada para esse ano.",
+                    "OK");
+                return;
+            }
+
+            if (bruto <= tara)
+            {
+                await DisplayAlert("Peso inválido",
+                    "O peso bruto precisa ser maior que a tara.",
+                    "OK");
+                return;
+            }
+
+            var dados = ObterVeiculo(nomeVeiculo);
+
+            if (dados.Capacidade > 0 &&
+                litrosConsumidos > dados.LitrosAtuais)
+            {
+                await DisplayAlert("Combustível insuficiente",
+                    $"Tanque: {dados.LitrosAtuais:N1} L.\n" +
+                    $"Consumo da viagem: {litrosConsumidos:N1} L.",
+                    "OK");
+                return;
+            }
+
+            double liquido = bruto - tara;
+            double valorEnergetico = consumo * liquido / 1000.0;
+
+            double meta = 82;
+            if (Ler(metaEnergetica.Text, out var metaDigitada) &&
+                metaDigitada > 0)
+                meta = metaDigitada;
+
+            var viagem = new Viagem
+            {
+                Id = Guid.NewGuid().ToString(),
+                Data = dataViagem.Date,
+                Veiculo = nomeVeiculo,
+                Motorista = cargaMotorista.Text?.Trim() ?? "",
+                AnoCarreta = ano,
+                PesoBruto = bruto,
+                Tara = tara,
+                PesoLiquido = liquido,
+                LitrosConsumidos = litrosConsumidos,
+                ConsumoKmL = consumo,
+                ValorEnergetico = valorEnergetico,
+                MetaEnergetica = meta,
+                TanqueDescontado = dados.Capacidade > 0
+            };
+
+            // Atualiza o tanque uma única vez.
+            if (viagem.TanqueDescontado)
+                dados.LitrosAtuais -= litrosConsumidos;
+
+            viagens.Insert(0, viagem);
+
+            SalvarDados();
+
+            await DisplayAlert("Viagem salva",
+                $"Registro salvo com sucesso!\n\n" +
+                $"Peso líquido: {liquido:N0} kg\n" +
+                $"Consumo: {consumo:N2} km/l\n" +
+                $"Valor energético: {valorEnergetico:N2}\n" +
+                $"Meta: {meta:N2}\n" +
+                $"Combustível descontado: {litrosConsumidos:N1} L",
                 "OK");
-            return;
-        }
 
-        if (bruto <= tara)
+            // Não recria a tela antes de concluir o salvamento.
+            MostrarMenu("Cargas");
+        }
+        catch (Exception ex)
         {
-            await DisplayAlert("Peso inválido",
-                "O peso bruto precisa ser maior que a tara.",
+            await DisplayAlert(
+                "Erro ao salvar viagem",
+                ex.ToString(),
                 "OK");
-            return;
         }
-
-        var dados = ObterVeiculo(nomeVeiculo);
-
-        if (dados.Capacidade > 0 && litrosConsumidos > dados.LitrosAtuais)
+        finally
         {
-            await DisplayAlert("Combustível insuficiente",
-                $"Tanque: {dados.LitrosAtuais:N1} L. Consumo da viagem: {litrosConsumidos:N1} L.",
-                "OK");
-            return;
+            salvandoViagem = false;
         }
-
-        double liquido = bruto - tara;
-        double valorEnergetico = consumo * liquido / 1000.0;
-
-        double meta = 82;
-        if (Ler(metaEnergetica.Text, out var metaDigitada) && metaDigitada > 0)
-            meta = metaDigitada;
-
-        // A viagem desconta os litros informados do tanque.
-        if (dados.Capacidade > 0)
-            dados.LitrosAtuais -= litrosConsumidos;
-
-        var viagem = new Viagem
-        {
-            Id = Guid.NewGuid().ToString(),
-            Data = dataViagem.Date,
-            Veiculo = nomeVeiculo,
-            Motorista = cargaMotorista.Text?.Trim() ?? "",
-            AnoCarreta = ano,
-            PesoBruto = bruto,
-            Tara = tara,
-            PesoLiquido = liquido,
-            LitrosConsumidos = litrosConsumidos,
-            ConsumoKmL = consumo,
-            ValorEnergetico = valorEnergetico,
-            MetaEnergetica = meta,
-            TanqueDescontado = dados.Capacidade > 0
-        };
-
-        viagens.Insert(0, viagem);
-        SalvarDados();
-
-        lblEnergetico.Text =
-            $"Valor energético: {valorEnergetico:N2} | Meta: {meta:N2} | " +
-            (valorEnergetico >= meta ? "META ATINGIDA" : "ABAIXO DA META");
-
-        AtualizarTanqueTexto(nomeVeiculo);
-
-        await DisplayAlert("Viagem salva",
-            $"Peso líquido: {liquido:N0} kg\n" +
-            $"Combustível descontado: {litrosConsumidos:N1} L",
-            "OK");
-
-        MostrarMenu("Cargas");
     }
 
     View CriarListaViagens()
@@ -910,7 +973,7 @@ public class MainPage : ContentPage
 
             detalhes.Children.Add(new Label
             {
-                Text = $"Combustível: {x.LitrosConsumidos:N1} L | Consumo manual: {x.ConsumoKmL:N2} km/l"
+                Text = $"Combustível: {x.LitrosConsumidos:N1} L | Consumo: {x.ConsumoKmL:N2} km/l"
             });
 
             detalhes.Children.Add(new Label
@@ -919,6 +982,7 @@ public class MainPage : ContentPage
             });
 
             var excluir = Botao("EXCLUIR VIAGEM", "#B91C1C");
+
             excluir.Clicked += async (s, e) =>
             {
                 bool ok = await DisplayAlert(
@@ -927,11 +991,13 @@ public class MainPage : ContentPage
                     "Sim",
                     "Não");
 
-                if (!ok) return;
+                if (!ok)
+                    return;
 
                 if (x.TanqueDescontado)
                 {
                     var d = ObterVeiculo(x.Veiculo);
+
                     d.LitrosAtuais = Math.Min(
                         d.Capacidade,
                         d.LitrosAtuais + x.LitrosConsumidos);
@@ -958,32 +1024,27 @@ public class MainPage : ContentPage
 
     View TelaIndicadores()
     {
-        AtualizarDashboard();
-
         double mediaViagem = viagens.Count > 0
             ? viagens.Average(x => x.ConsumoKmL)
             : 0;
 
-        double mediaAbast = abastecimentos.Count > 0
-            ? abastecimentos
-                .Where(x => x.Consumo > 0)
-                .Select(x => x.Consumo)
-                .DefaultIfEmpty(0)
-                .Average()
-            : 0;
+        var validos = abastecimentos.Where(x => x.Consumo > 0).ToList();
 
-        double litrosViagens = viagens.Sum(x => x.LitrosConsumidos);
+        double km = validos.Sum(x => x.KmAtual - x.KmAnterior);
+        double l = validos.Sum(x => x.Litros);
+
+        double mediaAbast = l > 0 ? km / l : 0;
+
+        double totalViagens = viagens.Sum(x => x.LitrosConsumidos);
+
         double mediaEnergetica = viagens.Count > 0
             ? viagens.Average(x => x.ValorEnergetico)
             : 0;
 
-        lblAbastecimentos.Text = abastecimentos.Count.ToString();
-        lblGasto.Text = abastecimentos.Sum(x => x.Valor).ToString("C", pt);
-        lblKm.Text = abastecimentos.Sum(x => x.KmAtual - x.KmAnterior).ToString("N0", pt) + " km";
-        lblMedia.Text = mediaAbast > 0 ? mediaAbast.ToString("N2", pt) + " km/l" : "--";
-
         lblComparacao = Indicador(
-            $"Diferença entre médias: {(mediaAbast - mediaViagem):N2} km/l");
+            mediaAbast > 0 && mediaViagem > 0
+                ? $"{mediaAbast - mediaViagem:N2} km/l"
+                : "Sem dados suficientes");
 
         return new VerticalStackLayout
         {
@@ -991,20 +1052,25 @@ public class MainPage : ContentPage
             Children =
             {
                 Titulo("INDICADORES GERAIS"),
-                Cartao("Quantidade de abastecimentos", lblAbastecimentos),
-                Cartao("Total gasto em abastecimentos", lblGasto),
-                Cartao("Quilômetros registrados", lblKm),
-                Cartao("Média km/l nos abastecimentos", lblMedia),
-                Cartao("Média km/l informada nas viagens",
+                Cartao("Quantidade de abastecimentos",
+                    Indicador(abastecimentos.Count.ToString())),
+                Cartao("Total gasto",
+                    Indicador(abastecimentos.Sum(x => x.Valor).ToString("C", pt))),
+                Cartao("Média km/l nos abastecimentos",
+                    Indicador(mediaAbast > 0 ? $"{mediaAbast:N2} km/l" : "--")),
+                Cartao("Quantidade de viagens",
+                    Indicador(viagens.Count.ToString())),
+                Cartao("Média km/l nas viagens",
                     Indicador(mediaViagem > 0 ? $"{mediaViagem:N2} km/l" : "--")),
                 Cartao("Litros consumidos nas viagens",
-                    Indicador($"{litrosViagens:N1} L")),
+                    Indicador($"{totalViagens:N1} L")),
                 Cartao("Média do valor energético",
                     Indicador(mediaEnergetica > 0 ? mediaEnergetica.ToString("N2", pt) : "--")),
-                Cartao("Comparação de consumo", lblComparacao),
+                Cartao("Diferença entre médias",
+                    lblComparacao),
                 new Label
                 {
-                    Text = "A média de abastecimentos é calculada automaticamente. A média das cargas utiliza o consumo informado manualmente em cada viagem.",
+                    Text = "Abastecimentos: cálculo automático. Viagens: consumo informado manualmente.",
                     TextColor = Colors.Gray,
                     FontSize = 12
                 }
@@ -1045,9 +1111,9 @@ public class MainPage : ContentPage
                 Titulo("RELATÓRIOS E FILTROS"),
                 Rotulo("Tipo de relatório"),
                 tipoRelatorio,
-                Rotulo("Período do relatório"),
+                Rotulo("Período"),
                 periodoRelatorio,
-                Rotulo("Escolha uma data de referência"),
+                Rotulo("Data de referência"),
                 dataFiltro,
                 Rotulo("Veículo"),
                 filtroVeiculo,
@@ -1078,7 +1144,7 @@ public class MainPage : ContentPage
         };
     }
 
-    bool PassaFiltro(string nome, string motoristaNome)
+    bool PassaFiltro(string nome, string nomeMotorista)
     {
         bool veiculoOk =
             string.IsNullOrWhiteSpace(filtroVeiculo.Text) ||
@@ -1087,7 +1153,7 @@ public class MainPage : ContentPage
 
         bool motoristaOk =
             string.IsNullOrWhiteSpace(filtroMotorista.Text) ||
-            motoristaNome.Contains(filtroMotorista.Text.Trim(),
+            nomeMotorista.Contains(filtroMotorista.Text.Trim(),
                 StringComparison.OrdinalIgnoreCase);
 
         return veiculoOk && motoristaOk;
@@ -1113,8 +1179,6 @@ public class MainPage : ContentPage
 
     void MostrarResultadoRelatorio()
     {
-        if (lista == null) return;
-
         lista.Children.Clear();
 
         string tipo = tipoRelatorio.SelectedItem?.ToString() ?? "Todos";
@@ -1131,9 +1195,10 @@ public class MainPage : ContentPage
         {
             lista.Children.Add(new Label
             {
-                Text = "Nenhum registro encontrado neste período.",
+                Text = "Nenhum registro encontrado.",
                 TextColor = Colors.Gray
             });
+
             return;
         }
 
@@ -1146,21 +1211,19 @@ public class MainPage : ContentPage
 
         lista.Children.Add(new Label
         {
-            Text = $"Total gasto: {ab.Sum(x => x.Valor):C2} | Litros abastecidos: {ab.Sum(x => x.Litros):N1} L",
-            TextColor = Colors.Black
+            Text = $"Gasto: {ab.Sum(x => x.Valor):C2} | Litros abastecidos: {ab.Sum(x => x.Litros):N1} L"
         });
 
         lista.Children.Add(new Label
         {
-            Text = $"Litros consumidos nas viagens: {cg.Sum(x => x.LitrosConsumidos):N1} L",
-            TextColor = Colors.Black
+            Text = $"Litros consumidos nas viagens: {cg.Sum(x => x.LitrosConsumidos):N1} L"
         });
 
         foreach (var x in ab)
         {
             lista.Children.Add(new Label
             {
-                Text = $"{x.Data:dd/MM/yyyy} | {x.Veiculo} | Abastecimento: {x.Litros:N1} L | {x.Consumo:N2} km/l",
+                Text = $"{x.Data:dd/MM/yyyy} | {x.Veiculo} | {x.Litros:N1} L | {x.Consumo:N2} km/l",
                 TextColor = Colors.Black
             });
         }
@@ -1169,54 +1232,35 @@ public class MainPage : ContentPage
         {
             lista.Children.Add(new Label
             {
-                Text = $"{x.Data:dd/MM/yyyy} | {x.Veiculo} | Viagem: {x.LitrosConsumidos:N1} L | {x.ConsumoKmL:N2} km/l | Peso líquido: {x.PesoLiquido:N0} kg",
+                Text = $"{x.Data:dd/MM/yyyy} | {x.Veiculo} | Viagem: {x.LitrosConsumidos:N1} L | {x.ConsumoKmL:N2} km/l | VE: {x.ValorEnergetico:N2}",
                 TextColor = Colors.Black
             });
         }
     }
 
-    void AtualizarDashboard()
-    {
-        if (lblAbastecimentos == null) return;
-
-        lblAbastecimentos.Text = abastecimentos.Count.ToString();
-        lblGasto.Text = abastecimentos.Sum(x => x.Valor).ToString("C", pt);
-
-        lblKm.Text =
-            abastecimentos.Sum(x => Math.Max(0, x.KmAtual - x.KmAnterior))
-            .ToString("N0", pt) + " km";
-
-        double km = abastecimentos.Sum(x => Math.Max(0, x.KmAtual - x.KmAnterior));
-        double l = abastecimentos.Sum(x => x.Litros);
-
-        lblMedia.Text = l > 0
-            ? (km / l).ToString("N2", pt) + " km/l"
-            : "-- km/l";
-    }
-
     async void CompartilharPDF(object? sender, EventArgs e)
     {
-        string tipo = tipoRelatorio.SelectedItem?.ToString() ?? "Todos";
-
-        var ab = tipo == "Cargas"
-            ? new List<Abastecimento>()
-            : FiltrarAbastecimentos();
-
-        var cg = tipo == "Abastecimentos"
-            ? new List<Viagem>()
-            : FiltrarViagens();
-
-        if (ab.Count == 0 && cg.Count == 0)
-        {
-            await DisplayAlert("Atenção",
-                "Não existem registros para gerar o PDF.",
-                "OK");
-            return;
-        }
-
-#if ANDROID
         try
         {
+            string tipo = tipoRelatorio.SelectedItem?.ToString() ?? "Todos";
+
+            var ab = tipo == "Cargas"
+                ? new List<Abastecimento>()
+                : FiltrarAbastecimentos();
+
+            var cg = tipo == "Abastecimentos"
+                ? new List<Viagem>()
+                : FiltrarViagens();
+
+            if (ab.Count == 0 && cg.Count == 0)
+            {
+                await DisplayAlert("Atenção",
+                    "Não existem registros para gerar o PDF.",
+                    "OK");
+                return;
+            }
+
+#if ANDROID
             string caminho = Path.Combine(
                 FileSystem.CacheDirectory,
                 "Relatorio_FuelControl.pdf");
@@ -1266,40 +1310,43 @@ public class MainPage : ContentPage
                 y += 25;
             }
 
-            void Linha(string textoLinha)
+            void Linha(string conteudo)
             {
                 if (y > 790)
                     NovaPagina();
 
-                canvas!.DrawText(
-                    textoLinha.Length > 100
-                        ? textoLinha.Substring(0, 100)
-                        : textoLinha,
-                    30, y, texto);
+                string linha = conteudo.Length > 100
+                    ? conteudo.Substring(0, 100)
+                    : conteudo;
 
+                canvas!.DrawText(linha, 30, y, texto);
                 y += 15;
             }
 
             NovaPagina();
 
             Linha("RELATORIO DE ABASTECIMENTOS");
+
             foreach (var x in ab)
             {
                 Linha($"{x.Data:dd/MM/yyyy} | {x.Veiculo} | {x.Motorista}");
                 Linha($"KM: {x.KmAnterior:N0} a {x.KmAtual:N0} | {x.Litros:N1} L | {x.Consumo:N2} km/l");
                 Linha($"Valor: {x.Valor:C2} | Custo/km: {x.CustoKm:C2}");
+
                 if (x.TemArla)
                     Linha($"Arla: {x.LitrosArla:N1} L");
+
                 y += 8;
             }
 
             Linha("RELATORIO DE CARGAS / VIAGENS");
+
             foreach (var x in cg)
             {
                 Linha($"{x.Data:dd/MM/yyyy} | {x.Veiculo} | {x.Motorista}");
                 Linha($"Carreta: {x.AnoCarreta} | Bruto: {x.PesoBruto:N0} kg | Tara: {x.Tara:N0} kg");
                 Linha($"Liquido: {x.PesoLiquido:N0} kg | Combustivel: {x.LitrosConsumidos:N1} L");
-                Linha($"Consumo manual: {x.ConsumoKmL:N2} km/l | VE: {x.ValorEnergetico:N2}");
+                Linha($"Consumo: {x.ConsumoKmL:N2} km/l | VE: {x.ValorEnergetico:N2} | Meta: {x.MetaEnergetica:N2}");
                 y += 8;
             }
 
@@ -1315,16 +1362,16 @@ public class MainPage : ContentPage
                     Title = "Relatório FuelControl",
                     File = new ShareFile(caminho)
                 });
+#else
+            await DisplayAlert("Indisponível",
+                "A geração de PDF está configurada para Android.",
+                "OK");
+#endif
         }
         catch (Exception ex)
         {
-            await DisplayAlert("Erro ao gerar PDF", ex.Message, "OK");
+            await DisplayAlert("Erro no PDF", ex.Message, "OK");
         }
-#else
-        await DisplayAlert("Indisponível",
-            "A geração de PDF está configurada para Android.",
-            "OK");
-#endif
     }
 }
 
@@ -1355,7 +1402,7 @@ public class Abastecimento
     public double ConsumoArlaKmL { get; set; }
     public double ConsumoArla100 { get; set; }
 
-    // Campos antigos mantidos para compatibilidade com o histórico existente.
+    // Campos antigos preservados para compatibilidade.
     public double MetaKmL { get; set; }
     public double PesoBruto { get; set; }
     public int AnoCarreta { get; set; }
