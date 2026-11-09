@@ -58,6 +58,8 @@ public class MainPage : ContentPage
     Label lblEnergetico = new();
     Label lblComparacao = new();
 
+    ProgressBar barraTanque = new();
+
     bool salvandoViagem;
 
     public MainPage()
@@ -330,7 +332,14 @@ public class MainPage : ContentPage
         lblCusto = Indicador("Custo por km: --");
         lblTanque = Indicador("Digite a placa para consultar o tanque.");
 
-        // Atualiza o painel automaticamente ao digitar a identificação.
+        barraTanque = new ProgressBar
+        {
+            Progress = 0,
+            ProgressColor = Color.FromArgb("#16A34A"),
+            BackgroundColor = Color.FromArgb("#E2E8F0"),
+            HeightRequest = 18
+        };
+
         veiculo.TextChanged += (s, e) =>
             AtualizarTanqueTexto(e.NewTextValue ?? "");
 
@@ -399,6 +408,7 @@ public class MainPage : ContentPage
                 Rotulo("Veículo / placa"), veiculo,
                 Titulo("CONSULTA DO TANQUE"),
                 lblTanque,
+                barraTanque,
                 Rotulo("Motorista"), motorista,
                 Rotulo("KM anterior"), kmAnterior,
                 Rotulo("KM atual"), kmAtual,
@@ -638,6 +648,7 @@ public class MainPage : ContentPage
 
         if (string.IsNullOrWhiteSpace(nome))
         {
+            barraTanque.Progress = 0;
             lblTanque.Text = "Digite a placa para consultar o tanque.";
             return;
         }
@@ -646,22 +657,38 @@ public class MainPage : ContentPage
 
         if (!veiculos.TryGetValue(chave, out var d) || d.Capacidade <= 0)
         {
+            barraTanque.Progress = 0;
             lblTanque.Text =
                 "Tanque não configurado. Informe capacidade e nível inicial.";
             return;
         }
 
-        double percentual = d.LitrosAtuais / d.Capacidade * 100;
-        double alerta = d.AlertaPercentual > 0 ? d.AlertaPercentual : 20;
+        double percentual = Math.Clamp(
+            d.LitrosAtuais / d.Capacidade * 100, 0, 100);
+
+        barraTanque.Progress = percentual / 100.0;
+
+        double alerta = d.AlertaPercentual > 0
+            ? d.AlertaPercentual : 20;
+
+        barraTanque.ProgressColor =
+            percentual <= alerta
+                ? Color.FromArgb("#DC2626")
+                : percentual <= 40
+                    ? Color.FromArgb("#F59E0B")
+                    : Color.FromArgb("#16A34A");
+
         double media = MediaAbastecimentos(nome);
-        double autonomia = media > 0 ? d.LitrosAtuais * media : 0;
+        double autonomia = media > 0
+            ? d.LitrosAtuais * media : 0;
 
         var registros = abastecimentos
             .Where(x => Id(x.Veiculo) == chave && x.Litros > 0)
             .ToList();
 
         double mediaKm = registros.Count > 0
-            ? registros.Average(x => Math.Max(0, x.KmAtual - x.KmAnterior))
+            ? registros.Average(x =>
+                Math.Max(0, x.KmAtual - x.KmAnterior))
             : 0;
 
         double mediaLitros = registros.Count > 0
@@ -669,9 +696,10 @@ public class MainPage : ContentPage
             : 0;
 
         lblTanque.Text =
-            $"NÍVEL DO TANQUE: {d.LitrosAtuais:N1} de {d.Capacidade:N1} L " +
-            $"({percentual:N1}%)\n" +
-            $"Autonomia estimada: {(media > 0 ? autonomia.ToString("N0", pt) + " km" : "--")}\n" +
+            $"NÍVEL ATUAL: {d.LitrosAtuais:N0}/{d.Capacidade:N0} L " +
+            $"({percentual:N0}%)\n" +
+            $"Autonomia estimada: " +
+            $"{(media > 0 ? autonomia.ToString("N0", pt) + " km" : "--")}\n" +
             $"Média de KM por abastecimento: " +
             $"{(registros.Count > 0 ? mediaKm.ToString("N0", pt) + " km" : "--")}\n" +
             $"Média de litros por abastecimento: " +
@@ -1035,14 +1063,10 @@ public class MainPage : ContentPage
             var ab = AbNoPeriodo(filtro);
             var cg = ViNoPeriodo(filtro);
 
-            // KM: diferença entre hodômetro atual e anterior.
             double kmTotal = ab.Sum(x =>
                 Math.Max(0, x.KmAtual - x.KmAnterior));
 
-            // Litros consumidos: lançamentos das viagens.
             double litrosTotal = cg.Sum(x => x.LitrosConsumidos);
-
-            // Toneladas líquidas: peso líquido das viagens dividido por 1.000.
             double toneladas = cg.Sum(x => x.PesoLiquido) / 1000.0;
 
             return new Border
