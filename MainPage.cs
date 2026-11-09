@@ -3,12 +3,12 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Storage;
 using Microsoft.Maui.ApplicationModel.DataTransfer;
 using System.Globalization;
-using System.Text;
 using System.Text.Json;
 
 #if ANDROID
-using Android.Graphics;
-using Android.Graphics.Pdf;
+using AndroidPaint = Android.Graphics.Paint;
+using AndroidColor = Android.Graphics.Color;
+using AndroidPdfDocument = Android.Graphics.Pdf.PdfDocument;
 #endif
 
 namespace FuelControl;
@@ -91,7 +91,7 @@ public class MainPage : ContentPage
         };
     }
 
-    View Cartao(string titulo, Label valor)
+    View Cartao(string titulo, Label valorCartao)
     {
         return new Frame
         {
@@ -110,17 +110,42 @@ public class MainPage : ContentPage
                         FontSize = 12,
                         TextColor = Colors.Gray
                     },
-                    valor
+                    valorCartao
                 }
             }
         };
+    }
+
+    Grid CriarDashboardGrid()
+    {
+        var grid = new Grid
+        {
+            ColumnDefinitions =
+            {
+                new ColumnDefinition(GridLength.Star),
+                new ColumnDefinition(GridLength.Star)
+            },
+            RowDefinitions =
+            {
+                new RowDefinition(GridLength.Auto),
+                new RowDefinition(GridLength.Auto)
+            },
+            ColumnSpacing = 10,
+            RowSpacing = 10
+        };
+
+        grid.Add(Cartao("Abastecimentos", lblAbastecimentos), 0, 0);
+        grid.Add(Cartao("Gasto total", lblGasto), 1, 0);
+        grid.Add(Cartao("KM percorridos", lblKm), 0, 1);
+        grid.Add(Cartao("Consumo médio", lblMedia), 1, 1);
+
+        return grid;
     }
 
     View CriarTela()
     {
         veiculo = Campo("Identificação do veículo", Keyboard.Default);
         motorista = Campo("Nome do motorista", Keyboard.Default);
-
         kmAnterior = Campo("Quilometragem anterior", Keyboard.Numeric);
         kmAtual = Campo("Quilometragem atual", Keyboard.Numeric);
         litros = Campo("Litros abastecidos", Keyboard.Numeric);
@@ -208,29 +233,7 @@ public class MainPage : ContentPage
                     },
 
                     Titulo("DASHBOARD"),
-
-                    new Grid
-                    {
-                        ColumnDefinitions =
-                        {
-                            new ColumnDefinition(GridLength.Star),
-                            new ColumnDefinition(GridLength.Star)
-                        },
-                        RowDefinitions =
-                        {
-                            new RowDefinition(GridLength.Auto),
-                            new RowDefinition(GridLength.Auto)
-                        },
-                        ColumnSpacing = 10,
-                        RowSpacing = 10,
-                        Children =
-                        {
-                            { Cartao("Abastecimentos", lblAbastecimentos), 0, 0 },
-                            { Cartao("Gasto total", lblGasto), 1, 0 },
-                            { Cartao("KM percorridos", lblKm), 0, 1 },
-                            { Cartao("Consumo médio", lblMedia), 1, 1 }
-                        }
-                    },
+                    CriarDashboardGrid(),
 
                     Titulo("NOVO ABASTECIMENTO"),
 
@@ -277,7 +280,6 @@ public class MainPage : ContentPage
                     valor,
 
                     calcular,
-
                     lblResultado,
                     lblCusto,
 
@@ -288,9 +290,7 @@ public class MainPage : ContentPage
                     },
 
                     Titulo("HISTÓRICO"),
-
                     lista,
-
                     pdf,
                     limpar,
 
@@ -418,8 +418,9 @@ public class MainPage : ContentPage
 
         try
         {
-            historico = JsonSerializer.Deserialize<List<Abastecimento>>(json)
-                        ?? new List<Abastecimento>();
+            historico =
+                JsonSerializer.Deserialize<List<Abastecimento>>(json)
+                ?? new List<Abastecimento>();
         }
         catch
         {
@@ -528,29 +529,29 @@ public class MainPage : ContentPage
 #if ANDROID
         try
         {
-            string caminho = Path.Combine(
+            string caminho = System.IO.Path.Combine(
                 FileSystem.CacheDirectory,
                 "Relatorio_FuelControl.pdf");
 
-            using (var documento = new PdfDocument())
+            using (var documento = new AndroidPdfDocument())
             {
-                var paginaInfo = new PdfDocument.PageInfo.Builder(
+                var paginaInfo = new AndroidPdfDocument.PageInfo.Builder(
                     595, 842, 1).Create();
 
                 var pagina = documento.StartPage(paginaInfo);
                 var canvas = pagina.Canvas;
 
-                var tinta = new Paint
+                var tinta = new AndroidPaint
                 {
-                    Color = Color.Rgb(18, 59, 101),
+                    Color = AndroidColor.Rgb(18, 59, 101),
                     TextSize = 20,
                     FakeBoldText = true,
                     AntiAlias = true
                 };
 
-                var texto = new Paint
+                var texto = new AndroidPaint
                 {
-                    Color = Color.Black,
+                    Color = AndroidColor.Black,
                     TextSize = 11,
                     AntiAlias = true
                 };
@@ -601,7 +602,6 @@ public class MainPage : ContentPage
                     35, y, texto);
 
                 y += 35;
-
                 tinta.TextSize = 13;
 
                 canvas.DrawText(
@@ -609,7 +609,6 @@ public class MainPage : ContentPage
                     35, y, tinta);
 
                 y += 25;
-
                 tinta.TextSize = 10;
 
                 foreach (var item in historico)
@@ -617,9 +616,11 @@ public class MainPage : ContentPage
                     if (y > 790)
                     {
                         texto.TextSize = 9;
+
                         canvas.DrawText(
                             "Consulte o aplicativo para os demais registros.",
                             35, 810, texto);
+
                         break;
                     }
 
@@ -653,7 +654,7 @@ public class MainPage : ContentPage
 
                 documento.FinishPage(pagina);
 
-                using var arquivo = File.Create(caminho);
+                using var arquivo = System.IO.File.Create(caminho);
                 documento.WriteTo(arquivo);
             }
 
@@ -693,6 +694,7 @@ public class Abastecimento
     public double Consumo { get; set; }
     public double CustoKm { get; set; }
 }
+
 
 
 
