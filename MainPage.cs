@@ -50,10 +50,6 @@ public class MainPage : ContentPage
     VerticalStackLayout painelArla = new();
     VerticalStackLayout lista = new();
 
-    Label lblAbastecimentos = new();
-    Label lblGasto = new();
-    Label lblKm = new();
-    Label lblMedia = new();
     Label lblResultado = new();
     Label lblCusto = new();
     Label lblTotal = new();
@@ -264,70 +260,80 @@ public class MainPage : ContentPage
 
     void MostrarMenu(string menu)
     {
-        var botoes = new HorizontalStackLayout
+        try
         {
-            Spacing = 4
-        };
-
-        string[] nomes =
-        {
-            "Abastecimentos",
-            "Cargas",
-            "Indicadores",
-            "Relatórios"
-        };
-
-        foreach (string nome in nomes)
-        {
-            var botao = Botao(nome);
-            botao.FontSize = 10;
-            botao.Padding = new Thickness(4, 0);
-            botao.Clicked += (s, e) => MostrarMenu(nome);
-            botoes.Children.Add(botao);
-        }
-
-        View conteudo = menu switch
-        {
-            "Abastecimentos" => TelaAbastecimentos(),
-            "Cargas" => TelaCargas(),
-            "Indicadores" => TelaIndicadores(),
-            "Relatórios" => TelaRelatorios(),
-            _ => TelaAbastecimentos()
-        };
-
-        Content = new ScrollView
-        {
-            Content = new VerticalStackLayout
+            var botoes = new HorizontalStackLayout
             {
-                Padding = 14,
-                Spacing = 9,
-                Children =
-                {
-                    new Label
-                    {
-                        Text = "FUELCONTROL",
-                        FontSize = 27,
-                        FontAttributes = FontAttributes.Bold,
-                        TextColor = Color.FromArgb("#123B65"),
-                        HorizontalOptions = LayoutOptions.Center
-                    },
-                    new Label
-                    {
-                        Text = "CONTROLE DE ABASTECIMENTO E CARGAS",
-                        FontSize = 10,
-                        TextColor = Colors.Gray,
-                        HorizontalOptions = LayoutOptions.Center
-                    },
-                    botoes,
-                    new BoxView
-                    {
-                        HeightRequest = 1,
-                        Color = Colors.LightGray
-                    },
-                    conteudo
-                }
+                Spacing = 4
+            };
+
+            string[] nomes =
+            {
+                "Abastecimentos",
+                "Cargas",
+                "Indicadores",
+                "Relatórios"
+            };
+
+            foreach (string nome in nomes)
+            {
+                var botao = Botao(nome);
+                botao.FontSize = 10;
+                botao.Padding = new Thickness(4, 0);
+                botao.Clicked += (s, e) => MostrarMenu(nome);
+                botoes.Children.Add(botao);
             }
-        };
+
+            View conteudo = menu switch
+            {
+                "Abastecimentos" => TelaAbastecimentos(),
+                "Cargas" => TelaCargas(),
+                "Indicadores" => TelaIndicadores(),
+                "Relatórios" => TelaRelatorios(),
+                _ => TelaAbastecimentos()
+            };
+
+            Content = new ScrollView
+            {
+                Content = new VerticalStackLayout
+                {
+                    Padding = 14,
+                    Spacing = 9,
+                    Children =
+                    {
+                        new Label
+                        {
+                            Text = "FUELCONTROL",
+                            FontSize = 27,
+                            FontAttributes = FontAttributes.Bold,
+                            TextColor = Color.FromArgb("#123B65"),
+                            HorizontalOptions = LayoutOptions.Center
+                        },
+                        new Label
+                        {
+                            Text = "CONTROLE DE ABASTECIMENTO E CARGAS",
+                            FontSize = 10,
+                            TextColor = Colors.Gray,
+                            HorizontalOptions = LayoutOptions.Center
+                        },
+                        botoes,
+                        new BoxView
+                        {
+                            HeightRequest = 1,
+                            Color = Colors.LightGray
+                        },
+                        conteudo
+                    }
+                }
+            };
+        }
+        catch (Exception ex)
+        {
+            MainThread.BeginInvokeOnMainThread(async () =>
+            {
+                await DisplayAlert("Erro ao abrir tela", ex.Message, "OK");
+            });
+        }
     }
 
     View TelaAbastecimentos()
@@ -532,7 +538,7 @@ public class MainPage : ContentPage
                 dados.LitrosAtuais + quantidade > dados.Capacidade)
             {
                 await DisplayAlert("Atenção",
-                    "O abastecimento ultrapassaria a capacidade do tanque. Confira o nível atual.",
+                    "O abastecimento ultrapassaria a capacidade do tanque.",
                     "OK");
                 return;
             }
@@ -718,6 +724,12 @@ public class MainPage : ContentPage
 
     View TelaCargas()
     {
+        // CORREÇÃO: cria um calendário novo ao abrir Cargas.
+        dataViagem = new DatePicker
+        {
+            Date = DateTime.Today
+        };
+
         cargaVeiculo = Campo("Caminhão / identificação");
         cargaMotorista = Campo("Motorista");
         anoCarreta = Campo("Ano da carreta", Keyboard.Numeric);
@@ -732,6 +744,7 @@ public class MainPage : ContentPage
         anoCarreta.TextChanged += (s, e) => AtualizarPeso();
         pesoBruto.TextChanged += (s, e) => AtualizarPeso();
         consumoViagem.TextChanged += (s, e) => AtualizarPeso();
+        metaEnergetica.TextChanged += (s, e) => AtualizarPeso();
 
         var salvar = Botao("SALVAR VIAGEM E DESCONTAR DO TANQUE");
         salvar.Clicked += SalvarViagem;
@@ -902,13 +915,23 @@ public class MainPage : ContentPage
                 TanqueDescontado = dados.Capacidade > 0
             };
 
-            // Atualiza o tanque uma única vez.
+            double litrosAntigos = dados.LitrosAtuais;
+
             if (viagem.TanqueDescontado)
                 dados.LitrosAtuais -= litrosConsumidos;
 
             viagens.Insert(0, viagem);
 
-            SalvarDados();
+            try
+            {
+                SalvarDados();
+            }
+            catch
+            {
+                viagens.Remove(viagem);
+                dados.LitrosAtuais = litrosAntigos;
+                throw;
+            }
 
             await DisplayAlert("Viagem salva",
                 $"Registro salvo com sucesso!\n\n" +
@@ -919,14 +942,13 @@ public class MainPage : ContentPage
                 $"Combustível descontado: {litrosConsumidos:N1} L",
                 "OK");
 
-            // Não recria a tela antes de concluir o salvamento.
             MostrarMenu("Cargas");
         }
         catch (Exception ex)
         {
             await DisplayAlert(
                 "Erro ao salvar viagem",
-                ex.ToString(),
+                ex.Message,
                 "OK");
         }
         finally
@@ -994,9 +1016,13 @@ public class MainPage : ContentPage
                 if (!ok)
                     return;
 
+                double litrosAntigos = 0;
+                DadosVeiculo? d = null;
+
                 if (x.TanqueDescontado)
                 {
-                    var d = ObterVeiculo(x.Veiculo);
+                    d = ObterVeiculo(x.Veiculo);
+                    litrosAntigos = d.LitrosAtuais;
 
                     d.LitrosAtuais = Math.Min(
                         d.Capacidade,
@@ -1004,8 +1030,21 @@ public class MainPage : ContentPage
                 }
 
                 viagens.Remove(x);
-                SalvarDados();
-                MostrarMenu("Cargas");
+
+                try
+                {
+                    SalvarDados();
+                    MostrarMenu("Cargas");
+                }
+                catch (Exception ex)
+                {
+                    viagens.Add(x);
+
+                    if (d != null)
+                        d.LitrosAtuais = litrosAntigos;
+
+                    await DisplayAlert("Erro", ex.Message, "OK");
+                }
             };
 
             detalhes.Children.Add(excluir);
@@ -1034,7 +1073,6 @@ public class MainPage : ContentPage
         double l = validos.Sum(x => x.Litros);
 
         double mediaAbast = l > 0 ? km / l : 0;
-
         double totalViagens = viagens.Sum(x => x.LitrosConsumidos);
 
         double mediaEnergetica = viagens.Count > 0
@@ -1080,6 +1118,12 @@ public class MainPage : ContentPage
 
     View TelaRelatorios()
     {
+        // CORREÇÃO: cria um calendário novo ao abrir Relatórios.
+        dataFiltro = new DatePicker
+        {
+            Date = DateTime.Today
+        };
+
         tipoRelatorio = NovoPicker(
             "Tipo de relatório",
             "Todos",
@@ -1402,7 +1446,6 @@ public class Abastecimento
     public double ConsumoArlaKmL { get; set; }
     public double ConsumoArla100 { get; set; }
 
-    // Campos antigos preservados para compatibilidade.
     public double MetaKmL { get; set; }
     public double PesoBruto { get; set; }
     public int AnoCarreta { get; set; }
