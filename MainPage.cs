@@ -140,10 +140,6 @@ public class MainPage : ContentPage
         {
             BackgroundColor = Colors.White,
             Stroke = Color.FromArgb("#DCE4ED"),
-            StrokeShape = new RoundRectangle
-            {
-                CornerRadius = 12
-            },
             Padding = 13,
             Content = new VerticalStackLayout
             {
@@ -741,10 +737,6 @@ public class MainPage : ContentPage
             {
                 BackgroundColor = Colors.White,
                 Stroke = Color.FromArgb("#DCE4ED"),
-                StrokeShape = new RoundRectangle
-                {
-                    CornerRadius = 10
-                },
                 Padding = 12,
                 Content = detalhes
             });
@@ -917,8 +909,3 @@ public class Abastecimento
     public double ConsumoArlaKmL { get; set; }
     public double ConsumoArla100 { get; set; }
 }
-
-
-
-
-
