@@ -41,8 +41,9 @@ public class MainPage : ContentPage
     Picker tipoVeiculo = new(), tipoCombustivel = new();
     Picker periodoRelatorio = new(), tipoRelatorio = new();
 
-    DatePicker dataViagem = new() { Date = DateTime.Today };
-    DatePicker dataFiltro = new() { Date = DateTime.Today };
+    DatePicker dataViagem = new() { Date = DateTime.Today, TextColor = Colors.Black, BackgroundColor = Colors.White };
+    TimePicker horaViagem = new() { Time = DateTime.Now.TimeOfDay, TextColor = Colors.Black, BackgroundColor = Colors.White };
+    DatePicker dataFiltro = new() { Date = DateTime.Today, TextColor = Colors.Black, BackgroundColor = Colors.White };
 
     CheckBox usarArla = new();
 
@@ -723,7 +724,18 @@ public class MainPage : ContentPage
 
     View TelaCargas()
     {
-        dataViagem = new DatePicker { Date = DateTime.Today };
+        dataViagem = new DatePicker
+        {
+            Date = DateTime.Today,
+            TextColor = Colors.Black,
+            BackgroundColor = Colors.White
+        };
+        horaViagem = new TimePicker
+        {
+            Time = DateTime.Now.TimeOfDay,
+            TextColor = Colors.Black,
+            BackgroundColor = Colors.White
+        };
 
         cargaVeiculo = Campo("Caminhão / identificação");
         cargaMotorista = Campo("Motorista");
@@ -753,6 +765,7 @@ public class MainPage : ContentPage
             {
                 Titulo("REGISTRO DE CARGAS POR VIAGEM"),
                 Rotulo("Data da viagem"), dataViagem,
+                Rotulo("Hora da viagem"), horaViagem,
                 Rotulo("Caminhão"), cargaVeiculo,
                 Rotulo("Motorista"), cargaMotorista,
                 Rotulo("Ano da carreta"), anoCarreta,
@@ -893,7 +906,7 @@ public class MainPage : ContentPage
             var viagem = new Viagem
             {
                 Id = Guid.NewGuid().ToString(),
-                Data = dataViagem.Date,
+                Data = dataViagem.Date.Add(horaViagem.Time),
                 Veiculo = nomeVeiculo,
                 Motorista = cargaMotorista.Text?.Trim() ?? "",
                 AnoCarreta = ano,
@@ -971,7 +984,7 @@ public class MainPage : ContentPage
 
             detalhes.Children.Add(new Label
             {
-                Text = $"{x.Data:dd/MM/yyyy} - {x.Veiculo}",
+                Text = $"{x.Data:dd/MM/yyyy HH:mm} - {x.Veiculo}",
                 FontAttributes = FontAttributes.Bold,
                 TextColor = Color.FromArgb("#123B65")
             });
@@ -1066,6 +1079,27 @@ public class MainPage : ContentPage
         return validas.Count == 0 ? 0 : SomarKmViagens(validas) / validas.Count / 2.0;
     }
 
+    // Média de consumo de Arla calculada somente com abastecimentos que
+    // possuem Arla informado e intervalo de KM válido.
+    List<Abastecimento> AbastecimentosComArlaValidos(IEnumerable<Abastecimento> registros) =>
+        registros.Where(x => x.TemArla && x.LitrosArla > 0 && x.KmAtual > x.KmAnterior).ToList();
+
+    double CalcularMediaArlaKmL(IEnumerable<Abastecimento> registros)
+    {
+        var validos = AbastecimentosComArlaValidos(registros);
+        double litros = validos.Sum(x => x.LitrosArla);
+        double km = validos.Sum(x => x.KmAtual - x.KmAnterior);
+        return litros > 0 ? km / litros : 0;
+    }
+
+    double CalcularMediaArla100Km(IEnumerable<Abastecimento> registros)
+    {
+        var validos = AbastecimentosComArlaValidos(registros);
+        double litros = validos.Sum(x => x.LitrosArla);
+        double km = validos.Sum(x => x.KmAtual - x.KmAnterior);
+        return km > 0 ? litros * 100.0 / km : 0;
+    }
+
     View TelaIndicadores()
     {
         DateTime hoje = DateTime.Today;
@@ -1112,6 +1146,9 @@ public class MainPage : ContentPage
                             ? $"Raio médio por viagem: {raioMedio:N2} km"
                             : "Raio médio por viagem: --"),
                         Indicador($"Combustível consumido: {litrosTotal:N1} L"),
+                        Indicador(AbastecimentosComArlaValidos(ab).Sum(x => x.LitrosArla) > 0
+                            ? $"Arla 32: {AbastecimentosComArlaValidos(ab).Sum(x => x.LitrosArla):N1} L | Média: {CalcularMediaArlaKmL(ab):N2} km/l ({CalcularMediaArla100Km(ab):N2} L/100 km)"
+                            : "Arla 32: --"),
                         Indicador($"Toneladas líquidas: {toneladas:N2} t")
                     }
                 }
@@ -1169,6 +1206,16 @@ public class MainPage : ContentPage
         painel.Children.Add(Cartao("Média km/l nos abastecimentos",
             Indicador(mediaAbast > 0 ? $"{mediaAbast:N2} km/l" : "--")));
 
+        double mediaArlaKmL = CalcularMediaArlaKmL(abastecimentos);
+        double mediaArla100 = CalcularMediaArla100Km(abastecimentos);
+        double totalArla = AbastecimentosComArlaValidos(abastecimentos).Sum(x => x.LitrosArla);
+
+        painel.Children.Add(Cartao("Média de consumo de Arla 32",
+            Indicador(mediaArlaKmL > 0
+                ? $"{mediaArlaKmL:N2} km/l | {mediaArla100:N2} L/100 km" : "--")));
+        painel.Children.Add(Cartao("Total de Arla 32 utilizado",
+            Indicador(totalArla > 0 ? $"{totalArla:N1} L" : "--")));
+
         painel.Children.Add(Cartao("Quantidade de viagens",
             Indicador(viagens.Count.ToString())));
 
@@ -1214,6 +1261,11 @@ public class MainPage : ContentPage
         {
             var abVeiculo = abastecimentosValidos
                 .Where(x => Id(x.Veiculo) == Id(nome)).ToList();
+            var abArlaVeiculo = AbastecimentosComArlaValidos(abastecimentos)
+                .Where(x => Id(x.Veiculo) == Id(nome)).ToList();
+            double mediaArlaVeiculo = CalcularMediaArlaKmL(abArlaVeiculo);
+            double mediaArla100Veiculo = CalcularMediaArla100Km(abArlaVeiculo);
+            double litrosArlaVeiculo = abArlaVeiculo.Sum(x => x.LitrosArla);
 
             var viVeiculo = viagens
                 .Where(x => Id(x.Veiculo) == Id(nome)).ToList();
@@ -1253,6 +1305,9 @@ public class MainPage : ContentPage
                                 : "Raio médio por viagem: --"
                         },
                         new Label { Text = $"Litros consumidos: {litrosVeiculo:N1} L" },
+                        new Label { Text = litrosArlaVeiculo > 0
+                            ? $"Arla 32: {litrosArlaVeiculo:N1} L | Média: {mediaArlaVeiculo:N2} km/l ({mediaArla100Veiculo:N2} L/100 km)"
+                            : "Arla 32: sem registros" },
                         new Label { Text = $"Toneladas líquidas: {toneladasVeiculo:N2} t" }
                     }
                 }
@@ -1273,7 +1328,12 @@ public class MainPage : ContentPage
 
     View TelaRelatorios()
     {
-        dataFiltro = new DatePicker { Date = DateTime.Today };
+        dataFiltro = new DatePicker
+        {
+            Date = DateTime.Today,
+            TextColor = Colors.Black,
+            BackgroundColor = Colors.White
+        };
 
         tipoRelatorio = NovoPicker(
             "Tipo de relatório", "Todos", "Abastecimentos", "Cargas");
@@ -1417,6 +1477,16 @@ public class MainPage : ContentPage
                    $"Litros abastecidos: {ab.Sum(x => x.Litros):N1} L"
         });
 
+        double mediaArlaRelatorio = CalcularMediaArlaKmL(ab);
+        double mediaArla100Relatorio = CalcularMediaArla100Km(ab);
+        double litrosArlaRelatorio = AbastecimentosComArlaValidos(ab).Sum(x => x.LitrosArla);
+        lista.Children.Add(new Label
+        {
+            Text = litrosArlaRelatorio > 0
+                ? $"Arla 32: {litrosArlaRelatorio:N1} L | Média: {mediaArlaRelatorio:N2} km/l ({mediaArla100Relatorio:N2} L/100 km)"
+                : "Arla 32: sem registros no período"
+        });
+
         lista.Children.Add(new Label
         {
             Text = $"Litros consumidos nas viagens: " +
@@ -1447,7 +1517,7 @@ public class MainPage : ContentPage
         {
             lista.Children.Add(new Label
             {
-                Text = $"{x.Data:dd/MM/yyyy} | {x.Veiculo} | " +
+                Text = $"{x.Data:dd/MM/yyyy HH:mm} | {x.Veiculo} | " +
                        $"{x.Litros:N1} L | {x.Consumo:N2} km/l",
                 TextColor = Colors.Black
             });
@@ -1457,7 +1527,7 @@ public class MainPage : ContentPage
         {
             lista.Children.Add(new Label
             {
-                Text = $"{x.Data:dd/MM/yyyy} | {x.Veiculo} | " +
+                Text = $"{x.Data:dd/MM/yyyy HH:mm} | {x.Veiculo} | " +
                        $"Líquido: {x.PesoLiquido:N0} kg | " +
                        $"Viagem: {x.LitrosConsumidos:N1} L | " +
                        $"{x.ConsumoKmL:N2} km/l | VE: {x.ValorEnergetico:N2}",
@@ -1580,6 +1650,12 @@ public class MainPage : ContentPage
 
             Linha($"Tonelagem liquida total: {toneladasTotal:N2} t");
             Linha($"Litros abastecidos: {ab.Sum(x => x.Litros):N1} L");
+            double mediaArlaPdf = CalcularMediaArlaKmL(ab);
+            double mediaArla100Pdf = CalcularMediaArla100Km(ab);
+            double litrosArlaPdf = AbastecimentosComArlaValidos(ab).Sum(x => x.LitrosArla);
+            Linha(litrosArlaPdf > 0
+                ? $"Arla 32: {litrosArlaPdf:N1} L | Media: {mediaArlaPdf:N2} km/l ({mediaArla100Pdf:N2} L/100 km)"
+                : "Arla 32: sem registros no periodo");
             Linha($"Litros consumidos nas viagens: {cg.Sum(x => x.LitrosConsumidos):N1} L");
             Linha($"Total gasto: {ab.Sum(x => x.Valor):C2}");
 
@@ -1609,7 +1685,7 @@ public class MainPage : ContentPage
 
             foreach (var x in ab)
             {
-                Linha($"{x.Data:dd/MM/yyyy} | {x.Veiculo} | {x.Motorista}");
+                Linha($"{x.Data:dd/MM/yyyy HH:mm} | {x.Veiculo} | {x.Motorista}");
                 Linha($"KM: {x.KmAnterior:N0} a {x.KmAtual:N0} | " +
                       $"{x.Litros:N1} L | {x.Consumo:N2} km/l");
                 Linha($"Valor: {x.Valor:C2} | Custo/km: {x.CustoKm:C2}");
@@ -1624,7 +1700,7 @@ public class MainPage : ContentPage
 
             foreach (var x in cg)
             {
-                Linha($"{x.Data:dd/MM/yyyy} | {x.Veiculo} | {x.Motorista}");
+                Linha($"{x.Data:dd/MM/yyyy HH:mm} | {x.Veiculo} | {x.Motorista}");
                 Linha($"Carreta: {x.AnoCarreta} | Bruto: {x.PesoBruto:N0} kg | Tara: {x.Tara:N0} kg");
                 Linha($"Liquido: {x.PesoLiquido:N0} kg | Combustivel: {x.LitrosConsumidos:N1} L");
                 if (ViagemComKmValido(x))
