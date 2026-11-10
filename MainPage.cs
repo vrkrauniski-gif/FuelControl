@@ -1347,6 +1347,83 @@ public class MainPage : ContentPage
         return km > 0 ? litros * 100.0 / km : 0;
     }
 
+    // Meta de toneladas em 24 horas conforme a tabela de raio médio enviada.
+    // A chave é o raio arredondado para o inteiro mais próximo.
+    readonly Dictionary<int, double> metasPremioDiario = new()
+    {
+        {5,1230},{6,1171},{7,1113},{8,1054},{9,995},{10,936},{11,874},{12,843},
+        {13,812},{14,784},{15,755},{16,731},{17,706},{18,682},{19,657},{20,633},
+        {21,612},{22,592},{23,572},{24,552},{25,545},{26,531},{27,510},{28,495},
+        {29,485},{30,478},{31,469},{32,453},{33,443},{34,434},{35,426},{36,419},
+        {37,410},{38,401},{39,394},{40,384},{41,375},{42,374},{43,366},{44,362},
+        {45,350},{46,346},{47,342},{48,338},{49,330},{50,321},{51,316},{52,311},
+        {53,306},{54,302},{55,297},{56,293},{57,289},{58,284},{59,280},{60,276},
+        {61,272},{62,269},{63,265},{64,262},{65,258},{66,255},{67,252},{68,248},
+        {69,245},{70,242},{71,239},{72,236},{73,234},{74,231},{75,228},{76,225},
+        {77,223},{78,220},{79,218},{80,215},{81,213},{82,211},{83,208},{84,206},
+        {85,204},{86,202},{87,200},{88,198},{89,196},{90,194},{91,192},{92,190},
+        {93,188},{94,186},{95,185},{96,183},{97,181},{98,180},{99,178},{100,177}
+    };
+
+    View CartaoPremioDiario(IEnumerable<Viagem> viagensDoDia)
+    {
+        var registros = viagensDoDia.ToList();
+        double raio = CalcularRaioMedio(registros);
+        double toneladas = registros.Sum(v => v.PesoLiquido) / 1000.0;
+        int raioTabela = raio > 0
+            ? (int)Math.Round(raio, MidpointRounding.AwayFromZero)
+            : 0;
+
+        var painel = new VerticalStackLayout { Spacing = 6 };
+        painel.Children.Add(Titulo("PRÊMIO DE PRODUTIVIDADE — 24 HORAS"));
+        painel.Children.Add(Indicador($"Raio médio do dia: {(raio > 0 ? raio.ToString("N2") + " km" : "--")}"));
+        painel.Children.Add(Indicador($"Toneladas transportadas: {toneladas:N2} t"));
+
+        if (raioTabela < 5 || raioTabela > 100 || !metasPremioDiario.TryGetValue(raioTabela, out double meta))
+        {
+            painel.Children.Add(new Label
+            {
+                Text = "Não foi possível verificar o prêmio: o raio médio precisa estar entre 5 e 100 km e haver viagens com KM válido.",
+                TextColor = Colors.DarkOrange,
+                FontAttributes = FontAttributes.Bold
+            });
+        }
+        else
+        {
+            double falta = Math.Max(0, meta - toneladas);
+            painel.Children.Add(Indicador($"Raio considerado na tabela: {raioTabela} km"));
+            painel.Children.Add(Indicador($"Meta para esse raio: {meta:N0} toneladas"));
+
+            bool atingiu = toneladas >= meta;
+            painel.Children.Add(new Label
+            {
+                Text = atingiu
+                    ? "✓ VOCÊ ATINGIU O PRÊMIO DIÁRIO!"
+                    : "✗ VOCÊ NÃO ATINGIU O PRÊMIO DIÁRIO",
+                TextColor = atingiu ? Colors.Green : Colors.Red,
+                FontAttributes = FontAttributes.Bold,
+                FontSize = 18
+            });
+            painel.Children.Add(new Label
+            {
+                Text = atingiu
+                    ? $"Prêmio atingido! Excedente: {toneladas - meta:N2} toneladas."
+                    : $"Faltam {falta:N2} toneladas para atingir o prêmio diário.",
+                TextColor = atingiu ? Colors.DarkGreen : Colors.DarkRed,
+                FontAttributes = FontAttributes.Bold,
+                FontSize = 16
+            });
+        }
+
+        return new Border
+        {
+            BackgroundColor = Colors.White,
+            Stroke = Color.FromArgb("#DCE4ED"),
+            Padding = 12,
+            Content = painel
+        };
+    }
+
     View TelaIndicadores()
     {
         DateTime hoje = DateTime.Today;
@@ -1447,6 +1524,10 @@ public class MainPage : ContentPage
         painel.Children.Add(Rotulo("Filtro por frente"));
         painel.Children.Add(filtroFrenteIndicadores);
         painel.Children.Add(Cartao("Velocidade média das viagens", Indicador(velocidadeMediaGeral > 0 ? $"{velocidadeMediaGeral:N2} km/h" : "--")));
+
+        var viagensHojePremio = FiltrarViagensPorFrente(
+            viagens.Where(v => v.Data.Date == hoje));
+        painel.Children.Add(CartaoPremioDiario(viagensHojePremio));
 
         painel.Children.Add(CartaoPeriodo("HOJE",
             d => d.Date == hoje));
