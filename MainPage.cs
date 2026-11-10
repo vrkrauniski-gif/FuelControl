@@ -68,6 +68,8 @@ public class MainPage : ContentPage
     ProgressBar barraTanque = new();
 
     bool salvandoViagem;
+    Abastecimento? abastecimentoEmEdicao;
+    Viagem? viagemEmEdicao;
 
     public MainPage()
     {
@@ -321,6 +323,7 @@ public class MainPage : ContentPage
         tipoCombustivel = NovoPicker("Combustível", "Etanol", "Gasolina");
 
         veiculo = Campo("Placa ou identificação do veículo");
+        veiculo.IsEnabled = true;
         motorista = Campo("Nome do motorista");
 
         kmAnterior = Campo("Quilometragem anterior", Keyboard.Numeric);
@@ -400,7 +403,7 @@ public class MainPage : ContentPage
         var ajustar = Botao("AJUSTAR NÍVEL ATUAL DO TANQUE", "#0F766E");
         ajustar.Clicked += AjustarTanque;
 
-        return new VerticalStackLayout
+        var layout = new VerticalStackLayout
         {
             Spacing = 5,
             Children =
@@ -427,9 +430,12 @@ public class MainPage : ContentPage
                 Rotulo("Capacidade total"), capacidadeTanque,
                 Rotulo("Combustível atual"), combustivelAtual,
                 Rotulo("Alerta em percentual"), limiteAlerta,
-                configurar, ajustar
+                configurar, ajustar,
+                Titulo("HISTÓRICO DE ABASTECIMENTOS")
             }
         };
+        layout.Children.Add(CriarListaAbastecimentos());
+        return layout;
     }
 
     void AtualizarTotal()
@@ -497,26 +503,32 @@ public class MainPage : ContentPage
 
             var dados = ObterVeiculo(veiculo.Text);
 
-            if (dados.Capacidade > 0 &&
-                dados.LitrosAtuais + quantidade > dados.Capacidade)
-            {
-                await DisplayAlert("Atenção",
-                    "O abastecimento ultrapassaria a capacidade do tanque.", "OK");
-                return;
-            }
-
             double nivelAntigo = dados.LitrosAtuais;
             double metaAntiga = dados.MetaKmL;
+            Abastecimento? registroAnterior = abastecimentoEmEdicao;
 
             if (dados.Capacidade > 0)
-                dados.LitrosAtuais += quantidade;
+            {
+                double nivelNovo = dados.LitrosAtuais;
+                if (registroAnterior != null)
+                    nivelNovo -= registroAnterior.Litros;
+                nivelNovo += quantidade;
+
+                if (nivelNovo < 0 || nivelNovo > dados.Capacidade)
+                {
+                    await DisplayAlert("Atenção",
+                        "A edição ultrapassaria a capacidade do tanque ou deixaria o nível inválido.", "OK");
+                    return;
+                }
+                dados.LitrosAtuais = nivelNovo;
+            }
 
             if (caminhao && Ler(metaKmL.Text, out var meta) && meta > 0)
                 dados.MetaKmL = meta;
 
             var registro = new Abastecimento
             {
-                Data = DateTime.Now,
+                Data = registroAnterior?.Data ?? DateTime.Now,
                 Veiculo = veiculo.Text.Trim(),
                 Motorista = motorista.Text?.Trim() ?? "",
                 TipoVeiculo = caminhao ? "Caminhão" : "Carro",
@@ -533,10 +545,18 @@ public class MainPage : ContentPage
                 LitrosArla = arla,
                 ConsumoArlaKmL = temArla ? distancia / arla : 0,
                 ConsumoArla100 = temArla ? arla * 100 / distancia : 0,
-                MetaKmL = caminhao ? dados.MetaKmL : 0
+                MetaKmL = caminhao ? dados.MetaKmL : 0,
+                TanqueAdicionado = dados.Capacidade > 0
             };
 
-            abastecimentos.Insert(0, registro);
+            if (registroAnterior != null)
+            {
+                int indice = abastecimentos.IndexOf(registroAnterior);
+                if (indice >= 0) abastecimentos[indice] = registro;
+                else abastecimentos.Insert(0, registro);
+            }
+            else
+                abastecimentos.Insert(0, registro);
 
             try
             {
@@ -544,11 +564,21 @@ public class MainPage : ContentPage
             }
             catch
             {
-                abastecimentos.Remove(registro);
+                if (registroAnterior != null)
+                {
+                    int indice = abastecimentos.IndexOf(registro);
+                    if (indice >= 0) abastecimentos[indice] = registroAnterior;
+                }
+                else
+                    abastecimentos.Remove(registro);
+
                 dados.LitrosAtuais = nivelAntigo;
                 dados.MetaKmL = metaAntiga;
                 throw;
             }
+
+            abastecimentoEmEdicao = null;
+            veiculo.IsEnabled = true;
 
             lblResultado.Text = $"Consumo automático: {consumo:N2} km/l";
 
@@ -562,18 +592,90 @@ public class MainPage : ContentPage
             AtualizarTanqueTexto(veiculo.Text);
 
             await DisplayAlert("Salvo",
-                "Abastecimento registrado com sucesso.", "OK");
+                registroAnterior != null
+                    ? "Abastecimento atualizado com sucesso."
+                    : "Abastecimento registrado com sucesso.", "OK");
 
             kmAnterior.Text = atual.ToString("N0", pt);
             kmAtual.Text = "";
             litros.Text = "";
             precoLitro.Text = "";
             litrosArla.Text = "";
+            MostrarMenu("Abastecimentos");
         }
         catch (Exception ex)
         {
             await DisplayAlert("Erro ao salvar abastecimento", ex.Message, "OK");
         }
+    }
+
+
+    View CriarListaAbastecimentos()
+    {
+        var painel = new VerticalStackLayout { Spacing = 8 };
+        if (abastecimentos.Count == 0)
+        {
+            painel.Children.Add(new Label
+            {
+                Text = "Nenhum abastecimento registrado.",
+                TextColor = Colors.Gray
+            });
+            return painel;
+        }
+
+        foreach (var x in abastecimentos.OrderByDescending(a => a.Data))
+        {
+            var card = new VerticalStackLayout
+            {
+                Spacing = 4,
+                Padding = 10,
+                BackgroundColor = Colors.White
+            };
+            card.Children.Add(new Label
+            {
+                Text = $"{x.Data:dd/MM/yyyy HH:mm} | {x.Veiculo} | {x.TipoVeiculo}",
+                FontAttributes = FontAttributes.Bold,
+                TextColor = Color.FromArgb("#123B65")
+            });
+            card.Children.Add(new Label
+            {
+                Text = $"Motorista: {x.Motorista} | {x.Combustivel} | {x.Litros:N1} L"
+            });
+            card.Children.Add(new Label
+            {
+                Text = $"KM: {x.KmAnterior:N0} → {x.KmAtual:N0} | Média: {x.Consumo:N2} km/l"
+            });
+            if (x.TemArla)
+                card.Children.Add(new Label { Text = $"Arla 32: {x.LitrosArla:N1} L" });
+
+            var editar = Botao("EDITAR ABASTECIMENTO", "#0F766E");
+            editar.Clicked += (sender, args) => CarregarAbastecimentoParaEdicao(x);
+            card.Children.Add(editar);
+            painel.Children.Add(card);
+        }
+        return painel;
+    }
+
+    void CarregarAbastecimentoParaEdicao(Abastecimento x)
+    {
+        abastecimentoEmEdicao = x;
+        veiculo.IsEnabled = false;
+        tipoVeiculo.SelectedItem = x.TipoVeiculo;
+        tipoCombustivel.SelectedItem = x.Combustivel;
+        veiculo.Text = x.Veiculo;
+        motorista.Text = x.Motorista;
+        kmAnterior.Text = x.KmAnterior.ToString("0.##", CultureInfo.InvariantCulture);
+        kmAtual.Text = x.KmAtual.ToString("0.##", CultureInfo.InvariantCulture);
+        litros.Text = x.Litros.ToString("0.##", CultureInfo.InvariantCulture);
+        precoLitro.Text = x.PrecoLitro.ToString("0.##", CultureInfo.InvariantCulture);
+        usarArla.IsChecked = x.TemArla;
+        litrosArla.Text = x.LitrosArla.ToString("0.##", CultureInfo.InvariantCulture);
+        metaKmL.Text = x.MetaKmL.ToString("0.##", CultureInfo.InvariantCulture);
+        AtualizarTotal();
+        AtualizarTanqueTexto(x.Veiculo);
+        DisplayAlert("Editar abastecimento",
+            "Os dados foram carregados. Altere os campos e toque em CALCULAR E SALVAR ABASTECIMENTO.",
+            "OK");
     }
 
     void SalvarConfiguracaoTanque(object? sender, EventArgs e)
@@ -776,6 +878,7 @@ public class MainPage : ContentPage
         }
 
         cargaVeiculo = Campo("Caminhão / identificação");
+        cargaVeiculo.IsEnabled = true;
         cargaMotorista = Campo("Motorista");
         anoCarreta = Campo("Ano da carreta", Keyboard.Numeric);
         pesoBruto = Campo("Peso bruto da carga (kg)", Keyboard.Numeric);
@@ -927,8 +1030,11 @@ public class MainPage : ContentPage
 
             var dados = ObterVeiculo(nomeVeiculo);
 
+            double litrosDisponiveisParaEdicao = dados.LitrosAtuais +
+                (viagemEmEdicao?.TanqueDescontado == true ? viagemEmEdicao.LitrosConsumidos : 0);
+
             if (dados.Capacidade > 0 &&
-                litrosConsumidos > dados.LitrosAtuais)
+                litrosConsumidos > litrosDisponiveisParaEdicao)
             {
                 await DisplayAlert("Combustível insuficiente",
                     $"Tanque: {dados.LitrosAtuais:N1} L.\n" +
@@ -947,7 +1053,7 @@ public class MainPage : ContentPage
 
             var viagem = new Viagem
             {
-                Id = Guid.NewGuid().ToString(),
+                Id = viagemEmEdicao?.Id ?? Guid.NewGuid().ToString(),
                 Data = dataViagem.Date.Add(horaInicialViagem.Time),
                 HoraInicial = horaInicialViagem.Time,
                 HoraFinal = horaFinalViagem.Time,
@@ -964,15 +1070,34 @@ public class MainPage : ContentPage
                 ConsumoKmL = consumo,
                 ValorEnergetico = valorEnergetico,
                 MetaEnergetica = meta,
-                TanqueDescontado = dados.Capacidade > 0
+                TanqueDescontado = viagemEmEdicao?.TanqueDescontado ?? (dados.Capacidade > 0)
             };
 
             double litrosAntigos = dados.LitrosAtuais;
+            Viagem? viagemAnterior = viagemEmEdicao;
+
+            if (viagemAnterior?.TanqueDescontado == true && dados.Capacidade > 0)
+                dados.LitrosAtuais += viagemAnterior.LitrosConsumidos;
 
             if (viagem.TanqueDescontado)
                 dados.LitrosAtuais -= litrosConsumidos;
 
-            viagens.Insert(0, viagem);
+            if (dados.Capacidade > 0 &&
+                (dados.LitrosAtuais < 0 || dados.LitrosAtuais > dados.Capacidade))
+            {
+                dados.LitrosAtuais = litrosAntigos;
+                await DisplayAlert("Atenção", "A edição deixaria o nível do tanque inválido.", "OK");
+                return;
+            }
+
+            if (viagemAnterior != null)
+            {
+                int indice = viagens.IndexOf(viagemAnterior);
+                if (indice >= 0) viagens[indice] = viagem;
+                else viagens.Insert(0, viagem);
+            }
+            else
+                viagens.Insert(0, viagem);
 
             try
             {
@@ -980,13 +1105,22 @@ public class MainPage : ContentPage
             }
             catch
             {
-                viagens.Remove(viagem);
+                if (viagemAnterior != null)
+                {
+                    int indice = viagens.IndexOf(viagem);
+                    if (indice >= 0) viagens[indice] = viagemAnterior;
+                }
+                else
+                    viagens.Remove(viagem);
                 dados.LitrosAtuais = litrosAntigos;
                 throw;
             }
 
+            viagemEmEdicao = null;
+            cargaVeiculo.IsEnabled = true;
+
             await DisplayAlert("Viagem salva",
-                $"Registro salvo com sucesso!\n\n" +
+                (viagemAnterior != null ? "Viagem atualizada com sucesso!\n\n" : "Registro salvo com sucesso!\n\n") +
                 $"Frente: {frenteSelecionada} | Horário: {horaInicialViagem.Time:hh\\:mm} até {horaFinalViagem.Time:hh\\:mm}\n" +
                 $"Peso líquido: {liquido:N0} kg\n" +
            $"KM inicial: {kmInicial:N0} | KM final: {kmFinal:N0}\n" +
@@ -1008,6 +1142,35 @@ public class MainPage : ContentPage
         {
             salvandoViagem = false;
         }
+    }
+
+
+    void CarregarViagemParaEdicao(Viagem x)
+    {
+        viagemEmEdicao = x;
+        cargaVeiculo.IsEnabled = false;
+        dataViagem.Date = x.Data.Date;
+        horaInicialViagem.Time = x.HoraInicial;
+        horaFinalViagem.Time = x.HoraFinal;
+        frenteSelecionada = x.Frente;
+
+        foreach (var item in checksFrentes)
+            item.Value.IsChecked = item.Key.ToString() == x.Frente;
+
+        cargaVeiculo.Text = x.Veiculo;
+        cargaMotorista.Text = x.Motorista;
+        anoCarreta.Text = x.AnoCarreta.ToString();
+        pesoBruto.Text = x.PesoBruto.ToString("0.##", CultureInfo.InvariantCulture);
+        kmInicialViagem.Text = x.KmInicial.ToString("0.##", CultureInfo.InvariantCulture);
+        kmFinalViagem.Text = x.KmFinal.ToString("0.##", CultureInfo.InvariantCulture);
+        litrosViagem.Text = x.LitrosConsumidos.ToString("0.##", CultureInfo.InvariantCulture);
+        consumoViagem.Text = x.ConsumoKmL.ToString("0.##", CultureInfo.InvariantCulture);
+        metaEnergetica.Text = x.MetaEnergetica.ToString("0.##", CultureInfo.InvariantCulture);
+        AtualizarPeso();
+
+        DisplayAlert("Editar viagem",
+            "Os dados foram carregados no formulário. Altere o que precisar e toque em SALVAR VIAGEM E DESCONTAR DO TANQUE.",
+            "OK");
     }
 
     View CriarListaViagens()
@@ -1058,6 +1221,11 @@ public class MainPage : ContentPage
                 Text = $"Valor energético: {x.ValorEnergetico:N2} | Meta: {x.MetaEnergetica:N2}"
             });
 
+            var botoesViagem = new HorizontalStackLayout { Spacing = 8 };
+            var editarViagem = Botao("EDITAR VIAGEM", "#0F766E");
+            editarViagem.Clicked += (sender, args) => CarregarViagemParaEdicao(x);
+            botoesViagem.Children.Add(editarViagem);
+
             var excluir = Botao("EXCLUIR VIAGEM", "#B91C1C");
 
             excluir.Clicked += async (s, e) =>
@@ -1101,7 +1269,8 @@ public class MainPage : ContentPage
                 }
             };
 
-            detalhes.Children.Add(excluir);
+            botoesViagem.Children.Add(excluir);
+            detalhes.Children.Add(botoesViagem);
 
             painel.Children.Add(new Border
             {
@@ -1845,6 +2014,7 @@ public class Abastecimento
     public double ConsumoArlaKmL { get; set; }
     public double ConsumoArla100 { get; set; }
     public double MetaKmL { get; set; }
+    public bool TanqueAdicionado { get; set; }
     public double PesoBruto { get; set; }
     public int AnoCarreta { get; set; }
     public double Tara { get; set; }
