@@ -1,4 +1,3 @@
-
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Storage;
 using Microsoft.Maui.ApplicationModel.DataTransfer;
@@ -35,6 +34,7 @@ public class MainPage : ContentPage
     Entry anoCarreta = new(), pesoBruto = new();
     Entry litrosViagem = new(), consumoViagem = new();
     Entry metaEnergetica = new();
+    Entry kmInicialViagem = new(), kmFinalViagem = new();
 
     Entry filtroVeiculo = new(), filtroMotorista = new();
 
@@ -732,6 +732,8 @@ public class MainPage : ContentPage
         litrosViagem = Campo("Litros consumidos nesta viagem", Keyboard.Numeric);
         consumoViagem = Campo("Consumo médio manual da viagem (km/l)", Keyboard.Numeric);
         metaEnergetica = Campo("Meta energética (padrão 82)", Keyboard.Numeric);
+       kmInicialViagem = Campo("KM inicial da viagem", Keyboard.Numeric);
+       kmFinalViagem = Campo("KM final da viagem", Keyboard.Numeric);
 
         lblPeso = Indicador("Tara: -- | Peso líquido: --");
         lblEnergetico = Indicador("Valor energético calculado: --");
@@ -756,6 +758,9 @@ public class MainPage : ContentPage
                 Rotulo("Ano da carreta"), anoCarreta,
                 Rotulo("Peso bruto (kg)"), pesoBruto,
                 lblPeso,
+                Titulo("QUILOMETRAGEM DA VIAGEM"),
+                Rotulo("KM inicial"), kmInicialViagem,
+                Rotulo("KM final"), kmFinalViagem,
                 Rotulo("Litros de combustível consumidos na viagem"),
                 litrosViagem,
                 Rotulo("Consumo médio da viagem (km/l) - manual"),
@@ -838,10 +843,13 @@ public class MainPage : ContentPage
                 !Ler(pesoBruto.Text, out var bruto) ||
                 !Ler(litrosViagem.Text, out var litrosConsumidos) ||
                 !Ler(consumoViagem.Text, out var consumo) ||
-                bruto <= 0 || litrosConsumidos <= 0 || consumo <= 0)
+                !Ler(kmInicialViagem.Text, out var kmInicial) ||
+                !Ler(kmFinalViagem.Text, out var kmFinal) ||
+                bruto <= 0 || litrosConsumidos <= 0 || consumo <= 0 ||
+                kmInicial < 0 || kmFinal <= kmInicial)
             {
                 await DisplayAlert("Atenção",
-                    "Preencha caminhão, ano, peso bruto, litros consumidos e consumo km/l.",
+                    "Preencha caminhão, ano, peso bruto, litros, consumo e KM inicial/final válidos.",
                     "OK");
                 return;
             }
@@ -892,6 +900,8 @@ public class MainPage : ContentPage
                 PesoBruto = bruto,
                 Tara = tara,
                 PesoLiquido = liquido,
+                KmInicial = kmInicial,
+                KmFinal = kmFinal,
                 LitrosConsumidos = litrosConsumidos,
                 ConsumoKmL = consumo,
                 ValorEnergetico = valorEnergetico,
@@ -920,6 +930,9 @@ public class MainPage : ContentPage
             await DisplayAlert("Viagem salva",
                 $"Registro salvo com sucesso!\n\n" +
                 $"Peso líquido: {liquido:N0} kg\n" +
+           $"KM inicial: {kmInicial:N0} | KM final: {kmFinal:N0}\n" +
+           $"KM rodados: {kmFinal-kmInicial:N0} km\n" +
+           $"Raio individual: {(kmFinal-kmInicial)/2.0:N2} km\n" +
                 $"Consumo: {consumo:N2} km/l\n" +
                 $"Valor energético: {valorEnergetico:N2}\n" +
                 $"Meta: {meta:N2}\n" +
@@ -975,7 +988,10 @@ public class MainPage : ContentPage
 
             detalhes.Children.Add(new Label
             {
-                Text = $"Combustível: {x.LitrosConsumidos:N1} L | Consumo: {x.ConsumoKmL:N2} km/l"
+                Text = (ViagemComKmValido(x)
+            ? $"KM inicial: {x.KmInicial:N0} | KM final: {x.KmFinal:N0} | Rodados: {ObterKmRodados(x):N0} km | Raio: {ObterKmRodados(x)/2.0:N2} km\n"
+            : "Quilometragem não informada\n") +
+            $"Combustível: {x.LitrosConsumidos:N1} L | Consumo: {x.ConsumoKmL:N2} km/l"
             });
 
             detalhes.Children.Add(new Label
@@ -1040,13 +1056,14 @@ public class MainPage : ContentPage
         return painel;
     }
 
-    // Calcula o raio médio: quilômetros divididos pelo número de viagens e por dois.
-    double CalcularRaioMedio(double km, int quantidadeViagens)
+    bool ViagemComKmValido(Viagem v) => v.KmFinal > v.KmInicial && v.KmInicial >= 0;
+    double ObterKmRodados(Viagem v) => ViagemComKmValido(v) ? v.KmFinal - v.KmInicial : 0;
+    double SomarKmViagens(IEnumerable<Viagem> registros) =>
+        registros.Where(ViagemComKmValido).Sum(ObterKmRodados);
+    double CalcularRaioMedio(IEnumerable<Viagem> registros)
     {
-        if (quantidadeViagens <= 0)
-            return 0;
-
-        return km / quantidadeViagens / 2.0;
+        var validas = registros.Where(ViagemComKmValido).ToList();
+        return validas.Count == 0 ? 0 : SomarKmViagens(validas) / validas.Count / 2.0;
     }
 
     View TelaIndicadores()
@@ -1072,12 +1089,11 @@ public class MainPage : ContentPage
             var ab = AbNoPeriodo(filtro);
             var cg = ViNoPeriodo(filtro);
 
-            double kmTotal = ab.Sum(x =>
-                Math.Max(0, x.KmAtual - x.KmAnterior));
+            double kmTotal = SomarKmViagens(cg);
 
             double litrosTotal = cg.Sum(x => x.LitrosConsumidos);
             double toneladas = cg.Sum(x => x.PesoLiquido) / 1000.0;
-            double raioMedio = CalcularRaioMedio(kmTotal, cg.Count);
+            double raioMedio = CalcularRaioMedio(cg);
 
             return new Border
             {
@@ -1106,17 +1122,19 @@ public class MainPage : ContentPage
             ? viagens.Average(x => x.ConsumoKmL)
             : 0;
 
-        double kmGeral = abastecimentosValidos.Sum(x =>
+        double kmAbastecimentos = abastecimentosValidos.Sum(x =>
             Math.Max(0, x.KmAtual - x.KmAnterior));
 
         double litrosAbastecidos = abastecimentosValidos.Sum(x => x.Litros);
         double mediaAbast = litrosAbastecidos > 0
-            ? kmGeral / litrosAbastecidos
+            ? kmAbastecimentos / litrosAbastecidos
             : 0;
+
+        double kmGeral = SomarKmViagens(viagens);
 
         double totalViagens = viagens.Sum(x => x.LitrosConsumidos);
         double toneladasGeral = viagens.Sum(x => x.PesoLiquido) / 1000.0;
-        double raioMedioGeral = CalcularRaioMedio(kmGeral, viagens.Count);
+        double raioMedioGeral = CalcularRaioMedio(viagens);
 
         double mediaEnergetica = viagens.Count > 0
             ? viagens.Average(x => x.ValorEnergetico)
@@ -1200,15 +1218,14 @@ public class MainPage : ContentPage
             var viVeiculo = viagens
                 .Where(x => Id(x.Veiculo) == Id(nome)).ToList();
 
-            double kmVeiculo = abVeiculo.Sum(x =>
-                Math.Max(0, x.KmAtual - x.KmAnterior));
+            double kmVeiculo = SomarKmViagens(viVeiculo);
 
             double litrosVeiculo = viVeiculo.Sum(x => x.LitrosConsumidos);
             double toneladasVeiculo =
                 viVeiculo.Sum(x => x.PesoLiquido) / 1000.0;
 
             double raioMedioVeiculo =
-                CalcularRaioMedio(kmVeiculo, viVeiculo.Count);
+                CalcularRaioMedio(viVeiculo);
 
             painel.Children.Add(new Border
             {
@@ -1365,11 +1382,10 @@ public class MainPage : ContentPage
             return;
         }
 
-        double kmTotal = ab.Sum(x =>
-            Math.Max(0, x.KmAtual - x.KmAnterior));
+        double kmTotal = SomarKmViagens(cg);
 
         double toneladasTotal = cg.Sum(x => x.PesoLiquido) / 1000.0;
-        double raioMedio = CalcularRaioMedio(kmTotal, cg.Count);
+        double raioMedio = CalcularRaioMedio(cg);
 
         lista.Children.Add(new Label
         {
@@ -1546,14 +1562,13 @@ public class MainPage : ContentPage
 
             Linha("RESUMO DO RELATORIO");
 
-            double kmTotal = ab.Sum(x =>
-                Math.Max(0, x.KmAtual - x.KmAnterior));
+            double kmTotal = SomarKmViagens(cg);
 
             double toneladasTotal =
                 cg.Sum(x => x.PesoLiquido) / 1000.0;
 
             double raioMedio =
-                CalcularRaioMedio(kmTotal, cg.Count);
+                CalcularRaioMedio(cg);
 
             Linha($"Abastecimentos: {ab.Count}");
             Linha($"Viagens realizadas: {cg.Count}");
@@ -1584,6 +1599,7 @@ public class MainPage : ContentPage
 
                 Linha($"{grupo.Key:dd/MM/yyyy} | " +
                       $"Viagens: {grupo.Count()} | " +
+                      $"KM: {SomarKmViagens(grupo):N0} | Raio: {CalcularRaioMedio(grupo):N2} km | " +
                       $"Tonelagem liquida: {toneladasDia:N2} t");
             }
 
@@ -1611,6 +1627,8 @@ public class MainPage : ContentPage
                 Linha($"{x.Data:dd/MM/yyyy} | {x.Veiculo} | {x.Motorista}");
                 Linha($"Carreta: {x.AnoCarreta} | Bruto: {x.PesoBruto:N0} kg | Tara: {x.Tara:N0} kg");
                 Linha($"Liquido: {x.PesoLiquido:N0} kg | Combustivel: {x.LitrosConsumidos:N1} L");
+                if (ViagemComKmValido(x))
+                    Linha($"KM inicial: {x.KmInicial:N0} | KM final: {x.KmFinal:N0} | Rodados: {ObterKmRodados(x):N0} | Raio: {ObterKmRodados(x)/2.0:N2} km");
                 Linha($"Consumo: {x.ConsumoKmL:N2} km/l | VE: {x.ValorEnergetico:N2} | Meta: {x.MetaEnergetica:N2}");
                 y += 8;
             }
@@ -1684,6 +1702,8 @@ public class Viagem
     public double PesoBruto { get; set; }
     public double Tara { get; set; }
     public double PesoLiquido { get; set; }
+    public double KmInicial { get; set; }
+    public double KmFinal { get; set; }
     public double LitrosConsumidos { get; set; }
     public double ConsumoKmL { get; set; }
     public double ValorEnergetico { get; set; }
