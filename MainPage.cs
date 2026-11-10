@@ -1213,6 +1213,9 @@ public class MainPage : ContentPage
                 Text = (ViagemComKmValido(x)
             ? $"KM inicial: {x.KmInicial:N0} | KM final: {x.KmFinal:N0} | Rodados: {ObterKmRodados(x):N0} km | Raio: {ObterKmRodados(x)/2.0:N2} km\n"
             : "Quilometragem não informada\n") +
+            (VelocidadeMediaViagem(x) > 0
+                ? $"Velocidade média da viagem: {VelocidadeMediaViagem(x):N2} km/h\\n"
+                : "Velocidade média: não calculada (verifique KM e horários)\\n") +
             $"Combustível: {x.LitrosConsumidos:N1} L | Consumo: {x.ConsumoKmL:N2} km/l"
             });
 
@@ -1306,6 +1309,14 @@ public class MainPage : ContentPage
         var validas = registros.Where(v => ViagemComKmValido(v) && DuracaoHoras(v) > 0).ToList();
         double horas = validas.Sum(DuracaoHoras);
         return horas > 0 ? validas.Sum(ObterKmRodados) / horas : 0;
+    }
+
+    double VelocidadeMediaViagem(Viagem v)
+    {
+        double horas = DuracaoHoras(v);
+        return ViagemComKmValido(v) && horas > 0
+            ? ObterKmRodados(v) / horas
+            : 0;
     }
 
     List<Viagem> FiltrarViagensPorFrente(IEnumerable<Viagem> registros)
@@ -1783,6 +1794,7 @@ public class MainPage : ContentPage
             {
                 Text = $"{x.Data:dd/MM/yyyy} {x.HoraInicial:hh\\:mm}-{x.HoraFinal:hh\\:mm} | Frente {x.Frente} | {x.Veiculo} | " +
                        $"Líquido: {x.PesoLiquido:N0} kg | " +
+                       $"KM: {ObterKmRodados(x):N0} | Velocidade média: {(VelocidadeMediaViagem(x) > 0 ? $"{VelocidadeMediaViagem(x):N2} km/h" : "--")} | " +
                        $"Viagem: {x.LitrosConsumidos:N1} L | " +
                        $"{x.ConsumoKmL:N2} km/l | VE: {x.ValorEnergetico:N2}",
                 TextColor = Colors.Black
@@ -1959,6 +1971,9 @@ public class MainPage : ContentPage
                 Linha($"Liquido: {x.PesoLiquido:N0} kg | Combustivel: {x.LitrosConsumidos:N1} L");
                 if (ViagemComKmValido(x))
                     Linha($"KM inicial: {x.KmInicial:N0} | KM final: {x.KmFinal:N0} | Rodados: {ObterKmRodados(x):N0} | Raio: {ObterKmRodados(x)/2.0:N2} km");
+                Linha(VelocidadeMediaViagem(x) > 0
+                    ? $"Velocidade média da viagem: {VelocidadeMediaViagem(x):N2} km/h"
+                    : "Velocidade média: não calculada (verifique KM e horários)");
                 Linha($"Consumo: {x.ConsumoKmL:N2} km/l | VE: {x.ValorEnergetico:N2} | Meta: {x.MetaEnergetica:N2}");
                 y += 8;
             }
