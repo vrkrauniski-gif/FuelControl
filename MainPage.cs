@@ -42,7 +42,13 @@ public class MainPage : ContentPage
     Picker periodoRelatorio = new(), tipoRelatorio = new();
 
     DatePicker dataViagem = new() { Date = DateTime.Today, TextColor = Colors.Black, BackgroundColor = Colors.White };
-    TimePicker horaViagem = new() { Time = DateTime.Now.TimeOfDay, TextColor = Colors.Black, BackgroundColor = Colors.White };
+    TimePicker horaInicialViagem = new() { Time = DateTime.Now.TimeOfDay, TextColor = Colors.Black, BackgroundColor = Colors.White };
+    TimePicker horaFinalViagem = new() { Time = DateTime.Now.AddHours(1).TimeOfDay, TextColor = Colors.Black, BackgroundColor = Colors.White };
+    VerticalStackLayout painelFrentes = new();
+    readonly Dictionary<int, CheckBox> checksFrentes = new();
+    string frenteSelecionada = "";
+    Picker filtroFrenteIndicadores = new();
+    string frenteFiltroIndicadores = "Todas";
     DatePicker dataFiltro = new() { Date = DateTime.Today, TextColor = Colors.Black, BackgroundColor = Colors.White };
 
     CheckBox usarArla = new();
@@ -730,12 +736,44 @@ public class MainPage : ContentPage
             TextColor = Colors.Black,
             BackgroundColor = Colors.White
         };
-        horaViagem = new TimePicker
+        horaInicialViagem = new TimePicker
         {
             Time = DateTime.Now.TimeOfDay,
             TextColor = Colors.Black,
             BackgroundColor = Colors.White
         };
+        horaFinalViagem = new TimePicker
+        {
+            Time = DateTime.Now.AddHours(1).TimeOfDay,
+            TextColor = Colors.Black,
+            BackgroundColor = Colors.White
+        };
+        painelFrentes = new VerticalStackLayout { Spacing = 4 };
+        checksFrentes.Clear();
+        frenteSelecionada = "";
+        painelFrentes.Children.Add(Rotulo("Selecione uma frente (1 a 7)"));
+        for (int i = 1; i <= 7; i++)
+        {
+            int frente = i;
+            var check = new CheckBox { Color = Color.FromArgb("#123B65") };
+            check.CheckedChanged += (sender, args) =>
+            {
+                if (args.Value)
+                {
+                    frenteSelecionada = frente.ToString();
+                    foreach (var item in checksFrentes)
+                        if (item.Key != frente) item.Value.IsChecked = false;
+                }
+                else if (frenteSelecionada == frente.ToString())
+                    frenteSelecionada = "";
+            };
+            checksFrentes[i] = check;
+            painelFrentes.Children.Add(new HorizontalStackLayout
+            {
+                Spacing = 8,
+                Children = { check, Rotulo($"Frente {i}") }
+            });
+        }
 
         cargaVeiculo = Campo("Caminhão / identificação");
         cargaMotorista = Campo("Motorista");
@@ -765,7 +803,9 @@ public class MainPage : ContentPage
             {
                 Titulo("REGISTRO DE CARGAS POR VIAGEM"),
                 Rotulo("Data da viagem"), dataViagem,
-                Rotulo("Hora da viagem"), horaViagem,
+                Rotulo("Hora inicial da viagem"), horaInicialViagem,
+                Rotulo("Hora final da viagem"), horaFinalViagem,
+                Titulo("FRENTE DE CARREGAMENTO"), painelFrentes,
                 Rotulo("Caminhão"), cargaVeiculo,
                 Rotulo("Motorista"), cargaMotorista,
                 Rotulo("Ano da carreta"), anoCarreta,
@@ -852,6 +892,8 @@ public class MainPage : ContentPage
             string nomeVeiculo = cargaVeiculo.Text?.Trim() ?? "";
 
             if (string.IsNullOrWhiteSpace(nomeVeiculo) ||
+                string.IsNullOrWhiteSpace(frenteSelecionada) ||
+                horaFinalViagem.Time == horaInicialViagem.Time ||
                 !int.TryParse(anoCarreta.Text, out var ano) ||
                 !Ler(pesoBruto.Text, out var bruto) ||
                 !Ler(litrosViagem.Text, out var litrosConsumidos) ||
@@ -862,7 +904,7 @@ public class MainPage : ContentPage
                 kmInicial < 0 || kmFinal <= kmInicial)
             {
                 await DisplayAlert("Atenção",
-                    "Preencha caminhão, ano, peso bruto, litros, consumo e KM inicial/final válidos.",
+                    "Preencha caminhão, frente, horários diferentes, ano, peso bruto, litros, consumo e KM inicial/final válidos.",
                     "OK");
                 return;
             }
@@ -906,7 +948,10 @@ public class MainPage : ContentPage
             var viagem = new Viagem
             {
                 Id = Guid.NewGuid().ToString(),
-                Data = dataViagem.Date.Add(horaViagem.Time),
+                Data = dataViagem.Date.Add(horaInicialViagem.Time),
+                HoraInicial = horaInicialViagem.Time,
+                HoraFinal = horaFinalViagem.Time,
+                Frente = frenteSelecionada,
                 Veiculo = nomeVeiculo,
                 Motorista = cargaMotorista.Text?.Trim() ?? "",
                 AnoCarreta = ano,
@@ -942,6 +987,7 @@ public class MainPage : ContentPage
 
             await DisplayAlert("Viagem salva",
                 $"Registro salvo com sucesso!\n\n" +
+                $"Frente: {frenteSelecionada} | Horário: {horaInicialViagem.Time:hh\\:mm} até {horaFinalViagem.Time:hh\\:mm}\n" +
                 $"Peso líquido: {liquido:N0} kg\n" +
            $"KM inicial: {kmInicial:N0} | KM final: {kmFinal:N0}\n" +
            $"KM rodados: {kmFinal-kmInicial:N0} km\n" +
@@ -984,7 +1030,7 @@ public class MainPage : ContentPage
 
             detalhes.Children.Add(new Label
             {
-                Text = $"{x.Data:dd/MM/yyyy HH:mm} - {x.Veiculo}",
+                Text = $"{x.Data:dd/MM/yyyy} | {x.HoraInicial:hh\\:mm}–{x.HoraFinal:hh\\:mm} - {x.Veiculo} | Frente {x.Frente}",
                 FontAttributes = FontAttributes.Bold,
                 TextColor = Color.FromArgb("#123B65")
             });
@@ -1079,6 +1125,27 @@ public class MainPage : ContentPage
         return validas.Count == 0 ? 0 : SomarKmViagens(validas) / validas.Count / 2.0;
     }
 
+    double DuracaoHoras(Viagem v)
+    {
+        TimeSpan duracao = v.HoraFinal - v.HoraInicial;
+        if (duracao.TotalMinutes < 0) duracao += TimeSpan.FromHours(24);
+        return duracao.TotalHours;
+    }
+
+    double CalcularVelocidadeMedia(IEnumerable<Viagem> registros)
+    {
+        var validas = registros.Where(v => ViagemComKmValido(v) && DuracaoHoras(v) > 0).ToList();
+        double horas = validas.Sum(DuracaoHoras);
+        return horas > 0 ? validas.Sum(ObterKmRodados) / horas : 0;
+    }
+
+    List<Viagem> FiltrarViagensPorFrente(IEnumerable<Viagem> registros)
+    {
+        return frenteFiltroIndicadores == "Todas"
+            ? registros.ToList()
+            : registros.Where(v => v.Frente == frenteFiltroIndicadores).ToList();
+    }
+
     // Média de consumo de Arla calculada somente com abastecimentos que
     // possuem Arla informado e intervalo de KM válido.
     List<Abastecimento> AbastecimentosComArlaValidos(IEnumerable<Abastecimento> registros) =>
@@ -1103,7 +1170,16 @@ public class MainPage : ContentPage
     View TelaIndicadores()
     {
         DateTime hoje = DateTime.Today;
+        filtroFrenteIndicadores = NovoPicker("Filtrar por frente", "Todas", "Frente 1", "Frente 2", "Frente 3", "Frente 4", "Frente 5", "Frente 6", "Frente 7");
+        filtroFrenteIndicadores.SelectedIndex = frenteFiltroIndicadores == "Todas" ? 0 : int.Parse(frenteFiltroIndicadores) ;
+        filtroFrenteIndicadores.SelectedIndexChanged += (sender, args) =>
+        {
+            string selecionado = filtroFrenteIndicadores.SelectedItem?.ToString() ?? "Todas";
+            frenteFiltroIndicadores = selecionado == "Todas" ? "Todas" : selecionado.Replace("Frente ", "");
+            MostrarMenu("Indicadores");
+        };
 
+        var viagensIndicadores = FiltrarViagensPorFrente(viagens);
         var abastecimentosValidos = abastecimentos
             .Where(x => x.Consumo > 0)
             .ToList();
@@ -1121,13 +1197,14 @@ public class MainPage : ContentPage
         View CartaoPeriodo(string titulo, Func<DateTime, bool> filtro)
         {
             var ab = AbNoPeriodo(filtro);
-            var cg = ViNoPeriodo(filtro);
+            var cg = FiltrarViagensPorFrente(ViNoPeriodo(filtro));
 
             double kmTotal = SomarKmViagens(cg);
 
             double litrosTotal = cg.Sum(x => x.LitrosConsumidos);
             double toneladas = cg.Sum(x => x.PesoLiquido) / 1000.0;
             double raioMedio = CalcularRaioMedio(cg);
+            double velocidadeMedia = CalcularVelocidadeMedia(cg);
 
             return new Border
             {
@@ -1142,6 +1219,7 @@ public class MainPage : ContentPage
                         Titulo(titulo),
                         Indicador($"Total de KM: {kmTotal:N0} km"),
                         Indicador($"Viagens realizadas: {cg.Count}"),
+                        Indicador(velocidadeMedia > 0 ? $"Velocidade média: {velocidadeMedia:N2} km/h" : "Velocidade média: --"),
                         Indicador(cg.Count > 0
                             ? $"Raio médio por viagem: {raioMedio:N2} km"
                             : "Raio médio por viagem: --"),
@@ -1155,9 +1233,10 @@ public class MainPage : ContentPage
             };
         }
 
-        double mediaViagem = viagens.Count > 0
-            ? viagens.Average(x => x.ConsumoKmL)
+        double mediaViagem = viagensIndicadores.Count > 0
+            ? viagensIndicadores.Average(x => x.ConsumoKmL)
             : 0;
+        double velocidadeMediaGeral = CalcularVelocidadeMedia(viagensIndicadores);
 
         double kmAbastecimentos = abastecimentosValidos.Sum(x =>
             Math.Max(0, x.KmAtual - x.KmAnterior));
@@ -1167,14 +1246,14 @@ public class MainPage : ContentPage
             ? kmAbastecimentos / litrosAbastecidos
             : 0;
 
-        double kmGeral = SomarKmViagens(viagens);
+        double kmGeral = SomarKmViagens(viagensIndicadores);
 
-        double totalViagens = viagens.Sum(x => x.LitrosConsumidos);
-        double toneladasGeral = viagens.Sum(x => x.PesoLiquido) / 1000.0;
-        double raioMedioGeral = CalcularRaioMedio(viagens);
+        double totalViagens = viagensIndicadores.Sum(x => x.LitrosConsumidos);
+        double toneladasGeral = viagensIndicadores.Sum(x => x.PesoLiquido) / 1000.0;
+        double raioMedioGeral = CalcularRaioMedio(viagensIndicadores);
 
-        double mediaEnergetica = viagens.Count > 0
-            ? viagens.Average(x => x.ValorEnergetico)
+        double mediaEnergetica = viagensIndicadores.Count > 0
+            ? viagensIndicadores.Average(x => x.ValorEnergetico)
             : 0;
 
         lblComparacao = Indicador(
@@ -1185,6 +1264,9 @@ public class MainPage : ContentPage
         var painel = new VerticalStackLayout { Spacing = 8 };
 
         painel.Children.Add(Titulo("INDICADORES GERAIS"));
+        painel.Children.Add(Rotulo("Filtro por frente"));
+        painel.Children.Add(filtroFrenteIndicadores);
+        painel.Children.Add(Cartao("Velocidade média das viagens", Indicador(velocidadeMediaGeral > 0 ? $"{velocidadeMediaGeral:N2} km/h" : "--")));
 
         painel.Children.Add(CartaoPeriodo("HOJE",
             d => d.Date == hoje));
@@ -1217,10 +1299,10 @@ public class MainPage : ContentPage
             Indicador(totalArla > 0 ? $"{totalArla:N1} L" : "--")));
 
         painel.Children.Add(Cartao("Quantidade de viagens",
-            Indicador(viagens.Count.ToString())));
+            Indicador(viagensIndicadores.Count.ToString())));
 
         painel.Children.Add(Cartao("Raio médio por viagem",
-            Indicador(viagens.Count > 0
+            Indicador(viagensIndicadores.Count > 0
                 ? $"{raioMedioGeral:N2} km" : "--")));
 
         painel.Children.Add(Cartao("Tonelagem líquida total",
@@ -1242,7 +1324,7 @@ public class MainPage : ContentPage
         painel.Children.Add(Titulo("INDICADORES POR VEÍCULO"));
 
         var nomesVeiculos = abastecimentos.Select(x => x.Veiculo)
-            .Concat(viagens.Select(x => x.Veiculo))
+            .Concat(viagensIndicadores.Select(x => x.Veiculo))
             .Where(x => !string.IsNullOrWhiteSpace(x))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .OrderBy(x => x)
@@ -1267,7 +1349,7 @@ public class MainPage : ContentPage
             double mediaArla100Veiculo = CalcularMediaArla100Km(abArlaVeiculo);
             double litrosArlaVeiculo = abArlaVeiculo.Sum(x => x.LitrosArla);
 
-            var viVeiculo = viagens
+            var viVeiculo = viagensIndicadores
                 .Where(x => Id(x.Veiculo) == Id(nome)).ToList();
 
             double kmVeiculo = SomarKmViagens(viVeiculo);
@@ -1298,6 +1380,7 @@ public class MainPage : ContentPage
                         },
                         new Label { Text = $"KM registrados: {kmVeiculo:N0} km" },
                         new Label { Text = $"Viagens realizadas: {viVeiculo.Count}" },
+                        new Label { Text = $"Velocidade média: {(CalcularVelocidadeMedia(viVeiculo) > 0 ? $"{CalcularVelocidadeMedia(viVeiculo):N2} km/h" : "--")}" },
                         new Label
                         {
                             Text = viVeiculo.Count > 0
@@ -1317,8 +1400,8 @@ public class MainPage : ContentPage
         painel.Children.Add(new Label
         {
             Text = "Raio médio = KM registrados no período ÷ número de viagens ÷ 2. " +
-                   "Os KM vêm da diferença entre KM atual e anterior nos abastecimentos. " +
-                   "A quantidade de viagens e a tonelagem vêm dos registros de cargas.",
+                   "Os KM vêm da diferença entre KM final e KM inicial informados em cada viagem. " +
+                   "A velocidade média usa KM rodados divididos pelo tempo entre hora inicial e final.",
             TextColor = Colors.Gray,
             FontSize = 12
         });
@@ -1502,11 +1585,13 @@ public class MainPage : ContentPage
         {
             double toneladasDia =
                 grupo.Sum(x => x.PesoLiquido) / 1000.0;
+            double velocidadeDia = CalcularVelocidadeMedia(grupo);
 
             lista.Children.Add(new Label
             {
                 Text = $"{grupo.Key:dd/MM/yyyy} - " +
                        $"Viagens: {grupo.Count()} | " +
+                       $"Velocidade média: {velocidadeDia:N2} km/h | " +
                        $"Tonelagem líquida: {toneladasDia:N2} t",
                 FontAttributes = FontAttributes.Bold,
                 TextColor = Color.FromArgb("#0F766E")
@@ -1527,7 +1612,7 @@ public class MainPage : ContentPage
         {
             lista.Children.Add(new Label
             {
-                Text = $"{x.Data:dd/MM/yyyy HH:mm} | {x.Veiculo} | " +
+                Text = $"{x.Data:dd/MM/yyyy} {x.HoraInicial:hh\\:mm}-{x.HoraFinal:hh\\:mm} | Frente {x.Frente} | {x.Veiculo} | " +
                        $"Líquido: {x.PesoLiquido:N0} kg | " +
                        $"Viagem: {x.LitrosConsumidos:N1} L | " +
                        $"{x.ConsumoKmL:N2} km/l | VE: {x.ValorEnergetico:N2}",
@@ -1700,7 +1785,7 @@ public class MainPage : ContentPage
 
             foreach (var x in cg)
             {
-                Linha($"{x.Data:dd/MM/yyyy HH:mm} | {x.Veiculo} | {x.Motorista}");
+                Linha($"{x.Data:dd/MM/yyyy} | {x.HoraInicial:hh\\:mm}-{x.HoraFinal:hh\\:mm} | Frente {x.Frente} | {x.Veiculo} | {x.Motorista}");
                 Linha($"Carreta: {x.AnoCarreta} | Bruto: {x.PesoBruto:N0} kg | Tara: {x.Tara:N0} kg");
                 Linha($"Liquido: {x.PesoLiquido:N0} kg | Combustivel: {x.LitrosConsumidos:N1} L");
                 if (ViagemComKmValido(x))
@@ -1772,6 +1857,9 @@ public class Viagem
 {
     public string Id { get; set; } = "";
     public DateTime Data { get; set; }
+    public TimeSpan HoraInicial { get; set; }
+    public TimeSpan HoraFinal { get; set; }
+    public string Frente { get; set; } = "";
     public string Veiculo { get; set; } = "";
     public string Motorista { get; set; } = "";
     public int AnoCarreta { get; set; }
