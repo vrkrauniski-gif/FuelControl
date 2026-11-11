@@ -266,6 +266,36 @@ public class MainPage : ContentPage
                 botao.Clicked += (s, e) => MostrarMenu(nome);
                 botoes.Children.Add(botao);
             }
+            var botaoTurno = Botao("Trocar turno");
+botaoTurno.FontSize = 10;
+botaoTurno.Padding = new Thickness(4, 0);
+
+botaoTurno.Clicked += async (s, e) =>
+{
+    string escolha = await DisplayActionSheet(
+        "Selecione o novo turno",
+        "Cancelar",
+        null,
+        "Turno A",
+        "Turno B",
+        "Turno C");
+
+    if (escolha == "Turno A")
+        ContextoTurno.Turno = "A";
+    else if (escolha == "Turno B")
+        ContextoTurno.Turno = "B";
+    else if (escolha == "Turno C")
+        ContextoTurno.Turno = "C";
+    else
+        return;
+
+    await DisplayAlert(
+        "Turno atualizado",
+        "Agora o aplicativo está no turno " + ContextoTurno.Turno,
+        "OK");
+};
+
+botoes.Children.Add(botaoTurno);
 
             View conteudo = menu switch
             {
