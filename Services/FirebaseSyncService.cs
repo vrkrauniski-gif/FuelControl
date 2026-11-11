@@ -1,6 +1,6 @@
 
 
-using System.Net.Http;
+using System.Net;
 using System.Text;
 using System.Text.Json;
 using Microsoft.Maui.Storage;
@@ -9,50 +9,65 @@ namespace FuelControl;
 
 public static class FirebaseSyncService
 {
-    // Mantenha aqui a chave que já existe no seu arquivo.
+    // Mantenha a mesma chave API do seu projeto.
     private const string ApiKey = "AIzaSyDWbk4L6QwgJ46TiDolWUCkm2GJ6YkVSoc";
-        
 
-    private static readonly HttpClient Http = new();
+    private static readonly HttpClient Http = new HttpClient
+    {
+        Timeout = TimeSpan.FromSeconds(15)
+    };
 
-    private const string Url =
-        "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=";
+    private static readonly SemaphoreSlim Bloqueio = new(1, 1);
 
     private const string RefreshUrl =
         "https://securetoken.googleapis.com/v1/token?key=";
 
+    private const string SignUpUrl =
+        "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=";
+
     public static string UsuarioFirebase =>
         Preferences.Default.Get("firebase_uid", "");
 
+    public static string UltimoErro =>
+        Preferences.Default.Get("firebase_erro", "");
+
     public static async Task<bool> ConectarAnonimamenteAsync()
     {
+        await Bloqueio.WaitAsync();
+
         try
         {
+            // Se não há internet, mantém os dados e tokens salvos.
+            if (Connectivity.Current.NetworkAccess
+                != NetworkAccess.Internet)
+            {
+                RegistrarErro("Sem conexão com a internet.");
+                return false;
+            }
+
             string refreshToken =
                 Preferences.Default.Get("firebase_refresh_token", "");
 
-            // Renova a autenticação quando já existe refresh token.
+            // Tenta renovar a autenticação existente.
             if (!string.IsNullOrWhiteSpace(refreshToken))
             {
-                var dados = new Dictionary<string, string>
+                using var dados = new FormUrlEncodedContent(
+                    new Dictionary<string, string>
+                    {
+                        ["grant_type"] = "refresh_token",
+                        ["refresh_token"] = refreshToken
+                    });
+
+                using var resposta = await Http.PostAsync(
+                    RefreshUrl + ApiKey, dados);
+
+                string conteudo =
+                    await resposta.Content.ReadAsStringAsync();
+
+                if (resposta.IsSuccessStatusCode)
                 {
-                    ["grant_type"] = "refresh_token",
-                    ["refresh_token"] = refreshToken
-                };
-
-                var respostaRefresh = await Http.PostAsync(
-                    RefreshUrl + ApiKey,
-                    new FormUrlEncodedContent(dados));
-
-                string conteudoRefresh =
-                    await respostaRefresh.Content.ReadAsStringAsync();
-
-                if (respostaRefresh.IsSuccessStatusCode)
-                {
-                    using var jsonRefresh =
-                        JsonDocument.Parse(conteudoRefresh);
-
-                    var raiz = jsonRefresh.RootElement;
+                    using var json = JsonDocument.Parse(conteudo);
+                    var raiz = json.RootElement;
 
                     Preferences.Default.Set(
                         "firebase_token",
@@ -66,80 +81,103 @@ public static class FirebaseSyncService
                         "firebase_uid",
                         raiz.GetProperty("user_id").GetString() ?? "");
 
+                    LimparErro();
                     return true;
                 }
 
-                Preferences.Default.Remove("firebase_token");
-                Preferences.Default.Remove("firebase_refresh_token");
-                Preferences.Default.Remove("firebase_uid");
+                // Somente credencial definitivamente inválida
+                // autoriza descartar a autenticação anterior.
+                if (resposta.StatusCode == HttpStatusCode.BadRequest &&
+                    conteudo.Contains("INVALID_REFRESH_TOKEN",
+                        StringComparison.OrdinalIgnoreCase))
+                {
+                    LimparAutenticacao();
+                }
+                else
+                {
+                    RegistrarErro(
+                        $"Falha ao renovar token: HTTP {(int)resposta.StatusCode}. {conteudo}");
+
+                    return false;
+                }
             }
 
-            // Verifica o token antigo, se existir.
-            string tokenSalvo =
-                Preferences.Default.Get("firebase_token", "");
+            // Cria usuário anônimo quando não existe autenticação válida.
+            using var corpo = new StringContent(
+                "{\"returnSecureToken\":true}",
+                Encoding.UTF8,
+                "application/json");
 
-            if (!string.IsNullOrWhiteSpace(tokenSalvo))
+            using var novaResposta = await Http.PostAsync(
+                SignUpUrl + ApiKey, corpo);
+
+            string novoConteudo =
+                await novaResposta.Content.ReadAsStringAsync();
+
+            if (!novaResposta.IsSuccessStatusCode)
             {
-                var verificacao = await Http.PostAsync(
-                    "https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=" + ApiKey,
-                    new StringContent(
-                        JsonSerializer.Serialize(new { idToken = tokenSalvo }),
-                        Encoding.UTF8,
-                        "application/json"));
-
-                if (verificacao.IsSuccessStatusCode)
-                    return true;
-
-                Preferences.Default.Remove("firebase_token");
-                Preferences.Default.Remove("firebase_uid");
-            }
-
-            // Cria autenticação anônima.
-            var resposta = await Http.PostAsync(
-                Url + ApiKey,
-                new StringContent(
-                    "{\"returnSecureToken\":true}",
-                    Encoding.UTF8,
-                    "application/json"));
-
-            string conteudo = await resposta.Content.ReadAsStringAsync();
-
-            if (!resposta.IsSuccessStatusCode)
-            {
-                Preferences.Default.Set(
-                    "firebase_erro",
-                    "Erro HTTP " + (int)resposta.StatusCode + ": " + conteudo);
+                RegistrarErro(
+                    $"Falha na autenticação: HTTP {(int)novaResposta.StatusCode}. {novoConteudo}");
 
                 return false;
             }
 
-            using var json = JsonDocument.Parse(conteudo);
-
-            var raizNova = json.RootElement;
+            using var novoJson = JsonDocument.Parse(novoConteudo);
+            var novoUsuario = novoJson.RootElement;
 
             Preferences.Default.Set(
                 "firebase_token",
-                raizNova.GetProperty("idToken").GetString() ?? "");
+                novoUsuario.GetProperty("idToken").GetString() ?? "");
 
             Preferences.Default.Set(
                 "firebase_refresh_token",
-                raizNova.GetProperty("refreshToken").GetString() ?? "");
+                novoUsuario.GetProperty("refreshToken").GetString() ?? "");
 
             Preferences.Default.Set(
                 "firebase_uid",
-                raizNova.GetProperty("localId").GetString() ?? "");
+                novoUsuario.GetProperty("localId").GetString() ?? "");
 
-            Preferences.Default.Remove("firebase_erro");
+            LimparErro();
 
             return !string.IsNullOrWhiteSpace(UsuarioFirebase);
         }
+        catch (TaskCanceledException)
+        {
+            RegistrarErro("Tempo limite excedido na conexão com Firebase.");
+            return false;
+        }
+        catch (HttpRequestException ex)
+        {
+            RegistrarErro(
+                $"Falha de rede ({ex.GetType().Name}): {ex.Message}");
+            return false;
+        }
         catch (Exception ex)
         {
-        Preferences.Default.Set(
-    "firebase_erro",
-    "Falha na conexão (" + ex.GetType().Name + "): " + ex.Message);
-
-return false;
+            RegistrarErro(
+                $"Erro Firebase ({ex.GetType().Name}): {ex.Message}");
+            return false;
         }
+        finally
+        {
+            Bloqueio.Release();
+        }
+    }
+
+    private static void LimparAutenticacao()
+    {
+        Preferences.Default.Remove("firebase_token");
+        Preferences.Default.Remove("firebase_refresh_token");
+        Preferences.Default.Remove("firebase_uid");
+    }
+
+    private static void RegistrarErro(string mensagem)
+    {
+        Preferences.Default.Set("firebase_erro", mensagem);
+    }
+
+    private static void LimparErro()
+    {
+        Preferences.Default.Remove("firebase_erro");
     }
 }
