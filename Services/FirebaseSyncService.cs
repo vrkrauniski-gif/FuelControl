@@ -24,10 +24,23 @@ public static class FirebaseSyncService
         try
         {
             string tokenSalvo =
-                Preferences.Default.Get("firebase_token", "");
+    Preferences.Default.Get("firebase_token", "");
 
-            if (!string.IsNullOrWhiteSpace(tokenSalvo))
-                return true;
+if (!string.IsNullOrWhiteSpace(tokenSalvo))
+{
+    var verificacao = await Http.PostAsync(
+        "https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=" + ApiKey,
+        new StringContent(
+            JsonSerializer.Serialize(new { idToken = tokenSalvo }),
+            Encoding.UTF8,
+            "application/json"));
+
+    if (verificacao.IsSuccessStatusCode)
+        return true;
+
+    Preferences.Default.Remove("firebase_token");
+    Preferences.Default.Remove("firebase_uid");
+}
 
             var resposta = await Http.PostAsync(
                 Url + ApiKey,
