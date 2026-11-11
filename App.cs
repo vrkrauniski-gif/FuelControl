@@ -15,6 +15,7 @@ public class App : Application
         {
             MainPage = CriarTelaTurno();
         }
+        _ = FirebaseSyncService.ConectarAnonimamenteAsync();
     }
 
     private ContentPage CriarTelaTurno()
