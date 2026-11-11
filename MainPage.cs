@@ -2117,6 +2117,15 @@ public class Abastecimento
     public double PesoLiquido { get; set; }
     public double ValorEnergetico { get; set; }
     public double MetaEnergetica { get; set; }
+    
+    public string Id { get; set; } = Guid.NewGuid().ToString("N");
+    public string Turno { get; set; } = "";
+    public DateTime CriadoEmUtc { get; set; }
+    public string CriadoPorDispositivo { get; set; } = "";
+    public DateTime EditadoEmUtc { get; set; }
+    public string EditadoPorDispositivo { get; set; } = "";
+
+
 }
 
 public class Viagem
