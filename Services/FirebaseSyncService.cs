@@ -8,7 +8,8 @@ namespace FuelControl;
 
 public static class FirebaseSyncService
 {
-    private const string ApiKey = "COLOQUE_A_CHAVE_API_DO_FIREBASE";
+    private const string ApiKey =  AIzaSyDWbk4L6QwgJ46TiDolWUCkm2GJ6YkVSoc
+        }
 
     private static readonly HttpClient Http = new();
 
