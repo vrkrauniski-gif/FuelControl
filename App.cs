@@ -1,6 +1,7 @@
 
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Storage;
+using Microsoft.Maui.Networking;
 
 namespace FuelControl;
 
@@ -13,27 +14,31 @@ public class App : Application
         else
             MainPage = CriarTelaTurno();
 
+        // A conexão não deve impedir a abertura do aplicativo.
         _ = VerificarFirebaseAsync();
     }
 
     private async Task VerificarFirebaseAsync()
     {
-        bool conectado =
-            await FirebaseSyncService.ConectarAnonimamenteAsync();
-
-        if (!conectado)
+        try
         {
-            string erro = Preferences.Default.Get(
-                "firebase_erro",
-                "O Firebase não informou o motivo do erro.");
+            // Se não houver internet, mantém o aplicativo offline.
+            if (Connectivity.Current.NetworkAccess != NetworkAccess.Internet)
+                return;
 
-            await MainThread.InvokeOnMainThreadAsync(async () =>
+            bool conectado =
+                await FirebaseSyncService.ConectarAnonimamenteAsync();
+
+            if (!conectado)
             {
-                await MainPage.DisplayAlert(
-                    "Erro de conexão Firebase",
-                    erro,
-                    "OK");
-            });
+                System.Diagnostics.Debug.WriteLine(
+                    "Firebase indisponível. Aplicativo continuará offline.");
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine(
+                "Erro Firebase: " + ex.Message);
         }
     }
 
