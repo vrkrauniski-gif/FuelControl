@@ -1060,6 +1060,13 @@ public class MainPage : ContentPage
 
             var viagem = new Viagem
             {
+                
+    Turno = viagemEmEdicao?.Turno ?? ContextoTurno.Turno,
+    CriadoEmUtc = viagemEmEdicao?.CriadoEmUtc ?? DateTime.UtcNow,
+    CriadoPorDispositivo = viagemEmEdicao?.CriadoPorDispositivo ?? ContextoTurno.Dispositivo,
+    EditadoEmUtc = DateTime.UtcNow,
+    EditadoPorDispositivo = ContextoTurno.Dispositivo,
+
                 Id = viagemEmEdicao?.Id ?? Guid.NewGuid().ToString(),
                 Data = dataViagem.Date.Add(horaInicialViagem.Time),
                 HoraInicial = horaInicialViagem.Time,
