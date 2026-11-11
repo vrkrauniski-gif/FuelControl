@@ -1,1 +1,62 @@
 
+using System.Net.Http;
+using System.Text;
+using System.Text.Json;
+using Microsoft.Maui.Storage;
+
+namespace FuelControl;
+
+public static class FirebaseSyncService
+{
+    private const string ApiKey = "COLOQUE_A_CHAVE_API_DO_FIREBASE";
+
+    private static readonly HttpClient Http = new();
+
+    private const string Url =
+        "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=";
+
+    public static string UsuarioFirebase =>
+        Preferences.Default.Get("firebase_uid", "");
+
+    public static async Task<bool> ConectarAnonimamenteAsync()
+    {
+        try
+        {
+            string tokenSalvo =
+                Preferences.Default.Get("firebase_token", "");
+
+            if (!string.IsNullOrWhiteSpace(tokenSalvo))
+                return true;
+
+            var resposta = await Http.PostAsync(
+                Url + ApiKey,
+                new StringContent(
+                    "{\"returnSecureToken\":true}",
+                    Encoding.UTF8,
+                    "application/json"));
+
+            string conteudo = await resposta.Content.ReadAsStringAsync();
+
+            if (!resposta.IsSuccessStatusCode)
+                return false;
+
+            using var json = JsonDocument.Parse(conteudo);
+
+            string token = json.RootElement
+                .GetProperty("idToken").GetString() ?? "";
+
+            string uid = json.RootElement
+                .GetProperty("localId").GetString() ?? "";
+
+            Preferences.Default.Set("firebase_token", token);
+            Preferences.Default.Set("firebase_uid", uid);
+
+            return !string.IsNullOrWhiteSpace(token);
+        }
+        catch
+        {
+            return false;
+        }
+    }
+}
+
