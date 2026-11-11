@@ -163,6 +163,73 @@ public static class FirebaseSyncService
             Bloqueio.Release();
         }
     }
+    public static async Task<bool> SalvarAbastecimentoAsync(
+    Abastecimento registro)
+{
+    try
+    {
+        if (!await ConectarAnonimamenteAsync())
+            return false;
+
+        string token = Preferences.Default.Get(
+            "firebase_token", "");
+
+        if (string.IsNullOrWhiteSpace(token))
+            return false;
+
+        string url =
+            "https://firestore.googleapis.com/v1/projects/fuelcontrol-vrk/databases/(default)/documents/abastecimentos/"
+            + Uri.EscapeDataString(registro.Id);
+
+        var documento = new
+        {
+            fields = new
+            {
+                payload = new
+                {
+                    stringValue = JsonSerializer.Serialize(registro)
+                },
+                turno = new
+                {
+                    stringValue = registro.Turno
+                },
+                dispositivo = new
+                {
+                    stringValue = registro.EditadoPorDispositivo
+                }
+            }
+        }
+
+        using var requisicao = new HttpRequestMessage(
+            HttpMethod.Patch, url);
+
+        requisicao.Headers.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue(
+                "Bearer", token);
+
+        requisicao.Content = new StringContent(
+            JsonSerializer.Serialize(documento),
+            Encoding.UTF8,
+            "application/json");
+
+        using var resposta = await Http.SendAsync(requisicao);
+
+        if (!resposta.IsSuccessStatusCode)
+        {
+            string erro = await resposta.Content.ReadAsStringAsync();
+            RegistrarErro("Erro ao salvar abastecimento: " + erro);
+            return false;
+        }
+
+        LimparErro();
+        return true;
+    }
+    catch (Exception ex)
+    {
+        RegistrarErro("Erro ao sincronizar: " + ex.Message);
+        return false;
+    }
+    }
 
     private static void LimparAutenticacao()
     {
