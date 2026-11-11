@@ -1,5 +1,6 @@
 
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Storage;
 
 namespace FuelControl;
 
@@ -8,14 +9,32 @@ public class App : Application
     public App()
     {
         if (ContextoTurno.Turno is "A" or "B" or "C")
-        {
             AbrirSistema();
-        }
         else
-        {
             MainPage = CriarTelaTurno();
+
+        _ = VerificarFirebaseAsync();
+    }
+
+    private async Task VerificarFirebaseAsync()
+    {
+        bool conectado =
+            await FirebaseSyncService.ConectarAnonimamenteAsync();
+
+        if (!conectado)
+        {
+            string erro = Preferences.Default.Get(
+                "firebase_erro",
+                "O Firebase não informou o motivo do erro.");
+
+            await MainThread.InvokeOnMainThreadAsync(async () =>
+            {
+                await MainPage.DisplayAlert(
+                    "Erro de conexão Firebase",
+                    erro,
+                    "OK");
+            });
         }
-        _ = FirebaseSyncService.ConectarAnonimamenteAsync();
     }
 
     private ContentPage CriarTelaTurno()
