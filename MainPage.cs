@@ -527,7 +527,14 @@ public class MainPage : ContentPage
                 dados.MetaKmL = meta;
 
             var registro = new Abastecimento
-            {
+            {  
+    Id = registroAnterior?.Id ?? Guid.NewGuid().ToString("N"),
+    Turno = registroAnterior?.Turno ?? ContextoTurno.Turno,
+    CriadoEmUtc = registroAnterior?.CriadoEmUtc ?? DateTime.UtcNow,
+    CriadoPorDispositivo = registroAnterior?.CriadoPorDispositivo ?? ContextoTurno.Dispositivo,
+    EditadoEmUtc = DateTime.UtcNow,
+    EditadoPorDispositivo = ContextoTurno.Dispositivo,
+
                 Data = registroAnterior?.Data ?? DateTime.Now,
                 Veiculo = veiculo.Text.Trim(),
                 Motorista = motorista.Text?.Trim() ?? "",
