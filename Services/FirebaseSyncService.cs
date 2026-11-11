@@ -63,9 +63,9 @@ public static class FirebaseSyncService
         }
         catch (Exception ex)
 {
-    Preferences.Default.Set("firebase_erro", ex.Message);
+    Preferences.Default.Set(
+        "firebase_erro",
+        ex.ToString());
+
     return false;
         }
-}
-
-}
