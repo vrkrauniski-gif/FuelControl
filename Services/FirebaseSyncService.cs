@@ -38,8 +38,15 @@ public static class FirebaseSyncService
 
             string conteudo = await resposta.Content.ReadAsStringAsync();
 
-            if (!resposta.IsSuccessStatusCode)
-                return false;
+            
+                if (!resposta.IsSuccessStatusCode)
+{
+    Preferences.Default.Set(
+        "firebase_erro",
+        "Erro HTTP " + (int)resposta.StatusCode + ": " + conteudo);
+
+    return false;
+}
 
             using var json = JsonDocument.Parse(conteudo);
 
