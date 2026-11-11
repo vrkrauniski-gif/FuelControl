@@ -22,6 +22,15 @@ jobs:
       - name: Compilar APK
         run: dotnet publish FuelControl.csproj -f net9.0-android -c Release -p:AndroidPackageFormat=apk
 
+      - name: Mostrar SHA-1 do APK
+        run: |
+          APK=$(find bin/Release/net9.0-android/publish -name '*Signed.apk' | head -n 1)
+          if [ -z "$APK" ]; then
+            APK=$(find bin/Release/net9.0-android/publish -name '*.apk' | head -n 1)
+          fi
+          echo "Certificado do APK:"
+          keytool -printcert -jarfile "$APK"
+
       - name: Salvar APK
         uses: actions/upload-artifact@v4
         with:
