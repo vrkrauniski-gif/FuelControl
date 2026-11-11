@@ -13,5 +13,8 @@
     <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
     <ApplicationVersion>1</ApplicationVersion>
   </PropertyGroup>
-
+<ItemGroup>
+    <UsesPermission Include="android.permission.INTERNET" />
+    <UsesPermission Include="android.permission.ACCESS_NETWORK_STATE" />
+</ItemGroup>
 </Project>
