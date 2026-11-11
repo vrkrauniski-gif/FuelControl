@@ -69,3 +69,5 @@ public static class FirebaseSyncService
 
     return false;
         }
+    }
+}
