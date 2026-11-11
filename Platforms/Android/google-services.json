@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "153750726280",
+    "project_id": "fuelcontrol-vrk",
+    "storage_bucket": "fuelcontrol-vrk.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:153750726280:android:c1be066645431110d9613d",
+        "android_client_info": {
+          "package_name": "com.vagner.fuelcontrol"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDWbk4L6QwgJ46TiDolWUCkm2GJ6YkVSoc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
