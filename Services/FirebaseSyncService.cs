@@ -135,8 +135,11 @@ public static class FirebaseSyncService
         }
         catch (Exception ex)
         {
-            Preferences.Default.Set("firebase_erro", ex.Message);
-            return false;
+        Preferences.Default.Set(
+    "firebase_erro",
+    "Falha na conexão (" + ex.GetType().Name + "): " + ex.Message);
+
+return false;
         }
     }
 }
