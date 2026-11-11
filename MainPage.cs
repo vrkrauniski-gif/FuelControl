@@ -2148,4 +2148,12 @@ public class Viagem
     public double ValorEnergetico { get; set; }
     public double MetaEnergetica { get; set; }
     public bool TanqueDescontado { get; set; }
+
+    
+    public string Turno { get; set; } = "";
+    public DateTime CriadoEmUtc { get; set; }
+    public string CriadoPorDispositivo { get; set; } = "";
+    public DateTime EditadoEmUtc { get; set; }
+    public string EditadoPorDispositivo { get; set; } = "";
+
 }
