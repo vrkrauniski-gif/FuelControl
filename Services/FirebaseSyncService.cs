@@ -198,7 +198,7 @@ public static class FirebaseSyncService
                     stringValue = registro.EditadoPorDispositivo
                 }
             }
-        }
+        };
 
         using var requisicao = new HttpRequestMessage(
             HttpMethod.Patch, url);
