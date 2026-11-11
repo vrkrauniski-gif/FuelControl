@@ -61,10 +61,10 @@ public static class FirebaseSyncService
 
             return !string.IsNullOrWhiteSpace(token);
         }
-        catch
-        {
-            return false;
+        catch (Exception ex)
+{
+    Preferences.Default.Set("firebase_erro", ex.Message);
+    return false;
         }
-    }
 }
 
