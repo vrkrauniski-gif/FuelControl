@@ -79,6 +79,7 @@ public class MainPage : ContentPage
     MostrarMenu("Abastecimentos");
 
     _ = SincronizarAbastecimentosAsync();
+    _ = SincronizarViagensAsync();
 
  }
 private string ChaveAbastecimento(Abastecimento x)
