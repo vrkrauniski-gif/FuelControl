@@ -490,9 +490,14 @@ botoes.Children.Add(botaoTurno);
         return l > 0 ? km / l : 0;
     }
 
-    async void SalvarAbastecimento(object? sender, EventArgs e)
-    {
-        try
+  async void SalvarAbastecimento(object? sender, EventArgs e)
+{
+    if (salvandoAbastecimento)
+        return;
+
+    salvandoAbastecimento = true;
+
+    try
         {
             bool caminhao =
                 tipoVeiculo.SelectedItem?.ToString() == "Caminhão";
