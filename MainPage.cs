@@ -284,7 +284,7 @@ foreach (string nome in nomes)
 var botaoTurno = Botao(
     "TROCAR TURNO (" + ContextoTurno.Turno + ")",
     "#0F766E");
-
+botaoTurno.HorizontalOptions = LayoutOptions.Fill;
 botaoTurno.FontSize = 11;
 botaoTurno.Margin = new Thickness(2);
 
