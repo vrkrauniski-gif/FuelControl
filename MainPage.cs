@@ -78,6 +78,7 @@ public class MainPage : ContentPage
         BackgroundColor = Color.FromArgb("#F1F5F9");
         CarregarDados();
         MostrarMenu("Abastecimentos");
+        _ = InicializarSincronizacaoAsync();
     }
 
     Entry Campo(string nome, Keyboard? teclado = null)
