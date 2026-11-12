@@ -766,10 +766,18 @@ View CriarListaAbastecimentos()
 
         var editar = Botao("EDITAR ABASTECIMENTO", "#0F766E");
 
-        editar.Clicked += (sender, args) =>
-            CarregarAbastecimentoParaEdicao(x);
+editar.IsEnabled =
+    string.Equals(
+        x.Turno,
+        ContextoTurno.Turno,
+        StringComparison.OrdinalIgnoreCase);
 
-        card.Children.Add(editar);
+editar.Opacity = editar.IsEnabled ? 1 : 0.45;
+
+editar.Clicked += (sender, args) =>
+    CarregarAbastecimentoParaEdicao(x);
+
+card.Children.Add(editar);
 
         painel.Children.Add(new Border
         {
