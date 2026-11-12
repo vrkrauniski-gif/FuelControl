@@ -166,7 +166,7 @@ private async Task SincronizarAbastecimentosAsync()
     }
 }
 
-}
+
 
     Entry Campo(string nome, Keyboard? teclado = null)
     {
