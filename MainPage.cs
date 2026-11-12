@@ -247,6 +247,42 @@ public class MainPage : ContentPage
         Preferences.Default.Set(ChaveVeiculos, JsonSerializer.Serialize(veiculos));
         Preferences.Default.Set(ChaveCargas, JsonSerializer.Serialize(viagens));
     }
+    
+private async Task SincronizarAbastecimentosAsync()
+{
+    try
+    {
+        var dadosNuvem =
+            await FirebaseSyncService.ListarAbastecimentosAsync();
+
+        if (dadosNuvem == null)
+            return;
+
+        foreach (var remoto in dadosNuvem)
+        {
+            var local = abastecimentos.FirstOrDefault(
+                x => x.Id == remoto.Id);
+
+            if (local == null)
+            {
+                abastecimentos.Add(remoto);
+            }
+            else if (remoto.EditadoEmUtc > local.EditadoEmUtc)
+            {
+                int indice = abastecimentos.IndexOf(local);
+                abastecimentos[indice] = remoto;
+            }
+        }
+
+        SalvarDados();
+    }
+    catch (Exception ex)
+    {
+        System.Diagnostics.Debug.WriteLine(
+            "Erro na sincronização: " + ex.Message);
+    }
+}
+
 
     void MostrarMenu(string menu)
     {
