@@ -4,31 +4,51 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - main
+      - integracao-firebase-compartilhado
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
 
-      - uses: actions/setup-dotnet@v4
+    steps:
+      - name: Baixar codigo
+        uses: actions/checkout@v4
+
+      - name: Configurar .NET
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '9.0.x'
 
       - name: Instalar MAUI Android
         run: dotnet workload install maui-android
 
-      - name: Compilar APK
-        run: dotnet publish FuelControl.csproj -f net9.0-android -c Release -p:AndroidPackageFormat=apk
-
-      - name: Mostrar SHA-1 do APK
+      - name: Preparar assinatura
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
         run: |
-          APK=$(find bin/Release/net9.0-android/publish -name '*Signed.apk' | head -n 1)
-          if [ -z "$APK" ]; then
-            APK=$(find bin/Release/net9.0-android/publish -name '*.apk' | head -n 1)
-          fi
-          echo "Certificado do APK:"
+          mkdir -p "$HOME/signing"
+          echo "$KEYSTORE_BASE64" | base64 --decode > "$HOME/signing/fuelcontrol.keystore"
+
+      - name: Compilar APK assinada
+        env:
+          STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          dotnet publish FuelControl.csproj \
+            -f net9.0-android \
+            -c Release \
+            -p:AndroidPackageFormat=apk \
+            -p:AndroidKeyStore=true \
+            -p:AndroidSigningKeyStore="$HOME/signing/fuelcontrol.keystore" \
+            -p:AndroidSigningKeyAlias="$KEY_ALIAS" \
+            -p:AndroidSigningKeyPass="$KEY_PASSWORD" \
+            -p:AndroidSigningStorePass="$STORE_PASSWORD"
+
+      - name: Verificar assinatura
+        run: |
+          APK=$(find bin/Release/net9.0-android/publish -name '*.apk' | head -n 1)
+          test -n "$APK"
           keytool -printcert -jarfile "$APK"
 
       - name: Salvar APK
