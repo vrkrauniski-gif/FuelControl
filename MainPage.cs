@@ -270,6 +270,7 @@ public class MainPage : ContentPage
 foreach (string nome in nomes)
 {
     var botao = Botao(nome);
+    botao.HorizontalOptions = LayoutOptions.Fill;
     botao.FontSize = 11;
     botao.Padding = new Thickness(8, 0);
     botao.Margin = new Thickness(2);
