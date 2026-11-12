@@ -660,6 +660,25 @@ botoes.Children.Add(botaoTurno);
             var registro = new Abastecimento
             {
                 Data = registroAnterior?.Data ?? DateTime.Now,
+                Id = registroAnterior?.Id ?? Guid.NewGuid().ToString("N"),
+
+Turno = registroAnterior != null &&
+        !string.IsNullOrWhiteSpace(registroAnterior.Turno)
+        ? registroAnterior.Turno
+        : ContextoTurno.Turno,
+
+CriadoEmUtc = registroAnterior == null ||
+              registroAnterior.CriadoEmUtc == default
+              ? DateTime.UtcNow
+              : registroAnterior.CriadoEmUtc,
+
+CriadoPorDispositivo = registroAnterior == null ||
+                       string.IsNullOrWhiteSpace(registroAnterior.CriadoPorDispositivo)
+                       ? ContextoTurno.Dispositivo
+                       : registroAnterior.CriadoPorDispositivo,
+
+EditadoEmUtc = DateTime.UtcNow,
+EditadoPorDispositivo = ContextoTurno.Dispositivo,
                 Veiculo = veiculo.Text.Trim(),
                 Motorista = motorista.Text?.Trim() ?? "",
                 TipoVeiculo = caminhao ? "Caminhão" : "Carro",
