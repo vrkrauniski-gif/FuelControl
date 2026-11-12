@@ -263,6 +263,86 @@ public static class FirebaseSyncService
         }
     }
 
+    
+public static async Task<bool> SalvarViagemAsync(Viagem viagem)
+{
+    try
+    {
+        if (viagem == null ||
+            string.IsNullOrWhiteSpace(viagem.Id))
+        {
+            Erro("Viagem sem identificador.");
+            return false;
+        }
+
+        if (viagem.Turno is not ("A" or "B" or "C"))
+        {
+            Erro("Turno inválido na viagem.");
+            return false;
+        }
+
+        if (!await ConectarAnonimamenteAsync())
+            return false;
+
+        string token = Preferences.Default.Get(
+            "firebase_token", "");
+
+        var documento = new
+        {
+            fields = new
+            {
+                payload = new
+                {
+                    stringValue =
+                        JsonSerializer.Serialize(viagem, JsonOptions)
+                },
+                turno = new
+                {
+                    stringValue = viagem.Turno
+                },
+                dispositivo = new
+                {
+                    stringValue = viagem.EditadoPorDispositivo
+                },
+                editadoEmUtc = new
+                {
+                    timestampValue =
+                        viagem.EditadoEmUtc.ToUniversalTime()
+                            .ToString("yyyy-MM-dd'T'HH:mm:ss.fff'Z'")
+                }
+            }
+        };
+
+        string url = BaseUrlViagens + "/" +
+            Uri.EscapeDataString(viagem.Id);
+
+        using var requisicao =
+            CriarRequisicao(HttpMethod.Patch, url, token);
+
+        requisicao.Content = new StringContent(
+            JsonSerializer.Serialize(documento),
+            Encoding.UTF8,
+            "application/json");
+
+        using var resposta = await Http.SendAsync(requisicao);
+
+        if (!resposta.IsSuccessStatusCode)
+        {
+            Erro("Erro ao salvar viagem: " +
+                await resposta.Content.ReadAsStringAsync());
+            return false;
+        }
+
+        LimparErro();
+        return true;
+    }
+    catch (Exception ex)
+    {
+        Erro("Erro ao salvar viagem: " + ex.Message);
+        return false;
+    }
+}
+
     public static async Task<List<Abastecimento>?>
         ListarAbastecimentosAsync()
     {
