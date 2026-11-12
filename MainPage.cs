@@ -249,6 +249,16 @@ public class MainPage : ContentPage
         Preferences.Default.Set(ChaveCargas, JsonSerializer.Serialize(viagens));
     }
     
+private async Task InicializarSincronizacaoAsync()
+{
+    await SincronizarAbastecimentosAsync();
+
+    MainThread.BeginInvokeOnMainThread(() =>
+    {
+        MostrarMenu("Abastecimentos");
+    });
+}
+
 private async Task SincronizarAbastecimentosAsync()
 {
     try
