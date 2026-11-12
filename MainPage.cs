@@ -68,6 +68,7 @@ public class MainPage : ContentPage
     ProgressBar barraTanque = new();
 
     bool salvandoViagem;
+    bool salvandoAbastecimento;
     Abastecimento? abastecimentoEmEdicao;
     Viagem? viagemEmEdicao;
 
