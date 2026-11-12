@@ -613,7 +613,8 @@ botoes.Children.Add(botaoTurno);
                 dados.MetaKmL = metaAntiga;
                 throw;
             }
-
+            bool sincronizado =
+    await FirebaseSyncService.SalvarAbastecimentoAsync(registro);
             abastecimentoEmEdicao = null;
             veiculo.IsEnabled = true;
 
