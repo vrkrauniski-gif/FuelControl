@@ -10,8 +10,7 @@
     <Nullable>enable</Nullable>
     <ApplicationTitle>FuelControl</ApplicationTitle>
     <ApplicationId>com.vagner.fuelcontrol</ApplicationId>
-    <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
-    <ApplicationVersion>1</ApplicationVersion>
+    <ApplicationVersion>2</ApplicationVersion>
   </PropertyGroup>
 
 </Project>
