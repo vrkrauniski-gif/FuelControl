@@ -630,9 +630,12 @@ botoes.Children.Add(botaoTurno);
             AtualizarTanqueTexto(veiculo.Text);
 
             await DisplayAlert("Salvo",
-                registroAnterior != null
-                    ? "Abastecimento atualizado com sucesso."
-                    : "Abastecimento registrado com sucesso.", "OK");
+    (registroAnterior != null
+        ? "Abastecimento atualizado no aparelho."
+        : "Abastecimento registrado no aparelho.") +
+    (sincronizado
+        ? "\nSincronizado com Firebase."
+        : "\nAguardando sincronização com Firebase."), "OK");
 
             kmAnterior.Text = atual.ToString("N0", pt);
             kmAtual.Text = "";
