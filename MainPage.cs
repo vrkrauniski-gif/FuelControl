@@ -259,21 +259,7 @@ public class MainPage : ContentPage
             };
 
             
-var botoes = new FlexLayout
-{
-    Direction = FlexDirection.Row,
-    Wrap = FlexWrap.Wrap,
-    JustifyContent = FlexJustify.Start,
-    AlignItems = FlexAlignItems.Center
-};
 
-string[] nomes =
-{
-    "Abastecimentos",
-    "Cargas",
-    "Indicadores",
-    "Relatórios"
-};
 
 // Botões dos menus
 foreach (string nome in nomes)
