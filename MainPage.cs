@@ -705,57 +705,83 @@ botoes.Children.Add(botaoTurno);
         {
             salvandoAbastecimento = false;
         }
-    }
+    
+    
 
+View CriarListaAbastecimentos()
+{
+    var painel = new VerticalStackLayout { Spacing = 10 };
 
-
-
-
-    View CriarListaAbastecimentos()
+    if (abastecimentos.Count == 0)
     {
-        var painel = new VerticalStackLayout { Spacing = 8 };
-        if (abastecimentos.Count == 0)
+        painel.Children.Add(new Label
         {
-            painel.Children.Add(new Label
-            {
-                Text = "Nenhum abastecimento registrado.",
-                TextColor = Colors.Gray
-            });
-            return painel;
-        }
+            Text = "Nenhum abastecimento registrado.",
+            TextColor = Color.FromArgb("#64748B")
+        });
 
-        foreach (var x in abastecimentos.OrderByDescending(a => a.Data))
-        {
-            var card = new VerticalStackLayout
-            {
-                Spacing = 4,
-                Padding = 10,
-                BackgroundColor = Colors.White
-            };
-            card.Children.Add(new Label
-            {
-                Text = $"{x.Data:dd/MM/yyyy HH:mm} | {x.Veiculo} | {x.TipoVeiculo}",
-                FontAttributes = FontAttributes.Bold,
-                TextColor = Color.FromArgb("#123B65")
-            });
-            card.Children.Add(new Label
-            {
-                Text = $"Motorista: {x.Motorista} | {x.Combustivel} | {x.Litros:N1} L"
-            });
-            card.Children.Add(new Label
-            {
-                Text = $"KM: {x.KmAnterior:N0} → {x.KmAtual:N0} | Média: {x.Consumo:N2} km/l"
-            });
-            if (x.TemArla)
-                card.Children.Add(new Label { Text = $"Arla 32: {x.LitrosArla:N1} L" });
-
-            var editar = Botao("EDITAR ABASTECIMENTO", "#0F766E");
-            editar.Clicked += (sender, args) => CarregarAbastecimentoParaEdicao(x);
-            card.Children.Add(editar);
-            painel.Children.Add(card);
-        }
         return painel;
     }
+
+    foreach (var x in abastecimentos.OrderByDescending(a => a.Data))
+    {
+        var card = new VerticalStackLayout
+        {
+            Spacing = 7,
+            Padding = 12,
+            BackgroundColor = Colors.White
+        };
+
+        card.Children.Add(new Label
+        {
+            Text = $"{x.Data:dd/MM/yyyy HH:mm} | {x.Veiculo} | {x.TipoVeiculo}",
+            FontAttributes = FontAttributes.Bold,
+            FontSize = 15,
+            TextColor = Color.FromArgb("#123B65")
+        });
+
+        card.Children.Add(new Label
+        {
+            Text = $"Motorista: {x.Motorista} | {x.Combustivel} | {x.Litros:N1} L",
+            TextColor = Color.FromArgb("#475569"),
+            FontSize = 14
+        });
+
+        card.Children.Add(new Label
+        {
+            Text = $"KM: {x.KmAnterior:N0} → {x.KmAtual:N0} | Média: {x.Consumo:N2} km/l",
+            TextColor = Color.FromArgb("#475569"),
+            FontSize = 14
+        });
+
+        if (x.TemArla && x.LitrosArla > 0)
+        {
+            card.Children.Add(new Label
+            {
+                Text = $"Arla 32: {x.LitrosArla:N1} L",
+                TextColor = Color.FromArgb("#475569"),
+                FontSize = 14
+            });
+        }
+
+        var editar = Botao("EDITAR ABASTECIMENTO", "#0F766E");
+
+        editar.Clicked += (sender, args) =>
+            CarregarAbastecimentoParaEdicao(x);
+
+        card.Children.Add(editar);
+
+        painel.Children.Add(new Border
+        {
+            BackgroundColor = Colors.White,
+            Stroke = Color.FromArgb("#DCE4ED"),
+            Padding = 3,
+            Content = card
+        });
+    }
+
+    return painel;
+}
 
     void CarregarAbastecimentoParaEdicao(Abastecimento x)
     {
