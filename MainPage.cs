@@ -855,6 +855,19 @@ else
 
     void CarregarAbastecimentoParaEdicao(Abastecimento x)
     {
+
+        if (!string.Equals(
+        x.Turno,
+        ContextoTurno.Turno,
+        StringComparison.OrdinalIgnoreCase))
+    {
+        _ = DisplayAlert(
+            "Edição não permitida",
+            "Você só pode editar abastecimentos cadastrados pelo seu turno.",
+            "OK");
+
+        return;
+    }
         abastecimentoEmEdicao = x;
         veiculo.IsEnabled = false;
         tipoVeiculo.SelectedItem = x.TipoVeiculo;
