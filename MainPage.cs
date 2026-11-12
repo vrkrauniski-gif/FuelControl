@@ -650,11 +650,18 @@ botoes.Children.Add(botaoTurno);
             litrosArla.Text = "";
             MostrarMenu("Abastecimentos");
         }
-        catch (Exception ex)
+                catch (Exception ex)
         {
             await DisplayAlert("Erro ao salvar abastecimento", ex.Message, "OK");
         }
+        finally
+        {
+            salvandoAbastecimento = false;
+        }
     }
+
+
+    View CriarListaAbastecimentos()
 
 
     View CriarListaAbastecimentos()
