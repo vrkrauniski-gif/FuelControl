@@ -15,7 +15,8 @@ public static class FirebaseSyncService
 
     private const string BaseUrl =
         "https://firestore.googleapis.com/v1/projects/fuelcontrol-vrk/databases/(default)/documents/abastecimentos";
-
+    private const string BaseUrlViagens =
+    "https://firestore.googleapis.com/v1/projects/fuelcontrol-vrk/databases/(default)/documents/viagens";
     private const string RefreshUrl =
         "https://securetoken.googleapis.com/v1/token?key=";
 
