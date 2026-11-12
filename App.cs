@@ -6,12 +6,9 @@ namespace FuelControl;
 public class App : Application
 {
     public App()
-    {
-        if (ContextoTurno.Turno is "A" or "B" or "C")
-            AbrirSistema();
-        else
-            MainPage = CriarTelaTurno();
-    }
+{
+    MainPage = CriarTelaTurno();
+}
 
     private ContentPage CriarTelaTurno()
     {
