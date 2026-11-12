@@ -2365,11 +2365,7 @@ public class Viagem
     public string CriadoPorDispositivo { get; set; } = "";
     public DateTime EditadoEmUtc { get; set; } = DateTime.UtcNow;
     public string EditadoPorDispositivo { get; set; } = "";
-    public string Turno { get; set; } = "";
-    public DateTime CriadoEmUtc { get; set; } = DateTime.UtcNow;
-    public string CriadoPorDispositivo { get; set; } = "";
-    public DateTime EditadoEmUtc { get; set; } = DateTime.UtcNow;
-    public string EditadoPorDispositivo { get; set; } = "";
+        
     public DateTime Data { get; set; }
     public TimeSpan HoraInicial { get; set; }
     public TimeSpan HoraFinal { get; set; }
