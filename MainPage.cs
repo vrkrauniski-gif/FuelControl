@@ -259,16 +259,46 @@ public class MainPage : ContentPage
             };
 
             
+var botoes = new FlexLayout
+{
+    Direction = FlexDirection.Row,
+    Wrap = FlexWrap.Wrap,
+    JustifyContent = FlexJustify.Start,
+    AlignItems = FlexAlignItems.Center
+};
+
+string[] nomes =
+{
+    "Abastecimentos",
+    "Cargas",
+    "Indicadores",
+    "Relatórios"
+};
+
+// Botões dos menus
+foreach (string nome in nomes)
+{
+    var botao = Botao(nome);
+    botao.FontSize = 11;
+    botao.Padding = new Thickness(8, 0);
+    botao.Margin = new Thickness(2);
+
+    botao.Clicked += (s, e) => MostrarMenu(nome);
+
+    botoes.Children.Add(botao);
+}
+
+// Botão para trocar o turno
 var botaoTurno = Botao(
     "TROCAR TURNO (" + ContextoTurno.Turno + ")",
     "#0F766E");
 
-botaoTurno.FontSize = 10;
-botaoTurno.Padding = new Thickness(4, 0);
+botaoTurno.FontSize = 11;
+botaoTurno.Margin = new Thickness(2);
 
 botaoTurno.Clicked += async (s, e) =>
 {
-    string? escolha = await DisplayActionSheet(
+    string escolha = await DisplayActionSheet(
         "Selecione o novo turno",
         "Cancelar",
         null,
@@ -284,20 +314,17 @@ botaoTurno.Clicked += async (s, e) =>
         _ => ""
     };
 
-    if (novoTurno == "")
+    if (string.IsNullOrEmpty(novoTurno))
         return;
 
     ContextoTurno.Turno = novoTurno;
-
-    await DisplayAlert(
-        "Turno alterado",
-        "Turno atual: " + novoTurno,
-        "OK");
 
     MostrarMenu(menu);
 };
 
 botoes.Children.Add(botaoTurno);
+
+
 
 
             View conteudo = menu switch
