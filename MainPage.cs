@@ -829,10 +829,26 @@ else
             if (x.TemArla)
                 card.Children.Add(new Label { Text = $"Arla 32: {x.LitrosArla:N1} L" });
 
-            var editar = Botao("EDITAR ABASTECIMENTO", "#0F766E");
-            editar.Clicked += (sender, args) => CarregarAbastecimentoParaEdicao(x);
-            card.Children.Add(editar);
-            painel.Children.Add(card);
+            if (string.Equals(
+    x.Turno,
+    ContextoTurno.Turno,
+    StringComparison.OrdinalIgnoreCase))
+{
+    var editar = Botao("EDITAR ABASTECIMENTO", "#0F766E");
+    editar.Clicked += (sender, args) =>
+        CarregarAbastecimentoParaEdicao(x);
+
+    card.Children.Add(editar);
+}
+else
+{
+    card.Children.Add(new Label
+    {
+        Text = $"Somente consulta | Cadastrado no turno {x.Turno}",
+        TextColor = Colors.Gray,
+        FontAttributes = FontAttributes.Italic
+    });
+}
         }
         return painel;
     }
