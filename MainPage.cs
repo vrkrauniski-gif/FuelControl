@@ -116,14 +116,17 @@ private async Task SincronizarAbastecimentosAsync()
 
         // Junta os dados locais e os da nuvem.
         var todos = abastecimentos
-            .Concat(dadosNuvem)
-            .Where(x => x != null)
-            .GroupBy(ChaveAbastecimento)
-            .Select(grupo => grupo
-                .OrderByDescending(x => x.EditadoEmUtc)
-                .First())
-            .OrderByDescending(x => x.Data)
-            .ToList();
+    .Concat(dadosNuvem)
+    .Where(x => x != null)
+    .GroupBy(x =>
+        string.IsNullOrWhiteSpace(x.Id)
+            ? Guid.NewGuid().ToString("N")
+            : x.Id)
+    .Select(grupo => grupo
+        .OrderByDescending(x => x.EditadoEmUtc)
+        .First())
+    .OrderByDescending(x => x.Data)
+    .ToList();
 
         abastecimentos = todos;
 
