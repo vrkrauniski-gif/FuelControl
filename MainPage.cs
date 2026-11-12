@@ -258,14 +258,47 @@ public class MainPage : ContentPage
                 "Abastecimentos", "Cargas", "Indicadores", "Relatórios"
             };
 
-            foreach (string nome in nomes)
-            {
-                var botao = Botao(nome);
-                botao.FontSize = 10;
-                botao.Padding = new Thickness(4, 0);
-                botao.Clicked += (s, e) => MostrarMenu(nome);
-                botoes.Children.Add(botao);
-            }
+            
+var botaoTurno = Botao(
+    "TROCAR TURNO (" + ContextoTurno.Turno + ")",
+    "#0F766E");
+
+botaoTurno.FontSize = 10;
+botaoTurno.Padding = new Thickness(4, 0);
+
+botaoTurno.Clicked += async (s, e) =>
+{
+    string? escolha = await DisplayActionSheet(
+        "Selecione o novo turno",
+        "Cancelar",
+        null,
+        "Turno A",
+        "Turno B",
+        "Turno C");
+
+    string novoTurno = escolha switch
+    {
+        "Turno A" => "A",
+        "Turno B" => "B",
+        "Turno C" => "C",
+        _ => ""
+    };
+
+    if (novoTurno == "")
+        return;
+
+    ContextoTurno.Turno = novoTurno;
+
+    await DisplayAlert(
+        "Turno alterado",
+        "Turno atual: " + novoTurno,
+        "OK");
+
+    MostrarMenu(menu);
+};
+
+botoes.Children.Add(botaoTurno);
+
 
             View conteudo = menu switch
             {
