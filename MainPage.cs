@@ -79,6 +79,93 @@ public class MainPage : ContentPage
     MostrarMenu("Abastecimentos");
 
     _ = SincronizarAbastecimentosAsync();
+
+    
+private string ChaveAbastecimento(Abastecimento x)
+{
+    return string.Join("|",
+        x.Veiculo.Trim().ToUpperInvariant(),
+        x.Motorista.Trim().ToUpperInvariant(),
+        x.Data.ToString("yyyyMMddHHmmss"),
+        x.KmAnterior.ToString("0.###", CultureInfo.InvariantCulture),
+        x.KmAtual.ToString("0.###", CultureInfo.InvariantCulture),
+        x.Litros.ToString("0.###", CultureInfo.InvariantCulture),
+        x.Combustivel.Trim().ToUpperInvariant());
+}
+
+private async Task SincronizarAbastecimentosAsync()
+{
+    try
+    {
+        bool conectado =
+            await FirebaseSyncService.ConectarAnonimamenteAsync();
+
+        if (!conectado)
+        {
+            System.Diagnostics.Debug.WriteLine(
+                "Firebase: " + FirebaseSyncService.UltimoErro);
+            return;
+        }
+
+        // Primeiro busca os registros que já estão na nuvem.
+        var dadosNuvem =
+            await FirebaseSyncService.ListarAbastecimentosAsync();
+
+        if (dadosNuvem == null)
+            return;
+
+        // Junta os dados locais e os da nuvem.
+        var todos = abastecimentos
+            .Concat(dadosNuvem)
+            .Where(x => x != null)
+            .GroupBy(ChaveAbastecimento)
+            .Select(grupo => grupo
+                .OrderByDescending(x => x.EditadoEmUtc)
+                .First())
+            .OrderByDescending(x => x.Data)
+            .ToList();
+
+        abastecimentos = todos;
+
+        // Completa os dados de identificação dos registros antigos.
+        foreach (var registro in abastecimentos)
+        {
+            if (string.IsNullOrWhiteSpace(registro.Id))
+                registro.Id = Guid.NewGuid().ToString("N");
+
+            if (registro.Turno is not ("A" or "B" or "C"))
+                registro.Turno = ContextoTurno.Turno;
+
+            if (registro.CriadoEmUtc == default)
+                registro.CriadoEmUtc = DateTime.UtcNow;
+
+            if (string.IsNullOrWhiteSpace(registro.CriadoPorDispositivo))
+                registro.CriadoPorDispositivo = ContextoTurno.Dispositivo;
+
+            if (registro.EditadoEmUtc == default)
+                registro.EditadoEmUtc = DateTime.UtcNow;
+
+            if (string.IsNullOrWhiteSpace(registro.EditadoPorDispositivo))
+                registro.EditadoPorDispositivo = ContextoTurno.Dispositivo;
+
+            // Envia somente os registros que ficaram após a deduplicação.
+            await FirebaseSyncService.SalvarAbastecimentoAsync(registro);
+        }
+
+        SalvarDados();
+
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            MostrarMenu("Abastecimentos");
+        });
+    }
+    catch (Exception ex)
+    {
+        System.Diagnostics.Debug.WriteLine(
+            "Erro na sincronização Firebase: " + ex.Message);
+    }
+}
+
 }
 
     Entry Campo(string nome, Keyboard? teclado = null)
