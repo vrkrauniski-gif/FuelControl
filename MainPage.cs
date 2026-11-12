@@ -1715,7 +1715,7 @@ public class MainPage : ContentPage
 
     bool DataNoPeriodo(DateTime data)
     {
-        DateTime referencia = dataFiltro.Date;
+        DateTime referencia = dataFiltro.Date ?? DateTime.Today;
 
         return periodoRelatorio.SelectedItem?.ToString() switch
         {
