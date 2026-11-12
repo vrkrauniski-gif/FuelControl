@@ -72,12 +72,14 @@ public class MainPage : ContentPage
     Viagem? viagemEmEdicao;
 
     public MainPage()
-    {
-        Title = "FuelControl";
-        BackgroundColor = Color.FromArgb("#F1F5F9");
-        CarregarDados();
-        MostrarMenu("Abastecimentos");
-    }
+{
+    Title = "FuelControl";
+    BackgroundColor = Color.FromArgb("#F1F5F9");
+    CarregarDados();
+    MostrarMenu("Abastecimentos");
+
+    _ = SincronizarAbastecimentosAsync();
+}
 
     Entry Campo(string nome, Keyboard? teclado = null)
     {
