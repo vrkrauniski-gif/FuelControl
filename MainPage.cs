@@ -659,8 +659,7 @@ botoes.Children.Add(botaoTurno);
 
             var registro = new Abastecimento
             {
-                Data = registroAnterior?.Data ?? DateTime.Now,
-                Id = registroAnterior?.Id ?? Guid.NewGuid().ToString("N"),
+            Id = registroAnterior?.Id ?? Guid.NewGuid().ToString("N"),
 
 Turno = registroAnterior != null &&
         !string.IsNullOrWhiteSpace(registroAnterior.Turno)
@@ -679,6 +678,7 @@ CriadoPorDispositivo = registroAnterior == null ||
 
 EditadoEmUtc = DateTime.UtcNow,
 EditadoPorDispositivo = ContextoTurno.Dispositivo,
+                Data = registroAnterior?.Data ?? DateTime.Now,
                 Veiculo = veiculo.Text.Trim(),
                 Motorista = motorista.Text?.Trim() ?? "",
                 TipoVeiculo = caminhao ? "Caminhão" : "Carro",
