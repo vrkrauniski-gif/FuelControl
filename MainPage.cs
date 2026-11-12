@@ -80,7 +80,7 @@ public class MainPage : ContentPage
 
     _ = SincronizarAbastecimentosAsync();
 
-    
+ }
 private string ChaveAbastecimento(Abastecimento x)
 {
     return string.Join("|",
