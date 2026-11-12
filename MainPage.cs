@@ -251,7 +251,12 @@ public class MainPage : ContentPage
     {
         try
         {
-            var botoes = new HorizontalStackLayout { Spacing = 4 };
+        var botoes = new VerticalStackLayout
+{
+    Spacing = 8,
+    HorizontalOptions = LayoutOptions.Fill
+};
+            
 
             string[] nomes =
             {
