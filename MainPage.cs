@@ -726,7 +726,23 @@ EditadoPorDispositivo = ContextoTurno.Dispositivo,
                 dados.MetaKmL = metaAntiga;
                 throw;
             }
+            
+bool sincronizado =
+    await FirebaseSyncService.SalvarAbastecimentoAsync(registro);
 
+if (sincronizado)
+{
+    await DisplayAlert("Firebase",
+        "Abastecimento salvo e sincronizado na nuvem.",
+        "OK");
+}
+else
+{
+    await DisplayAlert("Firebase",
+        "Abastecimento salvo no celular, mas não sincronizado. " +
+        FirebaseSyncService.UltimoErro,
+        "OK");
+}
             abastecimentoEmEdicao = null;
             veiculo.IsEnabled = true;
 
