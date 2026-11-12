@@ -457,4 +457,112 @@ public static async Task<bool> SalvarViagemAsync(Viagem viagem)
             return null;
         }
     }
+public static async Task<List<Viagem>?> ListarViagensAsync()
+{
+    try
+    {
+        if (!await ConectarAnonimamenteAsync())
+            return null;
+
+        string token = Preferences.Default.Get(
+            "firebase_token", "");
+
+        var resultado = new List<Viagem>();
+        string? proximaPagina = null;
+
+        do
+        {
+            string url = BaseUrlViagens + "?pageSize=1000";
+
+            if (!string.IsNullOrWhiteSpace(proximaPagina))
+            {
+                url += "&pageToken=" +
+                    Uri.EscapeDataString(proximaPagina);
+            }
+
+            using var requisicao =
+                CriarRequisicao(HttpMethod.Get, url, token);
+
+            using var resposta = await Http.SendAsync(requisicao);
+
+            if (!resposta.IsSuccessStatusCode)
+            {
+                Erro("Erro ao listar viagens: " +
+                    await resposta.Content.ReadAsStringAsync());
+                return null;
+            }
+
+            string conteudo =
+                await resposta.Content.ReadAsStringAsync();
+
+            using var json = JsonDocument.Parse(conteudo);
+            var raiz = json.RootElement;
+
+            if (raiz.TryGetProperty("documents", out var documentos))
+            {
+                foreach (var documento in documentos.EnumerateArray())
+                {
+                    if (!documento.TryGetProperty(
+                        "fields", out var campos))
+                        continue;
+
+                    if (!campos.TryGetProperty(
+                        "payload", out var payload))
+                        continue;
+
+                    if (!payload.TryGetProperty(
+                        "stringValue", out var valor))
+                        continue;
+
+                    string? dados = valor.GetString();
+
+                    if (string.IsNullOrWhiteSpace(dados))
+                        continue;
+
+                    var viagem =
+                        JsonSerializer.Deserialize<Viagem>(
+                            dados, JsonOptions);
+
+                    if (viagem == null ||
+                        string.IsNullOrWhiteSpace(viagem.Id))
+                        continue;
+
+                    if (string.IsNullOrWhiteSpace(viagem.Turno) &&
+                        campos.TryGetProperty("turno", out var turno))
+                    {
+                        if (turno.TryGetProperty(
+                            "stringValue", out var turnoValor))
+                        {
+                            viagem.Turno = turnoValor.GetString() ?? "";
+                        }
+                    }
+
+                    resultado.Add(viagem);
+                }
+            }
+
+            proximaPagina =
+                raiz.TryGetProperty(
+                    "nextPageToken", out var proximo)
+                ? proximo.GetString()
+                : null;
+
+        } while (!string.IsNullOrWhiteSpace(proximaPagina));
+
+        resultado = resultado
+            .GroupBy(x => x.Id)
+            .Select(g => g.OrderByDescending(
+                x => x.EditadoEmUtc).First())
+            .OrderByDescending(x => x.Data)
+            .ToList();
+
+        LimparErro();
+        return resultado;
+    }
+    catch (Exception ex)
+    {
+        Erro("Erro ao listar viagens: " + ex.Message);
+        return null;
+    }
+  }
 }
