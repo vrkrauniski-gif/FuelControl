@@ -849,6 +849,7 @@ else
         FontAttributes = FontAttributes.Italic
     });
 }
+painel.Children.Add(card);
         }
         return painel;
     }
