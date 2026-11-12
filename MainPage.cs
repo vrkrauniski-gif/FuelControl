@@ -2146,8 +2146,19 @@ public class DadosVeiculo
     public double MetaKmL { get; set; }
 }
 
+
+
 public class Abastecimento
 {
+    // Identificação e controle de sincronização
+    public string Id { get; set; } = System.Guid.NewGuid().ToString("N");
+    public string Turno { get; set; } = "";
+    public DateTime CriadoEmUtc { get; set; } = DateTime.UtcNow;
+    public string CriadoPorDispositivo { get; set; } = "";
+    public DateTime EditadoEmUtc { get; set; } = DateTime.UtcNow;
+    public string EditadoPorDispositivo { get; set; } = "";
+
+    // Dados do abastecimento
     public DateTime Data { get; set; }
     public string Veiculo { get; set; } = "";
     public string Motorista { get; set; } = "";
@@ -2173,6 +2184,9 @@ public class Abastecimento
     public double ValorEnergetico { get; set; }
     public double MetaEnergetica { get; set; }
 }
+
+
+
 
 public class Viagem
 {
