@@ -170,6 +170,81 @@ private async Task SincronizarAbastecimentosAsync()
 }
 
 
+private async Task SincronizarViagensAsync()
+{
+    try
+    {
+        bool conectado =
+            await FirebaseSyncService.ConectarAnonimamenteAsync();
+
+        if (!conectado)
+        {
+            System.Diagnostics.Debug.WriteLine(
+                "Firebase viagens: " + FirebaseSyncService.UltimoErro);
+            return;
+        }
+
+        // Busca as viagens que já estão na nuvem.
+        var dadosNuvem =
+            await FirebaseSyncService.ListarViagensAsync();
+
+        if (dadosNuvem == null)
+            return;
+
+        // Completa os dados de identificação das viagens locais antigas.
+        foreach (var viagem in viagens)
+        {
+            if (string.IsNullOrWhiteSpace(viagem.Id))
+                viagem.Id = Guid.NewGuid().ToString();
+
+            if (string.IsNullOrWhiteSpace(viagem.Turno))
+                viagem.Turno = ContextoTurno.Turno;
+
+            if (viagem.CriadoEmUtc == default)
+                viagem.CriadoEmUtc = DateTime.UtcNow;
+
+            if (string.IsNullOrWhiteSpace(viagem.CriadoPorDispositivo))
+                viagem.CriadoPorDispositivo = ContextoTurno.Dispositivo;
+
+            if (viagem.EditadoEmUtc == default)
+                viagem.EditadoEmUtc = DateTime.UtcNow;
+
+            if (string.IsNullOrWhiteSpace(viagem.EditadoPorDispositivo))
+                viagem.EditadoPorDispositivo = ContextoTurno.Dispositivo;
+        }
+
+        // Junta os registros locais e da nuvem pelo ID.
+        var todasViagens = viagens
+            .Concat(dadosNuvem)
+            .Where(x => x != null)
+            .GroupBy(x => x.Id)
+            .Select(grupo => grupo
+                .OrderByDescending(x => x.EditadoEmUtc)
+                .First())
+            .OrderByDescending(x => x.Data)
+            .ToList();
+
+        viagens = todasViagens;
+
+        // Envia os registros consolidados ao Firebase.
+        foreach (var viagem in viagens)
+        {
+            await FirebaseSyncService.SalvarViagemAsync(viagem);
+        }
+
+        // Mantém a cópia local atualizada.
+        SalvarDados();
+
+        System.Diagnostics.Debug.WriteLine(
+            $"Sincronização de viagens concluída: {viagens.Count} registros.");
+    }
+    catch (Exception ex)
+    {
+        System.Diagnostics.Debug.WriteLine(
+            "Erro na sincronização das viagens: " + ex.Message);
+    }
+}
+
 
     Entry Campo(string nome, Keyboard? teclado = null)
     {
