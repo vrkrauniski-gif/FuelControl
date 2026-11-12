@@ -661,7 +661,7 @@ botoes.Children.Add(botaoTurno);
     }
 
 
-    View CriarListaAbastecimentos()
+
 
 
     View CriarListaAbastecimentos()
