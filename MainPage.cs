@@ -1265,6 +1265,16 @@ painel.Children.Add(card);
             var viagem = new Viagem
             {
                 Id = viagemEmEdicao?.Id ?? Guid.NewGuid().ToString(),
+                Turno = viagemEmEdicao?.Turno ?? ContextoTurno.Turno,
+
+CriadoEmUtc = viagemEmEdicao?.CriadoEmUtc ?? DateTime.UtcNow,
+
+CriadoPorDispositivo = viagemEmEdicao?.CriadoPorDispositivo
+    ?? ContextoTurno.Dispositivo,
+
+EditadoEmUtc = DateTime.UtcNow,
+
+EditadoPorDispositivo = ContextoTurno.Dispositivo,
                 Data = (dataViagem.Date ?? DateTime.Today)
     .Date.Add(horaInicialViagem.Time ?? TimeSpan.Zero),
 
