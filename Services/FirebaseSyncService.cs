@@ -231,6 +231,84 @@ public static class FirebaseSyncService
     }
     }
 
+public static async Task<List<Abastecimento>?> ListarAbastecimentosAsync()
+{
+    try
+    {
+        if (!await ConectarAnonimamenteAsync())
+            return null;
+
+        string token = Preferences.Default.Get(
+            "firebase_token", "");
+
+        if (string.IsNullOrWhiteSpace(token))
+            return null;
+
+        string url =
+            "https://firestore.googleapis.com/v1/projects/fuelcontrol-vrk/databases/(default)/documents/abastecimentos?pageSize=1000";
+
+        using var requisicao = new HttpRequestMessage(
+            HttpMethod.Get, url);
+
+        requisicao.Headers.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue(
+                "Bearer", token);
+
+        using var resposta = await Http.SendAsync(requisicao);
+
+        if (!resposta.IsSuccessStatusCode)
+        {
+            string erro = await resposta.Content.ReadAsStringAsync();
+            RegistrarErro("Erro ao buscar abastecimentos: " + erro);
+            return null;
+        }
+
+        string conteudo = await resposta.Content.ReadAsStringAsync();
+
+        using var json = JsonDocument.Parse(conteudo);
+
+        var resultado = new List<Abastecimento>();
+
+        if (!json.RootElement.TryGetProperty(
+            "documents", out var documentos))
+            return resultado;
+
+        foreach (var documento in documentos.EnumerateArray())
+        {
+            if (!documento.TryGetProperty(
+                "fields", out var campos))
+                continue;
+
+            if (!campos.TryGetProperty(
+                "payload", out var payload))
+                continue;
+
+            if (!payload.TryGetProperty(
+                "stringValue", out var valor))
+                continue;
+
+            string? dados = valor.GetString();
+
+            if (string.IsNullOrWhiteSpace(dados))
+                continue;
+
+            var registro =
+                JsonSerializer.Deserialize<Abastecimento>(dados);
+
+            if (registro != null)
+                resultado.Add(registro);
+        }
+
+        LimparErro();
+        return resultado;
+    }
+    catch (Exception ex)
+    {
+        RegistrarErro("Erro ao listar abastecimentos: " + ex.Message);
+        return null;
+    }
+}
+
     private static void LimparAutenticacao()
     {
         Preferences.Default.Remove("firebase_token");
