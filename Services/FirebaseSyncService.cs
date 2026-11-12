@@ -1,23 +1,20 @@
 
-
 using System.Net;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using Microsoft.Maui.Storage;
+using Microsoft.Maui.Networking;
 
 namespace FuelControl;
 
 public static class FirebaseSyncService
 {
-    // Mantenha a mesma chave API do seu projeto.
-    private const string ApiKey = "AIzaSyDWbk4L6QwgJ46TiDolWUCkm2GJ6YkVSoc";
+    private const string ApiKey =
+        "AIzaSyDWbk4L6QwgJ46TiDolWUCkm2GJ6YkVSoc";
 
-    private static readonly HttpClient Http = new HttpClient
-    {
-        Timeout = TimeSpan.FromSeconds(15)
-    };
-
-    private static readonly SemaphoreSlim Bloqueio = new(1, 1);
+    private const string BaseUrl =
+        "https://firestore.googleapis.com/v1/projects/fuelcontrol-vrk/databases/(default)/documents/abastecimentos";
 
     private const string RefreshUrl =
         "https://securetoken.googleapis.com/v1/token?key=";
@@ -25,11 +22,40 @@ public static class FirebaseSyncService
     private const string SignUpUrl =
         "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=";
 
+    private static readonly HttpClient Http = new()
+    {
+        Timeout = TimeSpan.FromSeconds(30)
+    };
+
+    private static readonly SemaphoreSlim Bloqueio = new(1, 1);
+
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true
+    };
+
     public static string UsuarioFirebase =>
         Preferences.Default.Get("firebase_uid", "");
 
     public static string UltimoErro =>
         Preferences.Default.Get("firebase_erro", "");
+
+    private static void Erro(string mensagem)
+    {
+        Preferences.Default.Set("firebase_erro", mensagem);
+    }
+
+    private static void LimparErro()
+    {
+        Preferences.Default.Remove("firebase_erro");
+    }
+
+    private static void LimparAutenticacao()
+    {
+        Preferences.Default.Remove("firebase_token");
+        Preferences.Default.Remove("firebase_refresh_token");
+        Preferences.Default.Remove("firebase_uid");
+    }
 
     public static async Task<bool> ConectarAnonimamenteAsync()
     {
@@ -37,21 +63,18 @@ public static class FirebaseSyncService
 
         try
         {
-            // Se não há internet, mantém os dados e tokens salvos.
-            if (Connectivity.Current.NetworkAccess
-                != NetworkAccess.Internet)
+            if (Connectivity.Current.NetworkAccess != NetworkAccess.Internet)
             {
-                RegistrarErro("Sem conexão com a internet.");
+                Erro("Sem conexão com a internet.");
                 return false;
             }
 
             string refreshToken =
                 Preferences.Default.Get("firebase_refresh_token", "");
 
-            // Tenta renovar a autenticação existente.
             if (!string.IsNullOrWhiteSpace(refreshToken))
             {
-                using var dados = new FormUrlEncodedContent(
+                using var corpo = new FormUrlEncodedContent(
                     new Dictionary<string, string>
                     {
                         ["grant_type"] = "refresh_token",
@@ -59,7 +82,7 @@ public static class FirebaseSyncService
                     });
 
                 using var resposta = await Http.PostAsync(
-                    RefreshUrl + ApiKey, dados);
+                    RefreshUrl + ApiKey, corpo);
 
                 string conteudo =
                     await resposta.Content.ReadAsStringAsync();
@@ -85,77 +108,61 @@ public static class FirebaseSyncService
                     return true;
                 }
 
-                // Somente credencial definitivamente inválida
-                // autoriza descartar a autenticação anterior.
-                if (resposta.StatusCode == HttpStatusCode.BadRequest &&
-                    conteudo.Contains("INVALID_REFRESH_TOKEN",
-                        StringComparison.OrdinalIgnoreCase))
+                if (conteudo.Contains("INVALID_REFRESH_TOKEN",
+                    StringComparison.OrdinalIgnoreCase) ||
+                    conteudo.Contains("TOKEN_EXPIRED",
+                    StringComparison.OrdinalIgnoreCase) ||
+                    conteudo.Contains("USER_DISABLED",
+                    StringComparison.OrdinalIgnoreCase))
                 {
                     LimparAutenticacao();
                 }
                 else
                 {
-                    RegistrarErro(
-                        $"Falha ao renovar token: HTTP {(int)resposta.StatusCode}. {conteudo}");
-
+                    Erro("Falha ao renovar autenticação: " + conteudo);
                     return false;
                 }
             }
 
-            // Cria usuário anônimo quando não existe autenticação válida.
-            using var corpo = new StringContent(
+            using var novoCorpo = new StringContent(
                 "{\"returnSecureToken\":true}",
                 Encoding.UTF8,
                 "application/json");
 
             using var novaResposta = await Http.PostAsync(
-                SignUpUrl + ApiKey, corpo);
+                SignUpUrl + ApiKey, novoCorpo);
 
             string novoConteudo =
                 await novaResposta.Content.ReadAsStringAsync();
 
             if (!novaResposta.IsSuccessStatusCode)
             {
-                RegistrarErro(
-                    $"Falha na autenticação: HTTP {(int)novaResposta.StatusCode}. {novoConteudo}");
-
+                Erro("Falha na autenticação: " + novoConteudo);
                 return false;
             }
 
             using var novoJson = JsonDocument.Parse(novoConteudo);
-            var novoUsuario = novoJson.RootElement;
+            var usuario = novoJson.RootElement;
 
             Preferences.Default.Set(
                 "firebase_token",
-                novoUsuario.GetProperty("idToken").GetString() ?? "");
+                usuario.GetProperty("idToken").GetString() ?? "");
 
             Preferences.Default.Set(
                 "firebase_refresh_token",
-                novoUsuario.GetProperty("refreshToken").GetString() ?? "");
+                usuario.GetProperty("refreshToken").GetString() ?? "");
 
             Preferences.Default.Set(
                 "firebase_uid",
-                novoUsuario.GetProperty("localId").GetString() ?? "");
+                usuario.GetProperty("localId").GetString() ?? "");
 
             LimparErro();
 
             return !string.IsNullOrWhiteSpace(UsuarioFirebase);
         }
-        catch (TaskCanceledException)
-        {
-            RegistrarErro("Tempo limite excedido na conexão com Firebase.");
-            return false;
-        }
-        catch (HttpRequestException ex)
-        {
-            RegistrarErro(
-                $"Falha de rede ({ex.GetType().Name}): {ex.Message}");
-            return false;
-        }
         catch (Exception ex)
         {
-            RegistrarErro(
-                $"Erro Firebase ({ex.GetType().Name}): {ex.Message}");
+            Erro("Erro de autenticação: " + ex.Message);
             return false;
         }
         finally
@@ -163,166 +170,210 @@ public static class FirebaseSyncService
             Bloqueio.Release();
         }
     }
+
+    private static HttpRequestMessage CriarRequisicao(
+        HttpMethod metodo, string url, string token)
+    {
+        var requisicao = new HttpRequestMessage(metodo, url);
+
+        requisicao.Headers.Authorization =
+            new AuthenticationHeaderValue("Bearer", token);
+
+        return requisicao;
+    }
+
     public static async Task<bool> SalvarAbastecimentoAsync(
-    Abastecimento registro)
-{
-    try
+        Abastecimento registro)
     {
-        if (!await ConectarAnonimamenteAsync())
-            return false;
-
-        string token = Preferences.Default.Get(
-            "firebase_token", "");
-
-        if (string.IsNullOrWhiteSpace(token))
-            return false;
-
-        string url =
-            "https://firestore.googleapis.com/v1/projects/fuelcontrol-vrk/databases/(default)/documents/abastecimentos/"
-            + Uri.EscapeDataString(registro.Id);
-
-        var documento = new
+        try
         {
-            fields = new
+            if (registro == null ||
+                string.IsNullOrWhiteSpace(registro.Id))
             {
-                payload = new
-                {
-                    stringValue = JsonSerializer.Serialize(registro)
-                },
-                turno = new
-                {
-                    stringValue = registro.Turno
-                },
-                dispositivo = new
-                {
-                    stringValue = registro.EditadoPorDispositivo
-                }
+                Erro("Abastecimento sem identificador.");
+                return false;
             }
-        };
 
-        using var requisicao = new HttpRequestMessage(
-            HttpMethod.Patch, url);
+            if (registro.Turno is not ("A" or "B" or "C"))
+            {
+                Erro("Turno inválido no abastecimento.");
+                return false;
+            }
 
-        requisicao.Headers.Authorization =
-            new System.Net.Http.Headers.AuthenticationHeaderValue(
-                "Bearer", token);
+            if (!await ConectarAnonimamenteAsync())
+                return false;
 
-        requisicao.Content = new StringContent(
-            JsonSerializer.Serialize(documento),
-            Encoding.UTF8,
-            "application/json");
+            string token = Preferences.Default.Get(
+                "firebase_token", "");
 
-        using var resposta = await Http.SendAsync(requisicao);
+            var documento = new
+            {
+                fields = new
+                {
+                    payload = new
+                    {
+                        stringValue =
+                            JsonSerializer.Serialize(registro, JsonOptions)
+                    },
+                    turno = new
+                    {
+                        stringValue = registro.Turno
+                    },
+                    dispositivo = new
+                    {
+                        stringValue = registro.EditadoPorDispositivo
+                    },
+                    editadoEmUtc = new
+                    {
+                        timestampValue =
+                            registro.EditadoEmUtc.ToUniversalTime()
+                                .ToString("yyyy-MM-dd'T'HH:mm:ss.fff'Z'")
+                    }
+                }
+            };
 
-        if (!resposta.IsSuccessStatusCode)
+            string url = BaseUrl + "/" +
+                Uri.EscapeDataString(registro.Id);
+
+            using var requisicao =
+                CriarRequisicao(HttpMethod.Patch, url, token);
+
+            requisicao.Content = new StringContent(
+                JsonSerializer.Serialize(documento),
+                Encoding.UTF8,
+                "application/json");
+
+            using var resposta = await Http.SendAsync(requisicao);
+
+            if (!resposta.IsSuccessStatusCode)
+            {
+                Erro("Erro ao salvar: " +
+                    await resposta.Content.ReadAsStringAsync());
+                return false;
+            }
+
+            LimparErro();
+            return true;
+        }
+        catch (Exception ex)
         {
-            string erro = await resposta.Content.ReadAsStringAsync();
-            RegistrarErro("Erro ao salvar abastecimento: " + erro);
+            Erro("Erro ao salvar abastecimento: " + ex.Message);
             return false;
         }
-
-        LimparErro();
-        return true;
     }
-    catch (Exception ex)
+
+    public static async Task<List<Abastecimento>?>
+        ListarAbastecimentosAsync()
     {
-        RegistrarErro("Erro ao sincronizar: " + ex.Message);
-        return false;
-    }
-    }
-
-public static async Task<List<Abastecimento>?> ListarAbastecimentosAsync()
-{
-    try
-    {
-        if (!await ConectarAnonimamenteAsync())
-            return null;
-
-        string token = Preferences.Default.Get(
-            "firebase_token", "");
-
-        if (string.IsNullOrWhiteSpace(token))
-            return null;
-
-        string url =
-            "https://firestore.googleapis.com/v1/projects/fuelcontrol-vrk/databases/(default)/documents/abastecimentos?pageSize=1000";
-
-        using var requisicao = new HttpRequestMessage(
-            HttpMethod.Get, url);
-
-        requisicao.Headers.Authorization =
-            new System.Net.Http.Headers.AuthenticationHeaderValue(
-                "Bearer", token);
-
-        using var resposta = await Http.SendAsync(requisicao);
-
-        if (!resposta.IsSuccessStatusCode)
+        try
         {
-            string erro = await resposta.Content.ReadAsStringAsync();
-            RegistrarErro("Erro ao buscar abastecimentos: " + erro);
-            return null;
-        }
+            if (!await ConectarAnonimamenteAsync())
+                return null;
 
-        string conteudo = await resposta.Content.ReadAsStringAsync();
+            string token = Preferences.Default.Get(
+                "firebase_token", "");
 
-        using var json = JsonDocument.Parse(conteudo);
+            var resultado = new List<Abastecimento>();
+            string? proximaPagina = null;
 
-        var resultado = new List<Abastecimento>();
+            do
+            {
+                string url = BaseUrl + "?pageSize=1000";
 
-        if (!json.RootElement.TryGetProperty(
-            "documents", out var documentos))
+                if (!string.IsNullOrWhiteSpace(proximaPagina))
+                {
+                    url += "&pageToken=" +
+                        Uri.EscapeDataString(proximaPagina);
+                }
+
+                using var requisicao =
+                    CriarRequisicao(HttpMethod.Get, url, token);
+
+                using var resposta = await Http.SendAsync(requisicao);
+
+                if (!resposta.IsSuccessStatusCode)
+                {
+                    Erro("Erro ao listar: " +
+                        await resposta.Content.ReadAsStringAsync());
+                    return null;
+                }
+
+                string conteudo =
+                    await resposta.Content.ReadAsStringAsync();
+
+                using var json = JsonDocument.Parse(conteudo);
+                var raiz = json.RootElement;
+
+                if (raiz.TryGetProperty("documents", out var documentos))
+                {
+                    foreach (var documento in documentos.EnumerateArray())
+                    {
+                        if (!documento.TryGetProperty(
+                            "fields", out var campos))
+                            continue;
+
+                        if (!campos.TryGetProperty(
+                            "payload", out var payload))
+                            continue;
+
+                        if (!payload.TryGetProperty(
+                            "stringValue", out var valor))
+                            continue;
+
+                        string? dados = valor.GetString();
+
+                        if (string.IsNullOrWhiteSpace(dados))
+                            continue;
+
+                        var registro =
+                            JsonSerializer.Deserialize<Abastecimento>(
+                                dados, JsonOptions);
+
+                        if (registro == null)
+                            continue;
+
+                        if (string.IsNullOrWhiteSpace(registro.Id))
+                            continue;
+
+                        // Compatibilidade com registros antigos.
+                        if (string.IsNullOrWhiteSpace(registro.Turno) &&
+                            campos.TryGetProperty("turno", out var turno))
+                        {
+                            if (turno.TryGetProperty(
+                                "stringValue", out var turnoValor))
+                            {
+                                registro.Turno =
+                                    turnoValor.GetString() ?? "";
+                            }
+                        }
+
+                        resultado.Add(registro);
+                    }
+                }
+
+                proximaPagina =
+                    raiz.TryGetProperty(
+                        "nextPageToken", out var proximo)
+                    ? proximo.GetString()
+                    : null;
+
+            } while (!string.IsNullOrWhiteSpace(proximaPagina));
+
+            // Impede duplicidade por ID na lista retornada.
+            resultado = resultado
+                .GroupBy(x => x.Id)
+                .Select(g => g.OrderByDescending(
+                    x => x.EditadoEmUtc).First())
+                .OrderByDescending(x => x.Data)
+                .ToList();
+
+            LimparErro();
             return resultado;
-
-        foreach (var documento in documentos.EnumerateArray())
-        {
-            if (!documento.TryGetProperty(
-                "fields", out var campos))
-                continue;
-
-            if (!campos.TryGetProperty(
-                "payload", out var payload))
-                continue;
-
-            if (!payload.TryGetProperty(
-                "stringValue", out var valor))
-                continue;
-
-            string? dados = valor.GetString();
-
-            if (string.IsNullOrWhiteSpace(dados))
-                continue;
-
-            var registro =
-                JsonSerializer.Deserialize<Abastecimento>(dados);
-
-            if (registro != null)
-                resultado.Add(registro);
         }
-
-        LimparErro();
-        return resultado;
-    }
-    catch (Exception ex)
-    {
-        RegistrarErro("Erro ao listar abastecimentos: " + ex.Message);
-        return null;
-    }
-}
-
-    private static void LimparAutenticacao()
-    {
-        Preferences.Default.Remove("firebase_token");
-        Preferences.Default.Remove("firebase_refresh_token");
-        Preferences.Default.Remove("firebase_uid");
-    }
-
-    private static void RegistrarErro(string mensagem)
-    {
-        Preferences.Default.Set("firebase_erro", mensagem);
-    }
-
-    private static void LimparErro()
-    {
-        Preferences.Default.Remove("firebase_erro");
+        catch (Exception ex)
+        {
+            Erro("Erro ao listar abastecimentos: " + ex.Message);
+            return null;
+        }
     }
 }
