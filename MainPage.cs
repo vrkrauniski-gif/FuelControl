@@ -1054,9 +1054,12 @@ public class MainPage : ContentPage
             var viagem = new Viagem
             {
                 Id = viagemEmEdicao?.Id ?? Guid.NewGuid().ToString(),
-                Data = dataViagem.Date.Add(horaInicialViagem.Time),
-                HoraInicial = horaInicialViagem.Time,
-                HoraFinal = horaFinalViagem.Time,
+                Data = (dataViagem.Date ?? DateTime.Today)
+    .Date.Add(horaInicialViagem.Time ?? TimeSpan.Zero),
+
+HoraInicial = horaInicialViagem.Time ?? TimeSpan.Zero,
+
+HoraFinal = horaFinalViagem.Time ?? TimeSpan.Zero,
                 Frente = frenteSelecionada,
                 Veiculo = nomeVeiculo,
                 Motorista = cargaMotorista.Text?.Trim() ?? "",
