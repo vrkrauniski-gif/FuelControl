@@ -696,7 +696,19 @@ if (ContextoTurno.EhAdministrador)
         };
 
         veiculo.TextChanged += (s, e) =>
-            AtualizarTanqueTexto(e.NewTextValue ?? "");
+{
+    AtualizarTanqueTexto(e.NewTextValue ?? "");
+
+    if (abastecimentoEmEdicao == null)
+    {
+        double? ultimoKm =
+            ObterUltimoKmRegistrado(e.NewTextValue ?? "");
+
+        kmAnterior.Text = ultimoKm.HasValue
+            ? ultimoKm.Value.ToString("0.##", CultureInfo.InvariantCulture)
+            : "";
+    }
+};
 
         painelCarro = new VerticalStackLayout
         {
