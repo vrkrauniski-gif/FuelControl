@@ -905,10 +905,11 @@ else
             if (x.TemArla)
                 card.Children.Add(new Label { Text = $"Arla 32: {x.LitrosArla:N1} L" });
 
-            if (string.Equals(
-    x.Turno,
-    ContextoTurno.Turno,
-    StringComparison.OrdinalIgnoreCase))
+            if (ContextoTurno.EhAdministrador ||
+    string.Equals(
+        x.Turno,
+        ContextoTurno.Turno,
+        StringComparison.OrdinalIgnoreCase))
 {
     var editar = Botao("EDITAR ABASTECIMENTO", "#0F766E");
     editar.Clicked += (sender, args) =>
