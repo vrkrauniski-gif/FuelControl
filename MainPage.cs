@@ -1473,7 +1473,8 @@ else
 
     async void CarregarViagemParaEdicao(Viagem x)
     {
-    if (x.Turno != ContextoTurno.Turno)
+    if (!ContextoTurno.EhAdministrador &&
+    x.Turno != ContextoTurno.Turno)
 {
     await DisplayAlert(
         "Acesso restrito",
