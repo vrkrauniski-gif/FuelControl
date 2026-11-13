@@ -1621,7 +1621,7 @@ if (!excluidaNuvem)
                             d.LitrosAtuais + x.LitrosConsumidos);
                     }
 
-                    viagens.Remove(x);
+                    
 
                     try
                     {
@@ -1630,7 +1630,7 @@ if (!excluidaNuvem)
                     }
                     catch (Exception ex)
                     {
-                        viagens.Add(x);
+                        
 
                         if (d != null)
                             d.LitrosAtuais = litrosAntigos;
