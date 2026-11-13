@@ -1364,6 +1364,11 @@ cargaVeiculo.TextChanged += (s, e) =>
 
         AtualizarPreviaViagem();
         
+                foreach (var item in checksFrentes.Values)
+        {
+            item.CheckedChanged += (s, e) => AtualizarPreviaViagem();
+        }
+        
         anoCarreta.TextChanged += (s, e) => AtualizarPeso();
         pesoBruto.TextChanged += (s, e) => AtualizarPeso();
         consumoViagem.TextChanged += (s, e) => AtualizarPeso();
