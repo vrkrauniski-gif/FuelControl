@@ -1327,7 +1327,43 @@ cargaVeiculo.TextChanged += (s, e) =>
 
         lblPeso = Indicador("Tara: -- | Peso líquido: --");
         lblEnergetico = Indicador("Valor energético calculado: --");
+        
+        var lblPreviaViagem = new Label
+        {
+            Text = "Preencha os dados para visualizar a viagem.",
+            FontSize = 14,
+            TextColor = Color.FromArgb("#123B65"),
+            BackgroundColor = Colors.White,
+            Padding = 12
+        };
 
+        void AtualizarPreviaViagem()
+        {
+            lblPreviaViagem.Text =
+                "VEÍCULO: " + (cargaVeiculo.Text ?? "--") + "\n" +
+                "MOTORISTA: " + (cargaMotorista.Text ?? "--") + "\n" +
+                "FRENTE: " + (frenteSelecionada == "" ? "--" : frenteSelecionada) + "\n" +
+                "DATA: " + dataViagem.Date.ToString("dd/MM/yyyy") + "\n" +
+                "INÍCIO: " + horaInicialViagem.Time.ToString(@"hh\:mm") + "\n" +
+                "KM INICIAL: " + (kmInicialViagem.Text ?? "--") + "\n" +
+                "KM FINAL: " + (kmFinalViagem.Text ?? "--") + "\n" +
+                "PESO BRUTO: " + (pesoBruto.Text ?? "--") + " kg\n" +
+                "LITROS: " + (litrosViagem.Text ?? "--") + " L\n" +
+                "STATUS: VIAGEM EM PREENCHIMENTO";
+        }
+
+        cargaVeiculo.TextChanged += (s, e) => AtualizarPreviaViagem();
+        cargaMotorista.TextChanged += (s, e) => AtualizarPreviaViagem();
+        kmInicialViagem.TextChanged += (s, e) => AtualizarPreviaViagem();
+        kmFinalViagem.TextChanged += (s, e) => AtualizarPreviaViagem();
+        pesoBruto.TextChanged += (s, e) => AtualizarPreviaViagem();
+        litrosViagem.TextChanged += (s, e) => AtualizarPreviaViagem();
+
+        dataViagem.DateSelected += (s, e) => AtualizarPreviaViagem();
+        horaInicialViagem.PropertyChanged += (s, e) => AtualizarPreviaViagem();
+
+        AtualizarPreviaViagem();
+        
         anoCarreta.TextChanged += (s, e) => AtualizarPeso();
         pesoBruto.TextChanged += (s, e) => AtualizarPeso();
         consumoViagem.TextChanged += (s, e) => AtualizarPeso();
