@@ -1398,7 +1398,9 @@ cargaVeiculo.TextChanged += (s, e) =>
                 lblEnergetico,
                 Rotulo("Meta do valor energético"),
                 metaEnergetica,
-                salvar,
+                                salvar,
+                Titulo("VIAGEM EM PREENCHIMENTO"),
+                lblPreviaViagem,
                 Titulo("HISTÓRICO DE VIAGENS")
             }
         };
