@@ -96,7 +96,8 @@ public class App : Application
 
         if (string.IsNullOrWhiteSpace(admin) || admin.Length < 6)
         {
-            await DisplayAlert(
+            await MainPage!.DisplayAlert(
+DisplayActionSheet( MainPage!.DisplayActionSheet(
                 "Atenção",
                 "A senha deve ter pelo menos 6 caracteres.",
                 "OK");
