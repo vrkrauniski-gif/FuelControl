@@ -1301,9 +1301,22 @@ painel.Children.Add(card);
             });
         }
 
-        cargaVeiculo = Campo("Caminhão / identificação");
-        cargaVeiculo.IsEnabled = true;
-        cargaMotorista = Campo("Motorista");
+     cargaVeiculo = Campo("Caminhão / identificação");
+cargaVeiculo.IsEnabled = true;
+cargaMotorista = Campo("Motorista");
+
+cargaVeiculo.TextChanged += (s, e) =>
+{
+    if (viagemEmEdicao == null)
+    {
+        double? ultimoKm =
+            ObterUltimoKmRegistrado(e.NewTextValue ?? "");
+
+        kmInicialViagem.Text = ultimoKm.HasValue
+            ? ultimoKm.Value.ToString("0.##", CultureInfo.InvariantCulture)
+            : "";
+    }
+};
         anoCarreta = Campo("Ano da carreta", Keyboard.Numeric);
         pesoBruto = Campo("Peso bruto da carga (kg)", Keyboard.Numeric);
         litrosViagem = Campo("Litros consumidos nesta viagem", Keyboard.Numeric);
