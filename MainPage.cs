@@ -359,35 +359,35 @@ private async Task SincronizarViagensAsync()
             out valor);
     }
 
+    
     string Id(string? texto)
     {
         return (texto ?? "").Trim().ToUpperInvariant();
-        
-double? ObterUltimoKmRegistrado(string nomeVeiculo)
-{
-    string chave = Id(nomeVeiculo);
+    }
 
-    if (string.IsNullOrWhiteSpace(chave))
-        return null;
+    double? ObterUltimoKmRegistrado(string nomeVeiculo)
+    {
+        string chave = Id(nomeVeiculo);
 
-    var eventos = new List<(DateTime Data, double Km)>();
+        if (string.IsNullOrWhiteSpace(chave))
+            return null;
 
-    eventos.AddRange(abastecimentos
-        .Where(x => Id(x.Veiculo) == chave && x.KmAtual > 0)
-        .Select(x => (x.Data, x.KmAtual)));
+        var eventos = new List<(DateTime Data, double Km)>();
 
-    eventos.AddRange(viagens
-        .Where(x => !x.Excluida &&
-                    Id(x.Veiculo) == chave &&
-                    x.KmFinal > 0)
-        .Select(x => (x.Data, x.KmFinal)));
+        eventos.AddRange(abastecimentos
+            .Where(x => Id(x.Veiculo) == chave && x.KmAtual > 0)
+            .Select(x => (x.Data, x.KmAtual)));
 
-    return eventos
-        .OrderByDescending(x => x.Data)
-        .Select(x => (double?)x.Km)
-        .FirstOrDefault();
-}
+        eventos.AddRange(viagens
+            .Where(x => !x.Excluida &&
+                        Id(x.Veiculo) == chave &&
+                        x.KmFinal > 0)
+            .Select(x => (x.Data, x.KmFinal)));
 
+        return eventos
+            .OrderByDescending(x => x.Data)
+            .Select(x => (double?)x.Km)
+            .FirstOrDefault();
     }
 
     DadosVeiculo ObterVeiculo(string nome)
@@ -402,6 +402,7 @@ double? ObterUltimoKmRegistrado(string nomeVeiculo)
 
         return dados;
     }
+
 
     void CarregarDados()
     {
