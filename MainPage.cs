@@ -1419,12 +1419,21 @@ HoraFinal = horaFinalViagem.Time ?? TimeSpan.Zero,
                         bool sincronizada =
                 await FirebaseSyncService.SalvarViagemAsync(viagem);
 
+            
             if (!sincronizada)
-            {
-                System.Diagnostics.Debug.WriteLine(
-                    "Viagem salva localmente. Firebase: " +
-                    FirebaseSyncService.UltimoErro);
-            }
+{
+    await DisplayAlert(
+        "Erro ao sincronizar viagem",
+        FirebaseSyncService.UltimoErro,
+        "OK");
+}
+else
+{
+    await DisplayAlert(
+        "Firebase",
+        "Viagem enviada para a nuvem com sucesso!",
+        "OK");
+}
             
             viagemEmEdicao = null;
             cargaVeiculo.IsEnabled = true;
