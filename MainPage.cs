@@ -1469,7 +1469,7 @@ else
     }
 
 
-    void CarregarViagemParaEdicao(Viagem x)
+    async void CarregarViagemParaEdicao(Viagem x)
     {
     if (x.Turno != ContextoTurno.Turno)
 {
