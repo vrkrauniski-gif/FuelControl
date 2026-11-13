@@ -1557,6 +1557,16 @@ else
             });
 
             var botoesViagem = new HorizontalStackLayout { Spacing = 8 };
+
+if (x.Turno == ContextoTurno.Turno)
+{
+    var editarViagem = Botao("EDITAR VIAGEM", "#0F766E");
+    editarViagem.Clicked += (sender, args) =>
+        CarregarViagemParaEdicao(x);
+
+    botoesViagem.Children.Add(editarViagem);
+
+    var excluir = Botao("EXCLUIR VIAGEM", "#B91C1C");
             var editarViagem = Botao("EDITAR VIAGEM", "#0F766E");
             editarViagem.Clicked += (sender, args) => CarregarViagemParaEdicao(x);
             botoesViagem.Children.Add(editarViagem);
