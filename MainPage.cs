@@ -1589,15 +1589,22 @@ else
     return;
 }
 
+x.Excluida = true;
+x.EditadoEmUtc = DateTime.UtcNow;
+x.EditadoPorDispositivo = ContextoTurno.Dispositivo;
+
 bool excluidaNuvem =
-    await FirebaseSyncService.ExcluirViagemAsync(x.Id);
+    await FirebaseSyncService.SalvarViagemAsync(x);
 
 if (!excluidaNuvem)
 {
+    x.Excluida = false;
+
     await DisplayAlert(
         "Erro ao excluir",
         FirebaseSyncService.UltimoErro,
         "OK");
+
     return;
 }
 
