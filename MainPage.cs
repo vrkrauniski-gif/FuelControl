@@ -1896,7 +1896,7 @@ if (!excluidaNuvem)
         painel.Children.Add(Cartao("Velocidade média das viagens", Indicador(velocidadeMediaGeral > 0 ? $"{velocidadeMediaGeral:N2} km/h" : "--")));
 
         var viagensHojePremio = FiltrarViagensPorFrente(
-            viagens.Where(v => v.Data.Date == hoje));
+            viagens.Where(v => !v.Excluida && v.Data.Date == hoje));
         painel.Children.Add(CartaoPremioDiario(viagensHojePremio));
 
         painel.Children.Add(CartaoPeriodo("HOJE",
