@@ -362,6 +362,32 @@ private async Task SincronizarViagensAsync()
     string Id(string? texto)
     {
         return (texto ?? "").Trim().ToUpperInvariant();
+        
+double? ObterUltimoKmRegistrado(string nomeVeiculo)
+{
+    string chave = Id(nomeVeiculo);
+
+    if (string.IsNullOrWhiteSpace(chave))
+        return null;
+
+    var eventos = new List<(DateTime Data, double Km)>();
+
+    eventos.AddRange(abastecimentos
+        .Where(x => Id(x.Veiculo) == chave && x.KmAtual > 0)
+        .Select(x => (x.Data, x.KmAtual)));
+
+    eventos.AddRange(viagens
+        .Where(x => !x.Excluida &&
+                    Id(x.Veiculo) == chave &&
+                    x.KmFinal > 0)
+        .Select(x => (x.Data, x.KmFinal)));
+
+    return eventos
+        .OrderByDescending(x => x.Data)
+        .Select(x => (double?)x.Km)
+        .FirstOrDefault();
+}
+
     }
 
     DadosVeiculo ObterVeiculo(string nome)
