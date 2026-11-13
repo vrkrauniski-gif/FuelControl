@@ -116,7 +116,7 @@ DisplayActionSheet( MainPage!.DisplayActionSheet(
         ContextoTurno.ConfigurarAcessos(
             admin, pinA, pinB, pinC);
 
-        await DisplayAlert(
+        await MainPage!.DisplayAlert(
             "Sucesso",
             "Acessos configurados neste aparelho.",
             "OK");
@@ -138,7 +138,7 @@ DisplayActionSheet( MainPage!.DisplayActionSheet(
             pin.Length < 4 ||
             !pin.All(char.IsDigit))
         {
-            await DisplayAlert(
+            await MainPage!.DisplayAlert(
                 "PIN inválido",
                 "Informe de 4 a 8 números.",
                 "OK");
@@ -164,7 +164,7 @@ DisplayActionSheet( MainPage!.DisplayActionSheet(
 
         if (!ContextoTurno.ValidarTurno(turno, pin))
         {
-            await DisplayAlert(
+            await MainPage!.DisplayAlert(
                 "Acesso negado",
                 "PIN incorreto.",
                 "OK");
@@ -191,7 +191,7 @@ DisplayActionSheet( MainPage!.DisplayActionSheet(
 
         if (!ContextoTurno.ValidarAdministrador(senha))
         {
-            await DisplayAlert(
+            await MainPage!.DisplayAlert(
                 "Acesso negado",
                 "Senha incorreta.",
                 "OK");
