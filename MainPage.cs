@@ -1584,7 +1584,8 @@ else
                     if (!ok)
                         return;
 
-                        if (x.Turno != ContextoTurno.Turno)
+                        if (!ContextoTurno.EhAdministrador &&
+    x.Turno != ContextoTurno.Turno)
 {
     await DisplayAlert(
         "Acesso restrito",
