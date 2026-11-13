@@ -2520,4 +2520,5 @@ public class Viagem
     public double ValorEnergetico { get; set; }
     public double MetaEnergetica { get; set; }
     public bool TanqueDescontado { get; set; }
+    public bool Excluida { get; set; } = false;
 }
