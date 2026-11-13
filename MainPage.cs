@@ -1805,7 +1805,8 @@ if (!excluidaNuvem)
             MostrarMenu("Indicadores");
         };
 
-        var viagensIndicadores = FiltrarViagensPorFrente(viagens);
+        var viagensIndicadores = FiltrarViagensPorFrente(
+    viagens.Where(x => !x.Excluida).ToList());
         var abastecimentosValidos = abastecimentos
             .Where(x => x.Consumo > 0)
             .ToList();
