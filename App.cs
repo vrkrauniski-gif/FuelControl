@@ -198,8 +198,8 @@ DisplayActionSheet( MainPage!.DisplayActionSheet(
             return;
         }
 
-        string escolha = await DisplayActionSheet(
-            "Selecione o turno de operação",
+        string escolha = await MainPage!.DisplayActionSheet(
+            "Selecione o turno operação",
             "Cancelar",
             null,
             "Turno A",
