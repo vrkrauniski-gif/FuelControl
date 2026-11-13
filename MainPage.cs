@@ -1471,6 +1471,14 @@ else
 
     void CarregarViagemParaEdicao(Viagem x)
     {
+    if (x.Turno != ContextoTurno.Turno)
+{
+    await DisplayAlert(
+        "Acesso restrito",
+        "Somente o turno que cadastrou esta viagem pode editá-la.",
+        "OK");
+    return;
+}
         viagemEmEdicao = x;
         cargaVeiculo.IsEnabled = false;
         dataViagem.Date = x.Data.Date;
