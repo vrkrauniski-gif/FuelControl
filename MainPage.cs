@@ -1343,8 +1343,8 @@ cargaVeiculo.TextChanged += (s, e) =>
                 "VEÍCULO: " + (cargaVeiculo.Text ?? "--") + "\n" +
                 "MOTORISTA: " + (cargaMotorista.Text ?? "--") + "\n" +
                 "FRENTE: " + (frenteSelecionada == "" ? "--" : frenteSelecionada) + "\n" +
-                "DATA: " + dataViagem.Date.ToString("dd/MM/yyyy") + "\n" +
-                "INÍCIO: " + horaInicialViagem.Time.ToString(@"hh\:mm") + "\n" +
+                                "DATA: " + dataViagem.Date.ToString() + "\n" +
+                "INÍCIO: " + horaInicialViagem.Time.ToString() + "\n" +
                 "KM INICIAL: " + (kmInicialViagem.Text ?? "--") + "\n" +
                 "KM FINAL: " + (kmFinalViagem.Text ?? "--") + "\n" +
                 "PESO BRUTO: " + (pesoBruto.Text ?? "--") + " kg\n" +
