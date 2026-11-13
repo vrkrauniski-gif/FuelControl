@@ -97,7 +97,6 @@ public class App : Application
         if (string.IsNullOrWhiteSpace(admin) || admin.Length < 6)
         {
             await MainPage!.DisplayAlert(
-DisplayActionSheet( MainPage!.DisplayActionSheet(
                 "Atenção",
                 "A senha deve ter pelo menos 6 caracteres.",
                 "OK");
@@ -126,7 +125,7 @@ DisplayActionSheet( MainPage!.DisplayActionSheet(
 
     private async Task<string> SolicitarPinAsync(string turno)
     {
-        string pin = await DisplayPromptAsync(
+        string pin = await MainPage!.DisplayPromptAsync(
             "PIN do turno " + turno,
             "Crie um PIN numérico de 4 a 8 dígitos:",
             "Confirmar",
@@ -151,7 +150,7 @@ DisplayActionSheet( MainPage!.DisplayActionSheet(
 
     private async Task EntrarTurnoAsync(string turno)
     {
-        string pin = await DisplayPromptAsync(
+        string pin = await MainPage!.DisplayPromptAsync(
             "Acesso ao turno " + turno,
             "Digite o PIN do turno:",
             "Entrar",
@@ -179,7 +178,7 @@ DisplayActionSheet( MainPage!.DisplayActionSheet(
 
     private async Task EntrarAdministradorAsync()
     {
-        string senha = await DisplayPromptAsync(
+        string senha = await MainPage!.DisplayPromptAsync(
             "Administrador",
             "Digite a senha geral:",
             "Entrar",
@@ -199,7 +198,7 @@ DisplayActionSheet( MainPage!.DisplayActionSheet(
         }
 
         string escolha = await MainPage!.DisplayActionSheet(
-            "Selecione o turno operação",
+            "Selecione o turno de operação",
             "Cancelar",
             null,
             "Turno A",
