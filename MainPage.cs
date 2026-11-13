@@ -1818,7 +1818,7 @@ if (!excluidaNuvem)
 
         List<Viagem> ViNoPeriodo(Func<DateTime, bool> filtro)
         {
-            return viagens.Where(x => filtro(x.Data)).ToList();
+            return viagens.Where(x => !x.Excluida && filtro(x.Data)).ToList();
         }
 
         View CartaoPeriodo(string titulo, Func<DateTime, bool> filtro)
