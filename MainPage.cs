@@ -1341,7 +1341,12 @@ painel.Children.Add(card);
             var viagem = new Viagem
             {
                 Id = viagemEmEdicao?.Id ?? Guid.NewGuid().ToString(),
-                Turno = viagemEmEdicao?.Turno ?? ContextoTurno.Turno,
+                Turno = viagemEmEdicao != null &&
+        (viagemEmEdicao.Turno == "A" ||
+         viagemEmEdicao.Turno == "B" ||
+         viagemEmEdicao.Turno == "C")
+        ? viagemEmEdicao.Turno
+        : ContextoTurno.Turno,
 
 CriadoEmUtc = viagemEmEdicao?.CriadoEmUtc ?? DateTime.UtcNow,
 
