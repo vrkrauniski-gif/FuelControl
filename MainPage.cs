@@ -458,6 +458,7 @@ botaoTurno.HorizontalOptions = LayoutOptions.Fill;
 botaoTurno.FontSize = 11;
 botaoTurno.Margin = new Thickness(2);
 
+
 botaoTurno.Clicked += async (s, e) =>
 {
     string escolha = await DisplayActionSheet(
@@ -479,10 +480,32 @@ botaoTurno.Clicked += async (s, e) =>
     if (string.IsNullOrEmpty(novoTurno))
         return;
 
+    if (!ContextoTurno.EhAdministrador)
+    {
+        string pin = await DisplayPromptAsync(
+            "Confirmar acesso",
+            "Digite o PIN do turno " + novoTurno + ":",
+            "Confirmar",
+            "Cancelar",
+            maxLength: 8,
+            keyboard: Keyboard.Numeric);
+
+        if (string.IsNullOrEmpty(pin) ||
+            !ContextoTurno.ValidarTurno(novoTurno, pin))
+        {
+            await DisplayAlert(
+                "Acesso negado",
+                "PIN incorreto.",
+                "OK");
+            return;
+        }
+    }
+
     ContextoTurno.Turno = novoTurno;
 
     MostrarMenu(menu);
 };
+
 
 botoes.Children.Add(botaoTurno);
 
