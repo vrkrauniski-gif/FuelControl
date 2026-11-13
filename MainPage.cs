@@ -1509,7 +1509,8 @@ else
     {
         var painel = new VerticalStackLayout { Spacing = 8 };
 
-        if (viagens.Count == 0)
+        if (!viagens.Any(v => !v.Excluida))
+    
         {
             painel.Children.Add(new Label
             {
