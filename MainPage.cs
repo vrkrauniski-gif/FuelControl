@@ -2126,7 +2126,9 @@ if (!excluidaNuvem)
     List<Viagem> FiltrarViagens()
     {
         return viagens
-            .Where(x => DataNoPeriodo(x.Data))
+    .Where(x => !x.Excluida)
+    .Where(x => DataNoPeriodo(x.Data))
+       
             .Where(x => PassaFiltro(x.Veiculo, x.Motorista))
             .OrderByDescending(x => x.Data)
             .ToList();
