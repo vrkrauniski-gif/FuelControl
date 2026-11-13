@@ -488,6 +488,79 @@ botoes.Children.Add(botaoTurno);
 
 
 
+if (ContextoTurno.EhAdministrador)
+{
+    var botaoAdmin = Botao("ADMINISTRAÇÃO - PINs", "#7C3AED");
+    botaoAdmin.HorizontalOptions = LayoutOptions.Fill;
+
+    botaoAdmin.Clicked += async (s, e) =>
+    {
+        string escolha = await DisplayActionSheet(
+            "Qual PIN deseja redefinir?",
+            "Cancelar",
+            null,
+            "Turno A",
+            "Turno B",
+            "Turno C");
+
+        string turno = escolha switch
+        {
+            "Turno A" => "A",
+            "Turno B" => "B",
+            "Turno C" => "C",
+            _ => ""
+        };
+
+        if (string.IsNullOrEmpty(turno))
+            return;
+
+        string pin = await DisplayPromptAsync(
+            "Novo PIN",
+            "Digite o novo PIN numérico (4 a 8 dígitos):",
+            "Continuar",
+            "Cancelar",
+            maxLength: 8,
+            keyboard: Keyboard.Numeric);
+
+        if (string.IsNullOrWhiteSpace(pin) ||
+            pin.Length < 4 ||
+            !pin.All(char.IsDigit))
+        {
+            await DisplayAlert(
+                "PIN inválido",
+                "O PIN deve ter de 4 a 8 números.",
+                "OK");
+            return;
+        }
+
+        string confirmar = await DisplayPromptAsync(
+            "Confirmar PIN",
+            "Digite novamente o novo PIN:",
+            "Salvar",
+            "Cancelar",
+            maxLength: 8,
+            keyboard: Keyboard.Numeric);
+
+        if (confirmar != pin)
+        {
+            await DisplayAlert(
+                "Erro",
+                "Os PINs não são iguais.",
+                "OK");
+            return;
+        }
+
+        ContextoTurno.AlterarPin(turno, pin);
+
+        await DisplayAlert(
+            "Sucesso",
+            "PIN do turno " + turno + " alterado!",
+            "OK");
+    };
+
+    botoes.Children.Add(botaoAdmin);
+}
+
 
             View conteudo = menu switch
             {
