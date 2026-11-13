@@ -1579,6 +1579,27 @@ else
                     if (!ok)
                         return;
 
+                        if (x.Turno != ContextoTurno.Turno)
+{
+    await DisplayAlert(
+        "Acesso restrito",
+        "Somente o turno que cadastrou esta viagem pode excluí-la.",
+        "OK");
+    return;
+}
+
+bool excluidaNuvem =
+    await FirebaseSyncService.ExcluirViagemAsync(x.Id);
+
+if (!excluidaNuvem)
+{
+    await DisplayAlert(
+        "Erro ao excluir",
+        FirebaseSyncService.UltimoErro,
+        "OK");
+    return;
+}
+
                     double litrosAntigos = 0;
                     DadosVeiculo? d = null;
 
