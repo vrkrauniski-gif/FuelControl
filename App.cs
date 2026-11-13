@@ -87,7 +87,7 @@ public class App : Application
 
     private async Task ConfigurarAcessosAsync()
     {
-        string admin = await DisplayPromptAsync(
+        string admin = await MainPage!.DisplayPromptAsync(
             "Administrador",
             "Crie a senha geral (mínimo 6 caracteres):",
             "Continuar",
