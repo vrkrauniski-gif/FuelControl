@@ -1556,65 +1556,63 @@ else
                 Text = $"Valor energético: {x.ValorEnergetico:N2} | Meta: {x.MetaEnergetica:N2}"
             });
 
+            
             var botoesViagem = new HorizontalStackLayout { Spacing = 8 };
 
-if (x.Turno == ContextoTurno.Turno)
-{
-    var editarViagem = Botao("EDITAR VIAGEM", "#0F766E");
-    editarViagem.Clicked += (sender, args) =>
-        CarregarViagemParaEdicao(x);
-
-    botoesViagem.Children.Add(editarViagem);
-
-    var excluir = Botao("EXCLUIR VIAGEM", "#B91C1C");
-            var editarViagem = Botao("EDITAR VIAGEM", "#0F766E");
-            editarViagem.Clicked += (sender, args) => CarregarViagemParaEdicao(x);
-            botoesViagem.Children.Add(editarViagem);
-
-            var excluir = Botao("EXCLUIR VIAGEM", "#B91C1C");
-
-            excluir.Clicked += async (s, e) =>
+            if (x.Turno == ContextoTurno.Turno)
             {
-                bool ok = await DisplayAlert(
-                    "Excluir viagem",
-                    "Deseja excluir esta viagem? Os litros descontados serão devolvidos ao tanque cadastrado.",
-                    "Sim", "Não");
+                var editarViagem = Botao("EDITAR VIAGEM", "#0F766E");
+                editarViagem.Clicked += (sender, args) =>
+                    CarregarViagemParaEdicao(x);
 
-                if (!ok)
-                    return;
+                botoesViagem.Children.Add(editarViagem);
 
-                double litrosAntigos = 0;
-                DadosVeiculo? d = null;
+                var excluir = Botao("EXCLUIR VIAGEM", "#B91C1C");
 
-                if (x.TanqueDescontado)
+                excluir.Clicked += async (s, e) =>
                 {
-                    d = ObterVeiculo(x.Veiculo);
-                    litrosAntigos = d.LitrosAtuais;
+                    bool ok = await DisplayAlert(
+                        "Excluir viagem",
+                        "Deseja excluir esta viagem? Os litros descontados serão devolvidos ao tanque cadastrado.",
+                        "Sim", "Não");
 
-                    d.LitrosAtuais = Math.Min(
-                        d.Capacidade,
-                        d.LitrosAtuais + x.LitrosConsumidos);
-                }
+                    if (!ok)
+                        return;
 
-                viagens.Remove(x);
+                    double litrosAntigos = 0;
+                    DadosVeiculo? d = null;
 
-                try
-                {
-                    SalvarDados();
-                    MostrarMenu("Cargas");
-                }
-                catch (Exception ex)
-                {
-                    viagens.Add(x);
+                    if (x.TanqueDescontado)
+                    {
+                        d = ObterVeiculo(x.Veiculo);
+                        litrosAntigos = d.LitrosAtuais;
 
-                    if (d != null)
-                        d.LitrosAtuais = litrosAntigos;
+                        d.LitrosAtuais = Math.Min(
+                            d.Capacidade,
+                            d.LitrosAtuais + x.LitrosConsumidos);
+                    }
 
-                    await DisplayAlert("Erro", ex.Message, "OK");
-                }
-            };
+                    viagens.Remove(x);
 
-            botoesViagem.Children.Add(excluir);
+                    try
+                    {
+                        SalvarDados();
+                        MostrarMenu("Cargas");
+                    }
+                    catch (Exception ex)
+                    {
+                        viagens.Add(x);
+
+                        if (d != null)
+                            d.LitrosAtuais = litrosAntigos;
+
+                        await DisplayAlert("Erro", ex.Message, "OK");
+                    }
+                };
+
+                botoesViagem.Children.Add(excluir);
+            }
+
             detalhes.Children.Add(botoesViagem);
 
             painel.Children.Add(new Border
