@@ -934,7 +934,8 @@ painel.Children.Add(card);
     void CarregarAbastecimentoParaEdicao(Abastecimento x)
     {
 
-        if (!string.Equals(
+        if (!ContextoTurno.EhAdministrador &&
+    !string.Equals(
         x.Turno,
         ContextoTurno.Turno,
         StringComparison.OrdinalIgnoreCase))
