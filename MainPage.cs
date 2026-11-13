@@ -1520,7 +1520,7 @@ else
             return painel;
         }
 
-        foreach (var x in viagens.OrderByDescending(v => v.Data))
+        foreach (var x in viagens.Where(v => !v.Excluida).OrderByDescending(v => v.Data))
         {
             var detalhes = new VerticalStackLayout { Spacing = 3 };
 
