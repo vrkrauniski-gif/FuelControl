@@ -791,7 +791,7 @@ if (ContextoTurno.EhAdministrador)
                 Rotulo("KM anterior"), kmAnterior,
                 Rotulo("KM atual"), kmAtual,
                 Rotulo("Litros abastecidos"), litros,
-                painelCarro, painelArla,
+                painelArla,
                 Rotulo("Meta de consumo do caminhão"), metaKmL,
                 salvar, lblResultado, lblCusto,
                 Titulo("CONFIGURAÇÃO DO TANQUE"),
