@@ -2628,7 +2628,7 @@ if (!excluidaNuvem)
                 Linha($"Carreta: {x.AnoCarreta} | Bruto: {x.PesoBruto:N0} kg | Tara: {x.Tara:N0} kg");
                 Linha($"Liquido: {x.PesoLiquido:N0} kg | Combustivel: {x.LitrosConsumidos:N1} L");
                 if (ViagemComKmValido(x))
-                    Linha($"KM inicial: {x.KmInicial:N0} | KM final: {x.KmFinal:N0} | Rodados: {ObterKmRodados(x):N0} | Raio: {ObterKmRodados(x)/2.0:N2} km");
+                    Linha($"KM inicial: {x.KmInicial.ToString("0.0", pt)} | KM final: {x.KmFinal.ToString("0.0", pt)} | Rodados: {ObterKmRodados(x).ToString("0.0", pt)} | Raio: {(ObterKmRodados(x)/2.0).ToString("N2", pt)} km");
                 Linha(VelocidadeMediaViagem(x) > 0
                     ? $"Velocidade média da viagem: {VelocidadeMediaViagem(x):N2} km/h"
                     : "Velocidade média: não calculada (verifique KM e horários)");
