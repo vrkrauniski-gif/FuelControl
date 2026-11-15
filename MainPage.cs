@@ -2219,7 +2219,12 @@ if (!excluidaNuvem)
                         },
                         new Label { Text = $"KM registrados: {kmVeiculo.ToString("N1", pt)} km" },
                         new Label { Text = $"Viagens realizadas: {viVeiculo.Count}" },
-                        new Label { Text = $"Velocidade média: {(CalcularVelocidadeMedia(viVeiculo) > 0 ? $"{CalcularVelocidadeMedia(viVeiculo):N2} km/h" : "--")}" },
+                        new Label
+{
+    Text = CalcularVelocidadeMedia(viVeiculo) > 0
+        ? "Velocidade média: " + CalcularVelocidadeMedia(viVeiculo).ToString("N2", pt) + " km/h"
+        : "Velocidade média: --"
+},
                         new Label
                         {
                             Text = viVeiculo.Count > 0
