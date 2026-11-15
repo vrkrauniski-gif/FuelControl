@@ -2057,7 +2057,10 @@ if (!excluidaNuvem)
     : "Velocidade média: --"),
                         Indicador(cg.Count > 0
                             ? "Raio médio por viagem: " + raioMedio.ToString("N2", pt) + " km"
-                           Indicador($"Combustível consumido: {litrosTotal.ToString("N1", pt)} L"), : "Raio médio por viagem: --"),
+                           Indicador(cg.Count > 0
+    ? "Raio médio por viagem: " + raioMedio.ToString("N2", pt) + " km"
+    : "Raio médio por viagem: --"),
+Indicador($"Combustível consumido: {litrosTotal.ToString("N1", pt)} L"),
                         
                         Indicador(AbastecimentosComArlaValidos(ab).Sum(x => x.LitrosArla) > 0
                             ? $"Arla 32: {AbastecimentosComArlaValidos(ab).Sum(x => x.LitrosArla):N1} L | Média: {CalcularMediaArlaKmL(ab):N2} km/l ({CalcularMediaArla100Km(ab):N2} L/100 km)"
