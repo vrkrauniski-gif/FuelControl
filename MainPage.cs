@@ -1699,7 +1699,7 @@ else
         anoCarreta.Text = x.AnoCarreta.ToString();
         pesoBruto.Text = x.PesoBruto.ToString("0.##", CultureInfo.InvariantCulture);
         kmInicialViagem.Text = x.KmInicial.ToString("0.##", CultureInfo.InvariantCulture);
-        kmFinalViagem.Text = x.KmFinal.ToString("0.##", CultureInfo.InvariantCulture);
+        kmFinalViagem.Text = x.KmFinal.ToString("0.0", pt);
         litrosViagem.Text = x.LitrosConsumidos.ToString("0.##", CultureInfo.InvariantCulture);
         consumoViagem.Text = x.ConsumoKmL.ToString("0.##", CultureInfo.InvariantCulture);
         metaEnergetica.Text = x.MetaEnergetica.ToString("0.##", CultureInfo.InvariantCulture);
