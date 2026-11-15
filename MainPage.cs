@@ -2237,7 +2237,7 @@ if (!excluidaNuvem)
   " L | Média: " + mediaArlaVeiculo.ToString("N2", pt) +
   " km/l (" + mediaArla100Veiculo.ToString("N2", pt) + " L/100 km)"
                             : "Arla 32: sem registros" },
-                        new Label { Text = $"Toneladas líquidas: {toneladasVeiculo:N2} t" }
+                        new Label { Text = $"Toneladas líquidas: {toneladasVeiculo.ToString("N2", pt)} t" }
                     }
                 }
             });
