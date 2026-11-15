@@ -2231,7 +2231,7 @@ if (!excluidaNuvem)
                                 ?  "Raio médio por viagem: " + raioMedioVeiculo.ToString("N2", pt) + " km"
                                 : "Raio médio por viagem: --"
                         },
-                        new Label { Text = $"Litros consumidos: {litrosVeiculo:N1} L" },
+                        new Label { Text = $"Litros consumidos: {litrosVeiculo.ToString("N1", pt)} L" },
                         new Label { Text = litrosArlaVeiculo > 0
                             ? $"Arla 32: {litrosArlaVeiculo:N1} L | Média: {mediaArlaVeiculo:N2} km/l ({mediaArla100Veiculo:N2} L/100 km)"
                             : "Arla 32: sem registros" },
