@@ -2120,8 +2120,7 @@ if (!excluidaNuvem)
         painel.Children.Add(Cartao("Quantidade de abastecimentos",
             Indicador(abastecimentos.Count.ToString())));
 
-        painel.Children.Add(Cartao("Total gasto",
-            Indicador(abastecimentos.Sum(x => x.Valor).ToString("C", pt))));
+        
 
         painel.Children.Add(Cartao("Média km/l nos abastecimentos",
             Indicador(mediaAbast > 0 ? $"{mediaAbast:N2} km/l" : "--")));
