@@ -2070,7 +2070,7 @@ Indicador($"Combustível consumido: {litrosTotal.ToString("N1", pt)} L"),
       CalcularMediaArla100Km(ab).ToString("N2", pt) +
       " L/100 km)"
     : "Arla 32: --"),
-                        Indicador($"Toneladas líquidas: {toneladas:N2} t")
+                  Indicador($"Toneladas líquidas: {toneladas.ToString("N2", pt)} t")
                     }
                 }
             };
