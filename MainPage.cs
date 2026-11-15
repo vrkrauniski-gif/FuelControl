@@ -1456,7 +1456,7 @@ cargaVeiculo.TextChanged += (s, e) =>
                 meta = m;
 
             lblEnergetico.Text =
-                $"Valor energético calculado: {ve:N2} | " +
+                $"Valor energético calculado: {ve.ToString("N2", pt)} | " +
                 $"Meta: {meta:N2} | " +
                 (ve >= meta ? "META ATINGIDA" : "ABAIXO DA META");
         }
