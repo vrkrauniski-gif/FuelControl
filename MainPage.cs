@@ -2145,7 +2145,9 @@ Indicador($"Combustível consumido: {litrosTotal.ToString("N1", pt)} L"),
 
         painel.Children.Add(Cartao("Média de consumo de Arla 32",
             Indicador(mediaArlaKmL > 0
-                ? $"{mediaArlaKmL:N2} km/l | {mediaArla100:N2} L/100 km" : "--")));
+                ? mediaArlaKmL.ToString("N2", pt) + " km/l | " +
+  mediaArla100.ToString("N2", pt) + " L/100 km"
+: "--")));
         painel.Children.Add(Cartao("Total de Arla 32 utilizado",
             Indicador(totalArla > 0 ? $"{totalArla:N1} L" : "--")));
 
