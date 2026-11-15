@@ -1701,7 +1701,7 @@ else
         kmInicialViagem.Text = x.KmInicial.ToString("0.##", CultureInfo.InvariantCulture);
         kmFinalViagem.Text = x.KmFinal.ToString("0.0", pt);
         litrosViagem.Text = x.LitrosConsumidos.ToString("0.##", CultureInfo.InvariantCulture);
-        consumoViagem.Text = x.ConsumoKmL.ToString("0.##", CultureInfo.InvariantCulture);
+        consumoViagem.Text = x.ConsumoKmL.ToString("0.00", pt);
         metaEnergetica.Text = x.MetaEnergetica.ToString("0.##", CultureInfo.InvariantCulture);
         AtualizarPeso();
 
