@@ -2062,8 +2062,14 @@ if (!excluidaNuvem)
 Indicador($"Combustível consumido: {litrosTotal.ToString("N1", pt)} L"),
                         
                         Indicador(AbastecimentosComArlaValidos(ab).Sum(x => x.LitrosArla) > 0
-                            ? $"Arla 32: {AbastecimentosComArlaValidos(ab).Sum(x => x.LitrosArla):N1} L | Média: {CalcularMediaArlaKmL(ab):N2} km/l ({CalcularMediaArla100Km(ab):N2} L/100 km)"
-                            : "Arla 32: --"),
+    ? "Arla 32: " +
+      AbastecimentosComArlaValidos(ab).Sum(x => x.LitrosArla).ToString("N1", pt) +
+      " L | Média: " +
+      CalcularMediaArlaKmL(ab).ToString("N2", pt) +
+      " km/l (" +
+      CalcularMediaArla100Km(ab).ToString("N2", pt) +
+      " L/100 km)"
+    : "Arla 32: --"),
                         Indicador($"Toneladas líquidas: {toneladas:N2} t")
                     }
                 }
