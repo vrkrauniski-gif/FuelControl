@@ -263,7 +263,44 @@ public static class FirebaseSyncService
         }
     }
 
-    
+    public static async Task<bool> ExcluirAbastecimentoAsync(string id)
+{
+    try
+    {
+        if (string.IsNullOrWhiteSpace(id))
+            return false;
+
+        if (!await ConectarAnonimamenteAsync())
+            return false;
+
+        string token = Preferences.Default.Get(
+            "firebase_token", "");
+
+        string url = BaseUrl + "/" +
+            Uri.EscapeDataString(id);
+
+        using var requisicao =
+            CriarRequisicao(HttpMethod.Delete, url, token);
+
+        using var resposta = await Http.SendAsync(requisicao);
+
+        if (!resposta.IsSuccessStatusCode &&
+            resposta.StatusCode != HttpStatusCode.NotFound)
+        {
+            Erro("Erro ao excluir abastecimento: " +
+                await resposta.Content.ReadAsStringAsync());
+            return false;
+        }
+
+        LimparErro();
+        return true;
+    }
+    catch (Exception ex)
+    {
+        Erro("Erro ao excluir abastecimento: " + ex.Message);
+        return false;
+    }
+    }
 public static async Task<bool> SalvarViagemAsync(Viagem viagem)
 {
     try
