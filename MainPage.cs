@@ -1759,10 +1759,9 @@ else
 
             detalhes.Children.Add(new Label
             {
-                Text = $"Valor energético: {x.ValorEnergetico:N2} | Meta: {x.MetaEnergetica:N2}"
-            });
+                Text = $"Valor energético: {x.ValorEnergetico.ToString("N2", pt)} | Meta: {x.MetaEnergetica.ToString("N2", pt)}"
 
-            
+            };
             var botoesViagem = new HorizontalStackLayout { Spacing = 8 };
 
             if (ContextoTurno.EhAdministrador ||
