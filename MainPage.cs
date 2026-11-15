@@ -2052,7 +2052,9 @@ if (!excluidaNuvem)
                         Titulo(titulo),
                         Indicador($"Total de KM: {kmTotal.ToString("N1", pt)} km"),
                         Indicador($"Viagens realizadas: {cg.Count}"),
-                        Indicador(velocidadeMedia > 0 ? $"Velocidade média: {velocidadeMedia:N2} km/h" : "Velocidade média: --"),
+                        Indicador(velocidadeMedia > 0
+    ? "Velocidade média: " + velocidadeMedia.ToString("N2", pt) + " km/h"
+    : "Velocidade média: --"),
                         Indicador(cg.Count > 0
                             ? $"Raio médio por viagem: {raioMedio:N2} km"
                             : "Raio médio por viagem: --"),
