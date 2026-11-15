@@ -1749,7 +1749,7 @@ else
             detalhes.Children.Add(new Label
             {
                 Text = (ViagemComKmValido(x)
-            ? $"KM inicial: {x.KmInicial:N0} | KM final: {x.KmFinal:N0} | Rodados: {ObterKmRodados(x):N0} km | Raio: {ObterKmRodados(x)/2.0:N2} km\n"
+            ? ? $"KM inicial: {x.KmInicial.ToString("0.0", pt)} | KM final: {x.KmFinal.ToString("0.0", pt)} | Rodados: {ObterKmRodados(x).ToString("0.0", pt)} km | Raio: {(ObterKmRodados(x)/2.0).ToString("N2", pt)} km\n"
             : "Quilometragem não informada\n") +
             (VelocidadeMediaViagem(x) > 0
                 ? $"Velocidade média da viagem: {VelocidadeMediaViagem(x):N2} km/h\\n"
