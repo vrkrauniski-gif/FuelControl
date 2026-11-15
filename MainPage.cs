@@ -94,6 +94,7 @@ private string ChaveAbastecimento(Abastecimento x)
         x.Combustivel.Trim().ToUpperInvariant());
 }
 
+
 private async Task SincronizarAbastecimentosAsync()
 {
     try
@@ -102,36 +103,63 @@ private async Task SincronizarAbastecimentosAsync()
             await FirebaseSyncService.ConectarAnonimamenteAsync();
 
         if (!conectado)
-        {
-            System.Diagnostics.Debug.WriteLine(
-                "Firebase: " + FirebaseSyncService.UltimoErro);
             return;
-        }
 
-        // Primeiro busca os registros que já estão na nuvem.
         var dadosNuvem =
             await FirebaseSyncService.ListarAbastecimentosAsync();
 
         if (dadosNuvem == null)
             return;
 
-        // Junta os dados locais e os da nuvem.
+        // Identifica somente os registros do Toyota Corolla.
+        bool EhToyotaCorolla(Abastecimento x)
+        {
+            return Id(x.Veiculo).Contains("TOYOTA COROLLA");
+        }
+
+        // Exclui primeiro os registros do Corolla que estão na nuvem.
+        var registrosCarro = dadosNuvem
+            .Where(EhToyotaCorolla)
+            .ToList();
+
+        foreach (var registro in registrosCarro)
+        {
+            if (!string.IsNullOrWhiteSpace(registro.Id))
+            {
+                bool excluido =
+                    await FirebaseSyncService.ExcluirAbastecimentoAsync(
+                        registro.Id);
+
+                if (!excluido)
+                {
+                    System.Diagnostics.Debug.WriteLine(
+                        "Não foi possível excluir registro do Corolla.");
+                    return;
+                }
+            }
+        }
+
+        // Retira os registros do Corolla da cópia local.
+        abastecimentos = abastecimentos
+            .Where(x => !EhToyotaCorolla(x))
+            .ToList();
+
+        // Junta somente os abastecimentos que devem permanecer.
         var todos = abastecimentos
-    .Concat(dadosNuvem)
-    .Where(x => x != null)
-    .GroupBy(x =>
-        string.IsNullOrWhiteSpace(x.Id)
-            ? Guid.NewGuid().ToString("N")
-            : x.Id)
-    .Select(grupo => grupo
-        .OrderByDescending(x => x.EditadoEmUtc)
-        .First())
-    .OrderByDescending(x => x.Data)
-    .ToList();
+            .Concat(dadosNuvem.Where(x => !EhToyotaCorolla(x)))
+            .Where(x => x != null)
+            .GroupBy(x =>
+                string.IsNullOrWhiteSpace(x.Id)
+                    ? Guid.NewGuid().ToString("N")
+                    : x.Id)
+            .Select(grupo => grupo
+                .OrderByDescending(x => x.EditadoEmUtc)
+                .First())
+            .OrderByDescending(x => x.Data)
+            .ToList();
 
         abastecimentos = todos;
 
-        // Completa os dados de identificação dos registros antigos.
         foreach (var registro in abastecimentos)
         {
             if (string.IsNullOrWhiteSpace(registro.Id))
@@ -152,7 +180,6 @@ private async Task SincronizarAbastecimentosAsync()
             if (string.IsNullOrWhiteSpace(registro.EditadoPorDispositivo))
                 registro.EditadoPorDispositivo = ContextoTurno.Dispositivo;
 
-            // Envia somente os registros que ficaram após a deduplicação.
             await FirebaseSyncService.SalvarAbastecimentoAsync(registro);
         }
 
@@ -169,6 +196,7 @@ private async Task SincronizarAbastecimentosAsync()
             "Erro na sincronização Firebase: " + ex.Message);
     }
 }
+
 
 
 private async Task SincronizarViagensAsync()
