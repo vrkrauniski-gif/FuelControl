@@ -1324,7 +1324,7 @@ cargaVeiculo.TextChanged += (s, e) =>
             ObterUltimoKmRegistrado(e.NewTextValue ?? "");
 
         kmInicialViagem.Text = ultimoKm.HasValue
-            ? ultimoKm.Value.ToString("0.##", CultureInfo.InvariantCulture)
+            ? ultimoKm.Value.ToString("0.0", pt)
             : "";
     }
 };
