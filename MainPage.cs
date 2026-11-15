@@ -2233,7 +2233,9 @@ if (!excluidaNuvem)
                         },
                         new Label { Text = $"Litros consumidos: {litrosVeiculo.ToString("N1", pt)} L" },
                         new Label { Text = litrosArlaVeiculo > 0
-                            ? $"Arla 32: {litrosArlaVeiculo:N1} L | Média: {mediaArlaVeiculo:N2} km/l ({mediaArla100Veiculo:N2} L/100 km)"
+                            ? "Arla 32: " + litrosArlaVeiculo.ToString("N1", pt) +
+  " L | Média: " + mediaArlaVeiculo.ToString("N2", pt) +
+  " km/l (" + mediaArla100Veiculo.ToString("N2", pt) + " L/100 km)"
                             : "Arla 32: sem registros" },
                         new Label { Text = $"Toneladas líquidas: {toneladasVeiculo:N2} t" }
                     }
