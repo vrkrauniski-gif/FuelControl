@@ -2158,7 +2158,9 @@ Indicador($"Combustível consumido: {litrosTotal.ToString("N1", pt)} L"),
 
         painel.Children.Add(Cartao("Raio médio por viagem",
             Indicador(viagensIndicadores.Count > 0
-                ? $"{raioMedioGeral:N2} km" : "--")));
+                Indicador(totalArla > 0
+    ? totalArla.ToString("N1", pt) + " L"
+    : "--")));
 
         painel.Children.Add(Cartao("Tonelagem líquida total",
             Indicador($"{toneladasGeral:N2} t")));
