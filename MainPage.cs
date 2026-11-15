@@ -2055,8 +2055,7 @@ if (!excluidaNuvem)
                         Indicador(velocidadeMedia > 0
     ? "Velocidade média: " + velocidadeMedia.ToString("N2", pt) + " km/h"
     : "Velocidade média: --"),
-                        Indicador(cg.Count > 0
-                            ? "Raio médio por viagem: " + raioMedio.ToString("N2", pt) + " km"
+                    
                            Indicador(cg.Count > 0
     ? "Raio médio por viagem: " + raioMedio.ToString("N2", pt) + " km"
     : "Raio médio por viagem: --"),
