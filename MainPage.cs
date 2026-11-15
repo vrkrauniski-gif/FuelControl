@@ -692,8 +692,8 @@ if (ContextoTurno.EhAdministrador)
 
     View TelaAbastecimentos()
     {
-        tipoVeiculo = NovoPicker("Tipo de veículo", "Carro", "Caminhão");
-        tipoCombustivel = NovoPicker("Combustível", "Etanol", "Gasolina");
+    tipoVeiculo = NovoPicker("Tipo de veículo", "Caminhão");
+    tipoCombustivel = NovoPicker("Combustível", "Diesel S10");
 
         veiculo = Campo("Placa ou identificação do veículo");
         veiculo.IsEnabled = true;
