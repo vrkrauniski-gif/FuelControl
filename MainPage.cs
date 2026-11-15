@@ -1754,7 +1754,7 @@ else
             (VelocidadeMediaViagem(x) > 0
                 ? $"Velocidade média da viagem: {VelocidadeMediaViagem(x):N2} km/h\\n"
                 : "Velocidade média: não calculada (verifique KM e horários)\\n") +
-            $"Combustível: {x.LitrosConsumidos:N1} L | Consumo: {x.ConsumoKmL:N2} km/l"
+            $"Combustível: {x.LitrosConsumidos.ToString("N1", pt)} L | Consumo: {x.ConsumoKmL.ToString("N2", pt)} km/l"
             });
 
             detalhes.Children.Add(new Label
