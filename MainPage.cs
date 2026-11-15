@@ -733,8 +733,8 @@ if (ContextoTurno.EhAdministrador)
             ObterUltimoKmRegistrado(e.NewTextValue ?? "");
 
         kmAnterior.Text = ultimoKm.HasValue
-            ? ultimoKm.Value.ToString("0.##", CultureInfo.InvariantCulture)
-            : "";
+    ? ultimoKm.Value.ToString("0.0", pt)
+    : "";
     }
 };
 
