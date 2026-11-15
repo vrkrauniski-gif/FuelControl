@@ -1761,7 +1761,7 @@ else
             {
                 Text = $"Valor energético: {x.ValorEnergetico.ToString("N2", pt)} | Meta: {x.MetaEnergetica.ToString("N2", pt)}"
 
-            };
+            });
             var botoesViagem = new HorizontalStackLayout { Spacing = 8 };
 
             if (ContextoTurno.EhAdministrador ||
