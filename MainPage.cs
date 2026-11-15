@@ -2566,7 +2566,7 @@ if (!excluidaNuvem)
 
             Linha($"Abastecimentos: {ab.Count}");
             Linha($"Viagens realizadas: {cg.Count}");
-            Linha($"KM rodados: {kmTotal:N0} km");
+            Linha($"KM rodados: {kmTotal.ToString("0.0", pt)} km");
 
             Linha(cg.Count > 0
                 ? $"Raio medio por viagem: {raioMedio:N2} km"
