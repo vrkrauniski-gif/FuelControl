@@ -2632,7 +2632,7 @@ if (!excluidaNuvem)
                 Linha(VelocidadeMediaViagem(x) > 0
                     ? $"Velocidade média da viagem: {VelocidadeMediaViagem(x):N2} km/h"
                     : "Velocidade média: não calculada (verifique KM e horários)");
-                Linha($"Consumo: {x.ConsumoKmL:N2} km/l | VE: {x.ValorEnergetico:N2} | Meta: {x.MetaEnergetica:N2}");
+                Linha($"Consumo: {x.ConsumoKmL.ToString("N2", pt)} km/l | VE: {x.ValorEnergetico.ToString("N2", pt)} | Meta: {x.MetaEnergetica.ToString("N2", pt)}");
                 y += 8;
             }
 
