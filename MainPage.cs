@@ -2149,18 +2149,17 @@ Indicador($"Combustível consumido: {litrosTotal.ToString("N1", pt)} L"),
   mediaArla100.ToString("N2", pt) + " L/100 km"
 : "--")));
         painel.Children.Add(Cartao("Total de Arla 32 utilizado",
-            Indicador(totalArla > 0
-    ? totalArla.ToString("N1", pt) + " L"
-    : "--")));
+    Indicador(totalArla > 0
+        ? totalArla.ToString("N1", pt) + " L"
+        : "--")));
 
-        painel.Children.Add(Cartao("Quantidade de viagens",
-            Indicador(viagensIndicadores.Count.ToString())));
+painel.Children.Add(Cartao("Quantidade de viagens",
+    Indicador(viagensIndicadores.Count.ToString())));
 
-        painel.Children.Add(Cartao("Raio médio por viagem",
-            Indicador(viagensIndicadores.Count > 0
-                Indicador(totalArla > 0
-    ? totalArla.ToString("N1", pt) + " L"
-    : "--")));
+painel.Children.Add(Cartao("Raio médio por viagem",
+    Indicador(viagensIndicadores.Count > 0
+        ? raioMedioGeral.ToString("N2", pt) + " km"
+        : "--")));
 
         painel.Children.Add(Cartao("Tonelagem líquida total",
             Indicador($"{toneladasGeral:N2} t")));
