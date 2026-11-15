@@ -2135,7 +2135,9 @@ Indicador($"Combustível consumido: {litrosTotal.ToString("N1", pt)} L"),
         
 
         painel.Children.Add(Cartao("Média km/l nos abastecimentos",
-            Indicador(mediaAbast > 0 ? $"{mediaAbast:N2} km/l" : "--")));
+            Indicador(mediaAbast > 0
+    ? mediaAbast.ToString("N2", pt) + " km/l"
+    : "--")));
 
         double mediaArlaKmL = CalcularMediaArlaKmL(abastecimentos);
         double mediaArla100 = CalcularMediaArla100Km(abastecimentos);
