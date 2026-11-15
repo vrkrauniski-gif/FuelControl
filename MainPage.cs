@@ -2099,7 +2099,10 @@ if (!excluidaNuvem)
         painel.Children.Add(Titulo("INDICADORES GERAIS"));
         painel.Children.Add(Rotulo("Filtro por frente"));
         painel.Children.Add(filtroFrenteIndicadores);
-        painel.Children.Add(Cartao("Velocidade média das viagens", Indicador(velocidadeMediaGeral > 0 ? $"{velocidadeMediaGeral:N2} km/h" : "--")));
+        painel.Children.Add(Cartao("Velocidade média das viagens",
+    Indicador(velocidadeMediaGeral > 0
+        ? velocidadeMediaGeral.ToString("N2", pt) + " km/h"
+        : "--")));
 
         var viagensHojePremio = FiltrarViagensPorFrente(
             viagens.Where(v => !v.Excluida && v.Data.Date == hoje));
