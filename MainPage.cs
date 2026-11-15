@@ -749,7 +749,7 @@ if (ContextoTurno.EhAdministrador)
             Children = { Rotulo("Litros de Arla 32"), litrosArla }
         };
 
-        usarArla = new CheckBox { IsVisible = false };
+        usarArla = new CheckBox { IsVisible = true };
 
         usarArla.CheckedChanged += (s, e) =>
         {
