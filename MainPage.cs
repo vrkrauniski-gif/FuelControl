@@ -2228,7 +2228,7 @@ if (!excluidaNuvem)
                         new Label
                         {
                             Text = viVeiculo.Count > 0
-                                ? $"Raio médio por viagem: {raioMedioVeiculo:N2} km"
+                                ?  "Raio médio por viagem: " + raioMedioVeiculo.ToString("N2", pt) + " km"
                                 : "Raio médio por viagem: --"
                         },
                         new Label { Text = $"Litros consumidos: {litrosVeiculo:N1} L" },
