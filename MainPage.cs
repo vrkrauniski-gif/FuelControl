@@ -757,24 +757,7 @@ if (ContextoTurno.EhAdministrador)
                 tipoVeiculo.SelectedItem?.ToString() == "Caminhão" && e.Value;
         };
 
-        tipoVeiculo.SelectedIndexChanged += (s, e) =>
-        {
-            bool caminhao =
-                tipoVeiculo.SelectedItem?.ToString() == "Caminhão";
-
-            tipoCombustivel.ItemsSource = caminhao
-                ? new List<string> { "Diesel S10" }
-                : new List<string> { "Etanol", "Gasolina" };
-
-            tipoCombustivel.SelectedIndex = 0;
-            painelCarro.IsVisible = !caminhao;
-            usarArla.IsVisible = caminhao;
-            painelArla.IsVisible = caminhao && usarArla.IsChecked;
-            metaKmL.IsVisible = caminhao;
-
-            if (!caminhao)
-                usarArla.IsChecked = false;
-        };
+    
 
         litros.TextChanged += (s, e) => AtualizarTotal();
         precoLitro.TextChanged += (s, e) => AtualizarTotal();
