@@ -700,7 +700,11 @@ if (ContextoTurno.EhAdministrador)
         motorista = Campo("Nome do motorista");
 
         kmAnterior = Campo("Quilometragem anterior", Keyboard.Numeric);
-        kmAtual = Campo("Quilometragem atual", Keyboard.Numeric);
+        kmAtual.TextChanged += (s, e) =>
+{
+    if (string.IsNullOrWhiteSpace(kmAtual.Text))
+        return;
+};
         litros = Campo("Litros abastecidos", Keyboard.Numeric);
         precoLitro = Campo("Preço por litro (R$)", Keyboard.Numeric);
         litrosArla = Campo("Litros de Arla 32", Keyboard.Numeric);
