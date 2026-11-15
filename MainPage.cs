@@ -2056,7 +2056,7 @@ if (!excluidaNuvem)
     ? "Velocidade média: " + velocidadeMedia.ToString("N2", pt) + " km/h"
     : "Velocidade média: --"),
                         Indicador(cg.Count > 0
-                            ? $"Raio médio por viagem: {raioMedio:N2} km"
+                            ? "Raio médio por viagem: " + raioMedio.ToString("N2", pt) + " km"
                             : "Raio médio por viagem: --"),
                         Indicador($"Combustível consumido: {litrosTotal:N1} L"),
                         Indicador(AbastecimentosComArlaValidos(ab).Sum(x => x.LitrosArla) > 0
