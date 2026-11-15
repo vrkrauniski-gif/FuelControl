@@ -2217,7 +2217,7 @@ if (!excluidaNuvem)
                             FontSize = 16,
                             TextColor = Color.FromArgb("#123B65")
                         },
-                        new Label { Text = $"KM registrados: {kmVeiculo:N0} km" },
+                        new Label { Text = $"KM registrados: {kmVeiculo.ToString("N1", pt)} km" },
                         new Label { Text = $"Viagens realizadas: {viVeiculo.Count}" },
                         new Label { Text = $"Velocidade média: {(CalcularVelocidadeMedia(viVeiculo) > 0 ? $"{CalcularVelocidadeMedia(viVeiculo):N2} km/h" : "--")}" },
                         new Label
