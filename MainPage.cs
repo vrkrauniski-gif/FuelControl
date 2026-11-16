@@ -1420,6 +1420,48 @@ void AtualizarTanqueArlaTexto(string nome)
     }
 
     graficoArla.Children.Add(segmentos);
+    var marcacoesArla = new Grid
+{
+    ColumnSpacing = 2
+};
+
+for (int i = 0; i < 5; i++)
+    marcacoesArla.ColumnDefinitions.Add(
+        new ColumnDefinition(GridLength.Star));
+
+string[] nomesArla = { "E", "¼", "½", "¾", "F" };
+
+for (int i = 0; i < 5; i++)
+{
+    double litrosMarca = arla.Capacidade * i / 4.0;
+
+    var texto = new VerticalStackLayout
+    {
+        Spacing = 0,
+        HorizontalOptions = LayoutOptions.Center,
+        Children =
+        {
+            new Label
+            {
+                Text = nomesArla[i],
+                FontSize = 12,
+                FontAttributes = FontAttributes.Bold,
+                TextColor = Colors.White
+            },
+            new Label
+            {
+                Text = litrosMarca.ToString("N0", pt) + " L",
+                FontSize = 10,
+                TextColor = Colors.White
+            }
+        }
+    };
+
+    Grid.SetColumn(texto, i);
+    marcacoesArla.Children.Add(texto);
+}
+
+graficoArla.Children.Add(marcacoesArla);
 
     lblTanqueArla.Text =
         "NÍVEL ARLA 32: " +
