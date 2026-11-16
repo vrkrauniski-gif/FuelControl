@@ -1245,7 +1245,7 @@ $"({percentual.ToString("N0", pt)}%)\n" +
             $"Autonomia estimada: " +
             $"{(media > 0 ? autonomia.ToString("N1", pt) + " km" : "--")}\n" +
             $"Média de KM por abastecimento: " +
-            $"{(registros.Count > 0 ? mediaKm.ToString("N0", pt) + " km" : "--")}\n" +
+            $"{(registros.Count > 0 ? mediaKm.ToString("N1", pt) + " km" : "--")}\n" +
             $"Média de litros por abastecimento: " +
             $"{(registros.Count > 0 ? mediaLitros.ToString("N1", pt) + " L" : "--")}\n" +
             (percentual <= alerta ? "ATENÇÃO: ABASTECER" : "Nível normal");
