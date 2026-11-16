@@ -1952,7 +1952,7 @@ if (!excluidaNuvem)
         var painel = new VerticalStackLayout { Spacing = 6 };
         painel.Children.Add(Titulo("PRÊMIO DE PRODUTIVIDADE — 24 HORAS"));
         painel.Children.Add(Indicador($"Raio médio do dia: {(raio > 0 ? raio.ToString("N2") + " km" : "--")}"));
-        painel.Children.Add(Indicador($"Toneladas transportadas: {toneladas:N2} t"));
+        painel.Children.Add(Indicador("Toneladas transportadas: " + toneladas.ToString("N2", pt) + " t"));
 
         if (raioTabela < 5 || raioTabela > 100 || !metasPremioDiario.TryGetValue(raioTabela, out double meta))
         {
