@@ -742,6 +742,7 @@ graficoArla = new VerticalStackLayout
         veiculo.TextChanged += (s, e) =>
 {
     AtualizarTanqueTexto(e.NewTextValue ?? "");
+    AtualizarTanqueArlaTexto(e.NewTextValue ?? "");
         string chaveArla = Id(e.NewTextValue ?? "");
 
     if (tanquesArla.TryGetValue(chaveArla, out var tanqueArla))
