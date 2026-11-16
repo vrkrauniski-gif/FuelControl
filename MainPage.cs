@@ -2433,7 +2433,9 @@ painel.Children.Add(Cartao("Raio médio por viagem",
         lista.Children.Add(new Label
         {
             Text = litrosArlaRelatorio > 0
-                ? $"Arla 32: {litrosArlaRelatorio:N1} L | Média: {mediaArlaRelatorio:N2} km/l ({mediaArla100Relatorio:N2} L/100 km)"
+                ? "Arla 32: " + litrosArlaRelatorio.ToString("N1", pt) +
+  " L | Média: " + mediaArlaRelatorio.ToString("N2", pt) +
+  " km/l (" + mediaArla100Relatorio.ToString("N2", pt) + " L/100 km)"
                 : "Arla 32: sem registros no período"
         });
 
