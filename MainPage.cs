@@ -1434,8 +1434,25 @@ void AtualizarTanqueArlaTexto(string nome)
         return;
     }
 
-    double litros = Math.Clamp(
-        arla.LitrosEstimados, 0, arla.Capacidade);
+    double litros = arla.LitrosEstimados;
+
+double? kmAtualArla = ObterUltimoKmRegistrado(nome);
+
+if (arla.MediaKmL > 0 &&
+    arla.KmUltimoAbastecimento > 0 &&
+    kmAtualArla.HasValue &&
+    kmAtualArla.Value >= arla.KmUltimoAbastecimento)
+{
+    litros = Math.Clamp(
+        arla.Capacidade -
+        (kmAtualArla.Value - arla.KmUltimoAbastecimento) / arla.MediaKmL,
+        0,
+        arla.Capacidade);
+}
+else
+{
+    litros = Math.Clamp(litros, 0, arla.Capacidade);
+}
 
     double percentual = litros / arla.Capacidade * 100;
     double reserva = arla.Capacidade * 2.0 / 20.0;
