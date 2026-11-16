@@ -1445,7 +1445,8 @@ cargaVeiculo.TextChanged += (s, e) =>
         }
 
         double liquido = bruto - tara;
-        lblPeso.Text = $"Tara: {tara:N0} kg | Peso líquido: {liquido:N0} kg";
+        lblPeso.Text = "Tara: " + tara.ToString("N1", pt) +
+               " kg | Peso líquido: " + liquido.ToString("N1", pt) + " kg";
 
         if (Ler(consumoViagem.Text, out var consumo) && consumo > 0)
         {
