@@ -2441,8 +2441,8 @@ painel.Children.Add(Cartao("Raio médio por viagem",
 
         lista.Children.Add(new Label
         {
-            Text = $"Litros consumidos nas viagens: " +
-                   $"{cg.Sum(x => x.LitrosConsumidos):N1} L"
+            Text = "Litros consumidos nas viagens: " +
+       cg.Sum(x => x.LitrosConsumidos).ToString("N1", pt) + " L"
         });
 
         // Soma de tonelagem líquida agrupada por dia.
