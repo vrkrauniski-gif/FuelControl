@@ -2482,7 +2482,7 @@ painel.Children.Add(Cartao("Raio médio por viagem",
             lista.Children.Add(new Label
             {
                 Text = $"{x.Data:dd/MM/yyyy} {x.HoraInicial:hh\\:mm}-{x.HoraFinal:hh\\:mm} | Frente {x.Frente} | {x.Veiculo} | " +
-                       $"Líquido: {x.PesoLiquido:N0} kg | " +
+                       "Líquido: " + x.PesoLiquido.ToString("N1", pt) + " kg | " +
                        $"KM: {ObterKmRodados(x):N0} | Velocidade média: {(VelocidadeMediaViagem(x) > 0 ? $"{VelocidadeMediaViagem(x):N2} km/h" : "--")} | " +
                        $"Viagem: {x.LitrosConsumidos:N1} L | " +
                        $"{x.ConsumoKmL:N2} km/l | VE: {x.ValorEnergetico:N2}",
