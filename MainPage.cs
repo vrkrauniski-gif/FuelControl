@@ -786,7 +786,7 @@ if (ContextoTurno.EhAdministrador)
                 Rotulo("Veículo / placa"), veiculo,
                 Titulo("CONSULTA DO TANQUE"),
                 lblTanque,
-                barraTanque,
+graficoTanque,
                 Rotulo("Motorista"), motorista,
                 Rotulo("KM anterior"), kmAnterior,
                 Rotulo("KM atual"), kmAtual,
