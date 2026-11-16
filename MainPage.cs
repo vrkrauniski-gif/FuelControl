@@ -2165,7 +2165,9 @@ painel.Children.Add(Cartao("Raio médio por viagem",
             Indicador(toneladasGeral.ToString("N2", pt) + " t")));
 
         painel.Children.Add(Cartao("Média km/l nas viagens",
-            Indicador(mediaViagem > 0 ? $"{mediaViagem:N2} km/l" : "--")));
+            Indicador(mediaViagem > 0
+    ? mediaViagem.ToString("N2", pt) + " km/l"
+    : "--")));
 
         painel.Children.Add(Cartao("Litros consumidos nas viagens",
             Indicador($"{totalViagens:N1} L")));
