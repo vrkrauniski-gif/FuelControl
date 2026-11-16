@@ -986,7 +986,7 @@ else
             lblResultado.Text = "Consumo automático: " + consumo.ToString("N2", pt) + " km/l";
 
             lblCusto.Text = caminhao
-                ? $"Meta: {dados.MetaKmL:N2} km/l | " +
+                ? "Meta: " + dados.MetaKmL.ToString("N2", pt) + " km/l | " +
                   (dados.MetaKmL > 0 && consumo >= dados.MetaKmL
                     ? "META ATINGIDA" : "ABAIXO OU SEM META")
                 : $"Custo: {custo:C2}/km | " +
