@@ -1743,7 +1743,7 @@ else
 
             detalhes.Children.Add(new Label
             {
-                Text = $"Bruto: {x.PesoBruto:N0} kg | Tara: {x.Tara:N0} kg | Líquido: {x.PesoLiquido:N0} kg"
+                Text = $"Bruto: {x.PesoBruto.ToString("N1", pt)} kg | Tara: {x.Tara.ToString("N1", pt)} kg | Líquido: {x.PesoLiquido.ToString("N1", pt)} kg"
             });
 
             detalhes.Children.Add(new Label
