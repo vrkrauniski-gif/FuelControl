@@ -1240,8 +1240,8 @@ painel.Children.Add(card);
             : 0;
 
         lblTanque.Text =
-            $"NÍVEL ATUAL: {d.LitrosAtuais:N0}/{d.Capacidade:N0} L " +
-            $"({percentual:N0}%)\n" +
+            $"NÍVEL ATUAL: {d.LitrosAtuais.ToString("N1", pt)}/{d.Capacidade.ToString("N1", pt)} L " +
+$"({percentual.ToString("N0", pt)}%)\n" +
             $"Autonomia estimada: " +
             $"{(media > 0 ? autonomia.ToString("N0", pt) + " km" : "--")}\n" +
             $"Média de KM por abastecimento: " +
