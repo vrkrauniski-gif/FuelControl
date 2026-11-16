@@ -1967,7 +1967,7 @@ if (!excluidaNuvem)
         {
             double falta = Math.Max(0, meta - toneladas);
             painel.Children.Add(Indicador($"Raio considerado na tabela: {raioTabela} km"));
-            painel.Children.Add(Indicador($"Meta para esse raio: {meta:N0} toneladas"));
+            painel.Children.Add(Indicador("Meta para esse raio: " + meta.ToString("N1", pt) + " toneladas"));
 
             bool atingiu = toneladas >= meta;
             painel.Children.Add(new Label
