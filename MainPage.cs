@@ -983,7 +983,7 @@ else
             abastecimentoEmEdicao = null;
             veiculo.IsEnabled = true;
 
-            lblResultado.Text = $"Consumo automático: {consumo:N2} km/l";
+            lblResultado.Text = "Consumo automático: " + consumo.ToString("N2", pt) + " km/l";
 
             lblCusto.Text = caminhao
                 ? $"Meta: {dados.MetaKmL:N2} km/l | " +
