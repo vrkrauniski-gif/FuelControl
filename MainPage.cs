@@ -64,6 +64,7 @@ public class MainPage : ContentPage
     Label lblCusto = new();
     Label lblTotal = new();
     Label lblTanque = new();
+    Label lblTanqueArla = new();
     Label lblPeso = new();
     Label lblEnergetico = new();
     Label lblComparacao = new();
