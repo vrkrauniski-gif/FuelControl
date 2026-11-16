@@ -2101,7 +2101,7 @@ Indicador($"Combustível consumido: {litrosTotal.ToString("N1", pt)} L"),
 
         lblComparacao = Indicador(
             mediaAbast > 0 && mediaViagem > 0
-                ? $"{mediaAbast - mediaViagem:N2} km/l"
+                ? (mediaAbast - mediaViagem).ToString("N2", pt) + " km/l"
                 : "Sem dados suficientes");
 
         var painel = new VerticalStackLayout { Spacing = 8 };
