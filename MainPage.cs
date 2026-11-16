@@ -734,7 +734,10 @@ if (ContextoTurno.EhAdministrador)
 {
     Spacing = 3
 };
-
+graficoArla = new VerticalStackLayout
+{
+    Spacing = 3
+};
         veiculo.TextChanged += (s, e) =>
 {
     AtualizarTanqueTexto(e.NewTextValue ?? "");
