@@ -463,6 +463,15 @@ private async Task SincronizarViagensAsync()
                     JsonSerializer.Deserialize<List<Viagem>>(json) ?? new();
         }
         catch { viagens = new(); }
+        try
+{
+    var json = Preferences.Default.Get(ChaveTanquesArla, "");
+    if (!string.IsNullOrWhiteSpace(json))
+        tanquesArla =
+            JsonSerializer.Deserialize<Dictionary<string, DadosArla>>(json)
+            ?? new(StringComparer.OrdinalIgnoreCase);
+}
+catch { tanquesArla = new(StringComparer.OrdinalIgnoreCase); }
     }
 
     void SalvarDados()
