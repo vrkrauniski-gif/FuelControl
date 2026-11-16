@@ -1752,7 +1752,7 @@ else
             ?  $"KM inicial: {x.KmInicial.ToString("0.0", pt)} | KM final: {x.KmFinal.ToString("0.0", pt)} | Rodados: {ObterKmRodados(x).ToString("0.0", pt)} km | Raio: {(ObterKmRodados(x)/2.0).ToString("N2", pt)} km\n"
             : "Quilometragem não informada\n") +
             (VelocidadeMediaViagem(x) > 0
-                ? $"Velocidade média da viagem: {VelocidadeMediaViagem(x):N2} km/h\\n"
+                ? "Velocidade média da viagem: " + VelocidadeMediaViagem(x).ToString("N2", pt) + " km/h\\n"
                 : "Velocidade média: não calculada (verifique KM e horários)\\n") +
             $"Combustível: {x.LitrosConsumidos.ToString("N1", pt)} L | Consumo: {x.ConsumoKmL.ToString("N2", pt)} km/l"
             });
