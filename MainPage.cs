@@ -1243,7 +1243,7 @@ painel.Children.Add(card);
             $"NÍVEL ATUAL: {d.LitrosAtuais.ToString("N1", pt)}/{d.Capacidade.ToString("N1", pt)} L " +
 $"({percentual.ToString("N0", pt)}%)\n" +
             $"Autonomia estimada: " +
-            $"{(media > 0 ? autonomia.ToString("N0", pt) + " km" : "--")}\n" +
+            $"{(media > 0 ? autonomia.ToString("N1", pt) + " km" : "--")}\n" +
             $"Média de KM por abastecimento: " +
             $"{(registros.Count > 0 ? mediaKm.ToString("N0", pt) + " km" : "--")}\n" +
             $"Média de litros por abastecimento: " +
