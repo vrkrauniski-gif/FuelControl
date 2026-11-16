@@ -2611,7 +2611,9 @@ painel.Children.Add(Cartao("Raio médio por viagem",
             double mediaArla100Pdf = CalcularMediaArla100Km(ab);
             double litrosArlaPdf = AbastecimentosComArlaValidos(ab).Sum(x => x.LitrosArla);
             Linha(litrosArlaPdf > 0
-                ? $"Arla 32: {litrosArlaPdf:N1} L | Media: {mediaArlaPdf:N2} km/l ({mediaArla100Pdf:N2} L/100 km)"
+             ? "Arla 32: " + litrosArlaPdf.ToString("N1", pt) +
+  " L | Media: " + mediaArlaPdf.ToString("N2", pt) +
+  " km/l (" + mediaArla100Pdf.ToString("N2", pt) + " L/100 km)"
                 : "Arla 32: sem registros no periodo");
             Linha($"Litros consumidos nas viagens: {cg.Sum(x => x.LitrosConsumidos):N1} L");
             Linha($"Total gasto: {ab.Sum(x => x.Valor):C2}");
