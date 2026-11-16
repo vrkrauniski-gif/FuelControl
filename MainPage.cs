@@ -1148,6 +1148,19 @@ painel.Children.Add(card);
             var d = ObterVeiculo(veiculo.Text);
             d.Capacidade = capacidade;
             d.LitrosAtuais = atual;
+            if (Ler(capacidadeArla.Text, out var capacidadeA) && capacidadeA > 0)
+{
+    if (!tanquesArla.TryGetValue(Id(veiculo.Text), out var arla))
+    {
+        arla = new DadosArla();
+        tanquesArla[Id(veiculo.Text)] = arla;
+    }
+
+    arla.Capacidade = capacidadeA;
+
+    if (arla.LitrosEstimados <= 0 || arla.LitrosEstimados > capacidadeA)
+        arla.LitrosEstimados = capacidadeA;
+}
 
             if (Ler(limiteAlerta.Text, out var alerta) &&
                 alerta > 0 && alerta < 100)
