@@ -2784,6 +2784,14 @@ public class DadosVeiculo
     public double AlertaPercentual { get; set; } = 20;
     public double MetaKmL { get; set; }
 }
+public class DadosArla
+{
+    public double Capacidade { get; set; }
+    public double LitrosEstimados { get; set; }
+    public double KmUltimoAbastecimento { get; set; }
+    public double MediaKmL { get; set; }
+    public bool AbastecerNoProximo { get; set; }
+}
 
 
 
