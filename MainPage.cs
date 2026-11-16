@@ -737,6 +737,12 @@ if (ContextoTurno.EhAdministrador)
         veiculo.TextChanged += (s, e) =>
 {
     AtualizarTanqueTexto(e.NewTextValue ?? "");
+        string chaveArla = Id(e.NewTextValue ?? "");
+
+    if (tanquesArla.TryGetValue(chaveArla, out var tanqueArla))
+        capacidadeArla.Text = tanqueArla.Capacidade.ToString("0.##", pt);
+    else
+        capacidadeArla.Text = "";
 
     if (abastecimentoEmEdicao == null)
     {
