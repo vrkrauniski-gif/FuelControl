@@ -1657,7 +1657,7 @@ else
                 $"Consumo: {consumo.ToString("N2", pt)} km/l\n" +
                 $"Valor energético: {valorEnergetico.ToString("N2", pt)}\n" +
                 $"Meta: {meta.ToString("N2", pt)}\n" +
-                $"Combustível descontado: {litrosConsumidos:N1} L",
+                $"Combustível descontado: {litrosConsumidos.ToString("N1", pt)} L",
                 "OK");
 
             MostrarMenu("Cargas");
