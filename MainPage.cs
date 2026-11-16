@@ -23,6 +23,7 @@ public class MainPage : ContentPage
     List<Abastecimento> abastecimentos = new();
     List<Viagem> viagens = new();
     Dictionary<string, DadosVeiculo> veiculos = new(StringComparer.OrdinalIgnoreCase);
+    Dictionary<string, DadosArla> tanquesArla = new(StringComparer.OrdinalIgnoreCase);
 
     Entry veiculo = new(), motorista = new();
     Entry kmAnterior = new(), kmAtual = new();
