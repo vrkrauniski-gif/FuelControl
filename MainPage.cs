@@ -715,13 +715,10 @@ if (ContextoTurno.EhAdministrador)
         lblCusto = Indicador("Custo por km: --");
         lblTanque = Indicador("Digite a placa para consultar o tanque.");
 
-        barraTanque = new ProgressBar
-        {
-            Progress = 0,
-            ProgressColor = Color.FromArgb("#16A34A"),
-            BackgroundColor = Color.FromArgb("#E2E8F0"),
-            HeightRequest = 18
-        };
+        graficoTanque = new VerticalStackLayout
+{
+    Spacing = 3
+};
 
         veiculo.TextChanged += (s, e) =>
 {
