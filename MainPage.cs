@@ -2665,7 +2665,8 @@ x.Consumo.ToString("N2", pt) + " km/l");
             {
                 Linha($"{x.Data:dd/MM/yyyy} | {x.HoraInicial:hh\\:mm}-{x.HoraFinal:hh\\:mm} | Frente {x.Frente} | {x.Veiculo} | {x.Motorista}");
                 Linha($"Carreta: {x.AnoCarreta} | Bruto: {x.PesoBruto:N0} kg | Tara: {x.Tara:N0} kg");
-                Linha($"Liquido: {x.PesoLiquido:N0} kg | Combustivel: {x.LitrosConsumidos:N1} L");
+                Linha("Liquido: " + x.PesoLiquido.ToString("N1", pt) +
+      " kg | Combustivel: " + x.LitrosConsumidos.ToString("N1", pt) + " L");
                 if (ViagemComKmValido(x))
                     Linha($"KM inicial: {x.KmInicial.ToString("0.0", pt)} | KM final: {x.KmFinal.ToString("0.0", pt)} | Rodados: {ObterKmRodados(x).ToString("0.0", pt)} | Raio: {(ObterKmRodados(x)/2.0).ToString("N2", pt)} km");
                 Linha(VelocidadeMediaViagem(x) > 0
