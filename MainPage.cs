@@ -902,6 +902,20 @@ configurar, ajustar,
             double nivelAntigo = dados.LitrosAtuais;
             double metaAntiga = dados.MetaKmL;
             Abastecimento? registroAnterior = abastecimentoEmEdicao;
+            DadosArla? arlaAnterior = null;
+
+if (caminhao &&
+    tanquesArla.TryGetValue(Id(veiculo.Text), out var tanqueArlaAtual))
+{
+    arlaAnterior = new DadosArla
+    {
+        Capacidade = tanqueArlaAtual.Capacidade,
+        LitrosEstimados = tanqueArlaAtual.LitrosEstimados,
+        KmUltimoAbastecimento = tanqueArlaAtual.KmUltimoAbastecimento,
+        MediaKmL = tanqueArlaAtual.MediaKmL,
+        AbastecerNoProximo = tanqueArlaAtual.AbastecerNoProximo
+    };
+}
 
             if (dados.Capacidade > 0)
             {
