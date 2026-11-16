@@ -805,11 +805,12 @@ graficoTanque,
                 painelArla,
                 Rotulo("Meta de consumo do caminhão"), metaKmL,
                 salvar, lblResultado, lblCusto,
-                Titulo("CONFIGURAÇÃO DO TANQUE"),
-                Rotulo("Capacidade total"), capacidadeTanque,
-                Rotulo("Combustível atual"), combustivelAtual,
-                Rotulo("Alerta em percentual"), limiteAlerta,
-                configurar, ajustar,
+                Titulo("CONFIGURAÇÃO DOS TANQUES"),
+Rotulo("Capacidade total Diesel (litros)"), capacidadeTanque,
+Rotulo("Combustível atual"), combustivelAtual,
+Rotulo("Capacidade do ARLA 32 (litros)"), capacidadeArla,
+Rotulo("Alerta em percentual"), limiteAlerta,
+configurar, ajustar,
                 Titulo("HISTÓRICO DE ABASTECIMENTOS")
             }
         };
