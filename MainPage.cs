@@ -2664,7 +2664,9 @@ x.Consumo.ToString("N2", pt) + " km/l");
             foreach (var x in cg)
             {
                 Linha($"{x.Data:dd/MM/yyyy} | {x.HoraInicial:hh\\:mm}-{x.HoraFinal:hh\\:mm} | Frente {x.Frente} | {x.Veiculo} | {x.Motorista}");
-                Linha($"Carreta: {x.AnoCarreta} | Bruto: {x.PesoBruto:N0} kg | Tara: {x.Tara:N0} kg");
+                Linha("Carreta: " + x.AnoCarreta +
+      " | Bruto: " + x.PesoBruto.ToString("N1", pt) +
+      " kg | Tara: " + x.Tara.ToString("N1", pt) + " kg");
                 Linha("Liquido: " + x.PesoLiquido.ToString("N1", pt) +
       " kg | Combustivel: " + x.LitrosConsumidos.ToString("N1", pt) + " L");
                 if (ViagemComKmValido(x))
