@@ -1047,6 +1047,7 @@ else
             card.Children.Add(new Label
             {
                 Text = $"KM: {x.KmAnterior.ToString("N1", pt)} → {x.KmAtual.ToString("N1", pt)} | Média: {x.Consumo.ToString("N2", pt)} km/l"
+                });
             if (x.TemArla)
                 card.Children.Add(new Label { Text = $"Arla 32: {x.LitrosArla:N1} L" });
 
