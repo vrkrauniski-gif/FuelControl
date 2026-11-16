@@ -2635,7 +2635,8 @@ painel.Children.Add(Cartao("Raio médio por viagem",
 
                 Linha($"{grupo.Key:dd/MM/yyyy} | " +
                       $"Viagens: {grupo.Count()} | " +
-                      $"KM: {SomarKmViagens(grupo):N0} | Raio: {CalcularRaioMedio(grupo):N2} km | " +
+                      "KM: " + SomarKmViagens(grupo).ToString("N1", pt) +
+" | Raio: " + CalcularRaioMedio(grupo).ToString("N2", pt) + " km | " +
                       $"Tonelagem liquida: {toneladasDia:N2} t");
             }
 
