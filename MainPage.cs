@@ -1071,6 +1071,7 @@ else
                   (custo <= 0.50 ? "DENTRO DA META" : "ACIMA DA META");
 
             AtualizarTanqueTexto(veiculo.Text);
+            AtualizarTanqueArlaTexto(veiculo.Text);
 
             await DisplayAlert("Salvo",
                 registroAnterior != null
