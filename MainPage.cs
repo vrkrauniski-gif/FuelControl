@@ -2647,7 +2647,8 @@ painel.Children.Add(Cartao("Raio médio por viagem",
             foreach (var x in ab)
             {
                 Linha($"{x.Data:dd/MM/yyyy HH:mm} | {x.Veiculo} | {x.Motorista}");
-                Linha($"KM: {x.KmAnterior:N0} a {x.KmAtual:N0} | " +
+        Linha("KM: " + x.KmAnterior.ToString("N1", pt) +
+      " a " + x.KmAtual.ToString("N1", pt) + " | " +
                       $"{x.Litros:N1} L | {x.Consumo:N2} km/l");
                 Linha($"Valor: {x.Valor:C2} | Custo/km: {x.CustoKm:C2}");
 
