@@ -2654,7 +2654,7 @@ x.Consumo.ToString("N2", pt) + " km/l");
                 Linha($"Valor: {x.Valor:C2} | Custo/km: {x.CustoKm:C2}");
 
                 if (x.TemArla)
-                    Linha($"Arla: {x.LitrosArla:N1} L");
+                    Linha("Arla: " + x.LitrosArla.ToString("N1", pt) + " L");
 
                 y += 8;
             }
