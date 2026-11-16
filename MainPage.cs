@@ -2606,7 +2606,7 @@ painel.Children.Add(Cartao("Raio médio por viagem",
                 : "Raio medio por viagem: --");
 
             Linha("Tonelagem liquida total: " + toneladasTotal.ToString("N2", pt) + " t");
-            Linha($"Litros abastecidos: {ab.Sum(x => x.Litros):N1} L");
+            Linha("Litros abastecidos: " + ab.Sum(x => x.Litros).ToString("N1", pt) + " L");
             double mediaArlaPdf = CalcularMediaArlaKmL(ab);
             double mediaArla100Pdf = CalcularMediaArla100Km(ab);
             double litrosArlaPdf = AbastecimentosComArlaValidos(ab).Sum(x => x.LitrosArla);
