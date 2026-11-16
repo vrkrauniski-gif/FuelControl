@@ -1656,7 +1656,7 @@ else
            $"Raio individual: {((kmFinal-kmInicial)/2.0).ToString("N2", pt)} km\n" +
                 $"Consumo: {consumo.ToString("N2", pt)} km/l\n" +
                 $"Valor energético: {valorEnergetico.ToString("N2", pt)}\n" +
-                $"Meta: {meta:N2}\n" +
+                $"Meta: {meta.ToString("N2", pt)}\n" +
                 $"Combustível descontado: {litrosConsumidos:N1} L",
                 "OK");
 
