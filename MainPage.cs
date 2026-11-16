@@ -1364,6 +1364,73 @@ void AtualizarTanqueTexto(string nome)
             ? "ATENÇÃO: RESERVA ATINGIDA!"
             : "Nível normal");
 }
+void AtualizarTanqueArlaTexto(string nome)
+{
+    graficoArla.Children.Clear();
+
+    if (string.IsNullOrWhiteSpace(nome))
+    {
+        lblTanqueArla.Text = "Digite a placa para consultar o ARLA 32.";
+        return;
+    }
+
+    string chave = Id(nome);
+
+    if (!tanquesArla.TryGetValue(chave, out var arla) ||
+        arla.Capacidade <= 0)
+    {
+        lblTanqueArla.Text = "Tanque ARLA 32 não configurado.";
+        return;
+    }
+
+    double litros = Math.Clamp(
+        arla.LitrosEstimados, 0, arla.Capacidade);
+
+    double percentual = litros / arla.Capacidade * 100;
+    double reserva = arla.Capacidade * 2.0 / 20.0;
+
+    int partesPreenchidas = Math.Clamp(
+        (int)Math.Ceiling(percentual / 5.0), 0, 20);
+
+    var segmentos = new Grid
+    {
+        ColumnSpacing = 2,
+        HeightRequest = 28
+    };
+
+    for (int i = 0; i < 20; i++)
+        segmentos.ColumnDefinitions.Add(
+            new ColumnDefinition(GridLength.Star));
+
+    for (int i = 0; i < 20; i++)
+    {
+        var bloco = new BoxView
+        {
+            HeightRequest = 26,
+            Color = i < partesPreenchidas
+                ? (i < 2
+                    ? Color.FromArgb("#DC2626")
+                    : Color.FromArgb("#16A34A"))
+                : Color.FromArgb("#334155"),
+            Margin = new Thickness(1)
+        };
+
+        Grid.SetColumn(bloco, i);
+        segmentos.Children.Add(bloco);
+    }
+
+    graficoArla.Children.Add(segmentos);
+
+    lblTanqueArla.Text =
+        "NÍVEL ARLA 32: " +
+        litros.ToString("N1", pt) + "/" +
+        arla.Capacidade.ToString("N1", pt) + " L (" +
+        percentual.ToString("N1", pt) + "%)\n" +
+        "Reserva: " + reserva.ToString("N1", pt) + " L\n" +
+        (litros <= reserva
+            ? "ATENÇÃO: RESERVA DE ARLA ATINGIDA!"
+            : "Nível normal");
+}
 
 
     double TaraPorAno(int ano)
