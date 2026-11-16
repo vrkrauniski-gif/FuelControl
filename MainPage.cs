@@ -1520,9 +1520,12 @@ graficoArla.Children.Add(marcacoesArla);
         arla.Capacidade.ToString("N1", pt) + " L (" +
         percentual.ToString("N1", pt) + "%)\n" +
         "Reserva: " + reserva.ToString("N1", pt) + " L\n" +
-        (litros <= reserva
-            ? "ATENÇÃO: RESERVA DE ARLA ATINGIDA!"
-            : "Nível normal");
+(litros <= reserva
+    ? "ATENÇÃO: RESERVA DE ARLA ATINGIDA!\n"
+    : "Nível normal\n") +
+(arla.AbastecerNoProximo
+    ? "ATENÇÃO: ABASTECER ARLA NO PRÓXIMO ABASTECIMENTO DIESEL!"
+    : "Alternância de abastecimento normal.");
 }
 
 
