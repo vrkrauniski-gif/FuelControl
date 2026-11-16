@@ -2424,7 +2424,7 @@ painel.Children.Add(Cartao("Raio médio por viagem",
         lista.Children.Add(new Label
         {
             Text = $"Gasto: {ab.Sum(x => x.Valor):C2} | " +
-                   $"Litros abastecidos: {ab.Sum(x => x.Litros):N1} L"
+                   "Litros abastecidos: " + ab.Sum(x => x.Litros).ToString("N1", pt) + " L"
         });
 
         double mediaArlaRelatorio = CalcularMediaArlaKmL(ab);
