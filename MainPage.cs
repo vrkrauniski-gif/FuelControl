@@ -31,6 +31,7 @@ public class MainPage : ContentPage
     Entry litros = new(), precoLitro = new(), litrosArla = new();
     Entry capacidadeTanque = new(), combustivelAtual = new();
     Entry limiteAlerta = new(), metaKmL = new();
+    Entry capacidadeArla = new();
 
     Entry cargaVeiculo = new(), cargaMotorista = new();
     Entry anoCarreta = new(), pesoBruto = new();
