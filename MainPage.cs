@@ -2602,7 +2602,7 @@ painel.Children.Add(Cartao("Raio médio por viagem",
             Linha("KM rodados: " + kmTotal.ToString("N1", pt) + " km");
 
             Linha(cg.Count > 0
-                ? $"Raio medio por viagem: {raioMedio:N2} km"
+                ? "Raio medio por viagem: " + raioMedio.ToString("N2", pt) + " km"
                 : "Raio medio por viagem: --");
 
             Linha($"Tonelagem liquida total: {toneladasTotal:N2} t");
