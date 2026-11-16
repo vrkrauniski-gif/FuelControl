@@ -2487,7 +2487,7 @@ painel.Children.Add(Cartao("Raio médio por viagem",
 " | Velocidade média: " +
 (VelocidadeMediaViagem(x) > 0 ? VelocidadeMediaViagem(x).ToString("N2", pt) + " km/h" : "--") + " | " +
                        "Viagem: " + x.LitrosConsumidos.ToString("N1", pt) + " L | " +
-                       $"{x.ConsumoKmL:N2} km/l | VE: {x.ValorEnergetico:N2}",
+                    x.ConsumoKmL.ToString("N2", pt) + " km/l | VE: " + x.ValorEnergetico.ToString("N2", pt),
                 TextColor = Colors.Black
             });
         }
