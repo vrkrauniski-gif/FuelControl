@@ -65,7 +65,7 @@ public class MainPage : ContentPage
     Label lblEnergetico = new();
     Label lblComparacao = new();
 
-    ProgressBar barraTanque = new();
+    VerticalStackLayout graficoTanque = new();
 
     bool salvandoViagem;
     Abastecimento? abastecimentoEmEdicao;
