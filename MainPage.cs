@@ -1983,7 +1983,7 @@ if (!excluidaNuvem)
             {
                 Text = atingiu
                     ? "Prêmio atingido! Excedente: " + (toneladas - meta).ToString("N2", pt) + " toneladas."
-                    : $"Faltam {falta:N2} toneladas para atingir o prêmio diário.",
+                    : "Faltam " + falta.ToString("N2", pt) + " toneladas para atingir o prêmio diário.",
                 TextColor = atingiu ? Colors.DarkGreen : Colors.DarkRed,
                 FontAttributes = FontAttributes.Bold,
                 FontSize = 16
