@@ -2406,7 +2406,7 @@ painel.Children.Add(Cartao("Raio médio por viagem",
 
         lista.Children.Add(new Label
         {
-            Text = $"KM rodados: {kmTotal:N0} km"
+            Text = "KM rodados: " + kmTotal.ToString("N1", pt) + " km"
         });
 
         lista.Children.Add(new Label
