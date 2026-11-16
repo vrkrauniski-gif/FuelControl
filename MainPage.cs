@@ -1651,7 +1651,7 @@ else
             await DisplayAlert("Viagem salva",
                 (viagemAnterior != null ? "Viagem atualizada com sucesso!\n\n" : "Registro salvo com sucesso!\n\n") +
                 $"Frente: {frenteSelecionada} | Horário: {horaInicialViagem.Time:hh\\:mm} até {horaFinalViagem.Time:hh\\:mm}\n" +
-                $"Peso líquido: {liquido:N0} kg\n" +
+                "Peso líquido: " + liquido.ToString("N1", pt) + " kg\n" +
            $"KM inicial: {kmInicial.ToString("N1", pt)} | KM final: {kmFinal.ToString("N1", pt)}\n" +
            $"KM rodados: {(kmFinal-kmInicial).ToString("N1", pt)} km\n" +
            $"Raio individual: {((kmFinal-kmInicial)/2.0).ToString("N2", pt)} km\n" +
