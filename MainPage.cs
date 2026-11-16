@@ -1439,7 +1439,7 @@ cargaVeiculo.TextChanged += (s, e) =>
         if (!Ler(pesoBruto.Text, out var bruto) || bruto <= tara)
         {
             lblPeso.Text =
-                $"Tara automática: {tara:N0} kg | Informe o peso bruto.";
+            "Tara automática: " + tara.ToString("N1", pt) + " kg | Informe o peso bruto.";
             lblEnergetico.Text = "Valor energético calculado: --";
             return;
         }
