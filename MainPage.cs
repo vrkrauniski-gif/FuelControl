@@ -1529,7 +1529,7 @@ cargaVeiculo.TextChanged += (s, e) =>
                 litrosConsumidos > litrosDisponiveisParaEdicao)
             {
                 await DisplayAlert("Combustível insuficiente",
-                    $"Tanque: {dados.LitrosAtuais:N1} L.\n" +
+                    "Tanque: " + dados.LitrosAtuais.ToString("N1", pt) + " L.\n" +
                     $"Consumo da viagem: {litrosConsumidos:N1} L.",
                     "OK");
                 return;
