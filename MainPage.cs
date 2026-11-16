@@ -2412,7 +2412,7 @@ painel.Children.Add(Cartao("Raio médio por viagem",
         lista.Children.Add(new Label
         {
             Text = cg.Count > 0
-                ? $"Raio médio por viagem: {raioMedio:N2} km"
+                ? "Raio médio por viagem: " + raioMedio.ToString("N2", pt) + " km"
                 : "Raio médio por viagem: --"
         });
 
