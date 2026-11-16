@@ -1955,6 +1955,7 @@ else
                 $"Meta: {meta.ToString("N2", pt)}\n" +
                 $"Combustível descontado: {litrosConsumidos.ToString("N1", pt)} L",
                 "OK");
+                AtualizarTanqueArlaTexto(viagem.Veiculo);
 
             MostrarMenu("Cargas");
         }
