@@ -2461,7 +2461,7 @@ painel.Children.Add(Cartao("Raio médio por viagem",
                 Text = $"{grupo.Key:dd/MM/yyyy} - " +
                        $"Viagens: {grupo.Count()} | " +
                        "Velocidade média: " + velocidadeDia.ToString("N2", pt) + " km/h | " +
-                       $"Tonelagem líquida: {toneladasDia:N2} t",
+                       "Tonelagem líquida: " + toneladasDia.ToString("N2", pt) + " t",
                 FontAttributes = FontAttributes.Bold,
                 TextColor = Color.FromArgb("#0F766E")
             });
