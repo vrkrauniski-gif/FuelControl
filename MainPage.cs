@@ -1180,73 +1180,147 @@ painel.Children.Add(card);
         {
             DisplayAlert("Erro", ex.Message, "OK");
         }
-    }
+    
+void AtualizarTanqueTexto(string nome)
+{
+    if (lblTanque == null)
+        return;
 
-    void AtualizarTanqueTexto(string nome)
+    graficoTanque.Children.Clear();
+
+    if (string.IsNullOrWhiteSpace(nome))
     {
-        if (lblTanque == null)
-            return;
-
-        if (string.IsNullOrWhiteSpace(nome))
-        {
-            barraTanque.Progress = 0;
-            lblTanque.Text = "Digite a placa para consultar o tanque.";
-            return;
-        }
-
-        string chave = Id(nome);
-
-        if (!veiculos.TryGetValue(chave, out var d) || d.Capacidade <= 0)
-        {
-            barraTanque.Progress = 0;
-            lblTanque.Text =
-                "Tanque não configurado. Informe capacidade e nível inicial.";
-            return;
-        }
-
-        double percentual = Math.Clamp(
-            d.LitrosAtuais / d.Capacidade * 100, 0, 100);
-
-        barraTanque.Progress = percentual / 100.0;
-
-        double alerta = d.AlertaPercentual > 0
-            ? d.AlertaPercentual : 20;
-
-        barraTanque.ProgressColor =
-            percentual <= alerta
-                ? Color.FromArgb("#DC2626")
-                : percentual <= 40
-                    ? Color.FromArgb("#F59E0B")
-                    : Color.FromArgb("#16A34A");
-
-        double media = MediaAbastecimentos(nome);
-        double autonomia = media > 0
-            ? d.LitrosAtuais * media : 0;
-
-        var registros = abastecimentos
-            .Where(x => Id(x.Veiculo) == chave && x.Litros > 0)
-            .ToList();
-
-        double mediaKm = registros.Count > 0
-            ? registros.Average(x =>
-                Math.Max(0, x.KmAtual - x.KmAnterior))
-            : 0;
-
-        double mediaLitros = registros.Count > 0
-            ? registros.Average(x => x.Litros)
-            : 0;
-
-        lblTanque.Text =
-            $"NÍVEL ATUAL: {d.LitrosAtuais.ToString("N1", pt)}/{d.Capacidade.ToString("N1", pt)} L " +
-$"({percentual.ToString("N0", pt)}%)\n" +
-            $"Autonomia estimada: " +
-            $"{(media > 0 ? autonomia.ToString("N1", pt) + " km" : "--")}\n" +
-            $"Média de KM por abastecimento: " +
-            $"{(registros.Count > 0 ? mediaKm.ToString("N1", pt) + " km" : "--")}\n" +
-            $"Média de litros por abastecimento: " +
-            $"{(registros.Count > 0 ? mediaLitros.ToString("N1", pt) + " L" : "--")}\n" +
-            (percentual <= alerta ? "ATENÇÃO: ABASTECER" : "Nível normal");
+        lblTanque.Text = "Digite a placa para consultar o tanque.";
+        return;
     }
+
+    string chave = Id(nome);
+
+    if (!veiculos.TryGetValue(chave, out var d) || d.Capacidade <= 0)
+    {
+        lblTanque.Text =
+            "Tanque não configurado. Informe capacidade e nível inicial.";
+        return;
+    }
+
+    double percentual = Math.Clamp(
+        d.LitrosAtuais / d.Capacidade * 100, 0, 100);
+
+    double litrosReserva = d.Capacidade * 2.0 / 20.0;
+
+    int partesPreenchidas = (int)Math.Ceiling(percentual / 5.0);
+    partesPreenchidas = Math.Clamp(partesPreenchidas, 0, 20);
+
+    var segmentos = new Grid
+    {
+        ColumnSpacing = 2,
+        HeightRequest = 28
+    };
+
+    for (int i = 0; i < 20; i++)
+        segmentos.ColumnDefinitions.Add(
+            new ColumnDefinition(GridLength.Star));
+
+    for (int i = 0; i < 20; i++)
+    {
+        var bloco = new BoxView
+        {
+            HeightRequest = 26,
+            Color = i < partesPreenchidas
+                ? (i < 2
+                    ? Color.FromArgb("#DC2626")
+                    : Color.FromArgb("#16A34A"))
+                : Color.FromArgb("#334155"),
+            Margin = new Thickness(1)
+        };
+
+        Grid.SetColumn(bloco, i);
+        segmentos.Children.Add(bloco);
+    }
+
+    var marcacoes = new Grid
+    {
+        ColumnSpacing = 2
+    };
+
+    for (int i = 0; i < 5; i++)
+        marcacoes.ColumnDefinitions.Add(
+            new ColumnDefinition(GridLength.Star));
+
+    string[] nomes = { "E", "¼", "½", "¾", "F" };
+
+    for (int i = 0; i < 5; i++)
+    {
+        double litrosMarca = d.Capacidade * i / 4.0;
+
+        var texto = new VerticalStackLayout
+        {
+            Spacing = 0,
+            HorizontalOptions = LayoutOptions.Center,
+            Children =
+            {
+                new Label
+                {
+                    Text = nomes[i],
+                    FontSize = 12,
+                    FontAttributes = FontAttributes.Bold,
+                    TextColor = Colors.White,
+                    HorizontalTextAlignment =
+                        TextAlignment.Center
+                },
+                new Label
+                {
+                    Text = litrosMarca.ToString("N0", pt) + " L",
+                    FontSize = 10,
+                    TextColor = Colors.White,
+                    HorizontalTextAlignment =
+                        TextAlignment.Center
+                }
+            }
+        };
+
+        Grid.SetColumn(texto, i);
+        marcacoes.Children.Add(texto);
+    }
+
+    graficoTanque.Children.Add(segmentos);
+    graficoTanque.Children.Add(marcacoes);
+
+    double media = MediaAbastecimentos(nome);
+    double autonomia = media > 0
+        ? d.LitrosAtuais * media : 0;
+
+    var registros = abastecimentos
+        .Where(x => Id(x.Veiculo) == chave && x.Litros > 0)
+        .ToList();
+
+    double mediaKm = registros.Count > 0
+        ? registros.Average(x =>
+            Math.Max(0, x.KmAtual - x.KmAnterior))
+        : 0;
+
+    double mediaLitros = registros.Count > 0
+        ? registros.Average(x => x.Litros)
+        : 0;
+
+    lblTanque.Text =
+        "NÍVEL ATUAL: " +
+        d.LitrosAtuais.ToString("N1", pt) + "/" +
+        d.Capacidade.ToString("N1", pt) + " L (" +
+        percentual.ToString("N1", pt) + "%)\n" +
+        "Reserva: " + litrosReserva.ToString("N1", pt) + " L\n" +
+        "Autonomia estimada: " +
+        (media > 0 ? autonomia.ToString("N1", pt) + " km" : "--") +
+        "\nMédia de KM por abastecimento: " +
+        (registros.Count > 0 ? mediaKm.ToString("N1", pt) + " km" : "--") +
+        "\nMédia de litros por abastecimento: " +
+        (registros.Count > 0 ? mediaLitros.ToString("N1", pt) + " L" : "--") +
+        "\n" +
+        (d.LitrosAtuais <= litrosReserva
+            ? "ATENÇÃO: RESERVA ATINGIDA!"
+            : "Nível normal");
+}
+
 
     double TaraPorAno(int ano)
     {
