@@ -1982,7 +1982,7 @@ if (!excluidaNuvem)
             painel.Children.Add(new Label
             {
                 Text = atingiu
-                    ? $"Prêmio atingido! Excedente: {toneladas - meta:N2} toneladas."
+                    ? "Prêmio atingido! Excedente: " + (toneladas - meta).ToString("N2", pt) + " toneladas."
                     : $"Faltam {falta:N2} toneladas para atingir o prêmio diário.",
                 TextColor = atingiu ? Colors.DarkGreen : Colors.DarkRed,
                 FontAttributes = FontAttributes.Bold,
