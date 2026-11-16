@@ -1035,6 +1035,10 @@ EditadoPorDispositivo = ContextoTurno.Dispositivo,
 
                 dados.LitrosAtuais = nivelAntigo;
                 dados.MetaKmL = metaAntiga;
+                if (arlaAnterior != null)
+{
+    tanquesArla[Id(veiculo.Text)] = arlaAnterior;
+}
                 throw;
             }
             
