@@ -1275,7 +1275,7 @@ painel.Children.Add(card);
         {
             DisplayAlert("Erro", ex.Message, "OK");
         }
-    
+    }
 void AtualizarTanqueTexto(string nome)
 {
     if (lblTanque == null)
