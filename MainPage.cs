@@ -69,6 +69,7 @@ public class MainPage : ContentPage
     Label lblComparacao = new();
 
     VerticalStackLayout graficoTanque = new();
+    VerticalStackLayout graficoArla = new();
 
     bool salvandoViagem;
     Abastecimento? abastecimentoEmEdicao;
