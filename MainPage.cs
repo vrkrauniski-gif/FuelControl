@@ -730,6 +730,7 @@ if (ContextoTurno.EhAdministrador)
         lblResultado = Indicador("Consumo: -- km/l");
         lblCusto = Indicador("Custo por km: --");
         lblTanque = Indicador("Digite a placa para consultar o tanque.");
+        lblTanqueArla = Indicador("Digite a placa para consultar o ARLA 32.");
 
         graficoTanque = new VerticalStackLayout
 {
