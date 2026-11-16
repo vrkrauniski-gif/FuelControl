@@ -479,6 +479,7 @@ catch { tanquesArla = new(StringComparer.OrdinalIgnoreCase); }
         Preferences.Default.Set(Chave, JsonSerializer.Serialize(abastecimentos));
         Preferences.Default.Set(ChaveVeiculos, JsonSerializer.Serialize(veiculos));
         Preferences.Default.Set(ChaveCargas, JsonSerializer.Serialize(viagens));
+        Preferences.Default.Set(ChaveTanquesArla, JsonSerializer.Serialize(tanquesArla));
     }
 
 
