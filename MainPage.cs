@@ -977,6 +977,38 @@ EditadoPorDispositivo = ContextoTurno.Dispositivo,
                 MetaKmL = caminhao ? dados.MetaKmL : 0,
                 TanqueAdicionado = dados.Capacidade > 0
             };
+            if (caminhao && registroAnterior == null &&
+    tanquesArla.TryGetValue(Id(veiculo.Text), out var tanqueArlaSalvar))
+{
+    if (temArla)
+    {
+        if (tanqueArlaSalvar.KmUltimoAbastecimento > 0 &&
+            atual > tanqueArlaSalvar.KmUltimoAbastecimento)
+        {
+            tanqueArlaSalvar.MediaKmL =
+                (atual - tanqueArlaSalvar.KmUltimoAbastecimento) / arla;
+        }
+
+        tanqueArlaSalvar.LitrosEstimados = tanqueArlaSalvar.Capacidade;
+        tanqueArlaSalvar.KmUltimoAbastecimento = atual;
+        tanqueArlaSalvar.AbastecerNoProximo = false;
+    }
+    else
+    {
+        tanqueArlaSalvar.AbastecerNoProximo = true;
+
+        if (tanqueArlaSalvar.MediaKmL > 0 &&
+            tanqueArlaSalvar.KmUltimoAbastecimento > 0)
+        {
+            tanqueArlaSalvar.LitrosEstimados = Math.Clamp(
+                tanqueArlaSalvar.Capacidade -
+                (atual - tanqueArlaSalvar.KmUltimoAbastecimento) /
+                tanqueArlaSalvar.MediaKmL,
+                0,
+                tanqueArlaSalvar.Capacidade);
+        }
+    }
+}
 
             if (registroAnterior != null)
             {
