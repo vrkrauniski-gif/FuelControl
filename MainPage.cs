@@ -2418,7 +2418,7 @@ painel.Children.Add(Cartao("Raio médio por viagem",
 
         lista.Children.Add(new Label
         {
-            Text = $"Tonelagem líquida total: {toneladasTotal:N2} t"
+            Text = "Tonelagem líquida total: " + toneladasTotal.ToString("N2", pt) + " t"
         });
 
         lista.Children.Add(new Label
