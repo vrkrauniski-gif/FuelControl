@@ -2472,7 +2472,7 @@ painel.Children.Add(Cartao("Raio médio por viagem",
             lista.Children.Add(new Label
             {
                 Text = $"{x.Data:dd/MM/yyyy HH:mm} | {x.Veiculo} | " +
-                       $"{x.Litros:N1} L | {x.Consumo:N2} km/l",
+                       x.Litros.ToString("N1", pt) + " L | " + x.Consumo.ToString("N2", pt) + " km/l",
                 TextColor = Colors.Black
             });
         }
