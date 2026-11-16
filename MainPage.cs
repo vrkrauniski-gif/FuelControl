@@ -2672,7 +2672,7 @@ x.Consumo.ToString("N2", pt) + " km/l");
                 Linha(VelocidadeMediaViagem(x) > 0
                     ? "Velocidade média da viagem: " +
   VelocidadeMediaViagem(x).ToString("N2", pt) + " km/h"
-  VelocidadeMediaViagem(x).ToString("N2", pt) + " km/h"
+  
                     : "Velocidade média: não calculada (verifique KM e horários)");
                 Linha($"Consumo: {x.ConsumoKmL.ToString("N2", pt)} km/l | VE: {x.ValorEnergetico.ToString("N2", pt)} | Meta: {x.MetaEnergetica.ToString("N2", pt)}");
                 y += 8;
