@@ -2170,7 +2170,7 @@ painel.Children.Add(Cartao("Raio médio por viagem",
     : "--")));
 
         painel.Children.Add(Cartao("Litros consumidos nas viagens",
-            Indicador($"{totalViagens:N1} L")));
+            Indicador(totalViagens.ToString("N1", pt) + " L")));
 
         painel.Children.Add(Cartao("Média do valor energético",
             Indicador(mediaEnergetica > 0
