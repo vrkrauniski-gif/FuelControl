@@ -17,6 +17,7 @@ public class MainPage : ContentPage
     const string Chave = "fuelcontrol_historico";
     const string ChaveVeiculos = "fuelcontrol_veiculos";
     const string ChaveCargas = "fuelcontrol_viagens";
+    const string ChaveTanquesArla = "fuelcontrol_tanques_arla";
 
     readonly CultureInfo pt = CultureInfo.GetCultureInfo("pt-BR");
 
