@@ -1222,6 +1222,16 @@ painel.Children.Add(card);
             d.LitrosAtuais = atual;
             if (Ler(capacidadeArla.Text, out var capacidadeA) && capacidadeA > 0)
 {
+    if (!Ler(litrosArlaAtual.Text, out var litrosAtuaisArla) ||
+        litrosAtuaisArla < 0 ||
+        litrosAtuaisArla > capacidadeA)
+    {
+        DisplayAlert("Atenção",
+            "Informe os litros atuais do ARLA 32 entre zero e a capacidade do tanque.",
+            "OK");
+        return;
+    }
+
     if (!tanquesArla.TryGetValue(Id(veiculo.Text), out var arla))
     {
         arla = new DadosArla();
@@ -1229,9 +1239,7 @@ painel.Children.Add(card);
     }
 
     arla.Capacidade = capacidadeA;
-
-    if (arla.LitrosEstimados <= 0 || arla.LitrosEstimados > capacidadeA)
-        arla.LitrosEstimados = capacidadeA;
+    arla.LitrosEstimados = litrosAtuaisArla;
 }
 
             if (Ler(limiteAlerta.Text, out var alerta) &&
