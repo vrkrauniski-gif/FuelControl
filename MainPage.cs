@@ -1360,7 +1360,7 @@ void AtualizarTanqueTexto(string nome)
                     Text = nomes[i],
                     FontSize = 12,
                     FontAttributes = FontAttributes.Bold,
-                    TextColor = Colors.White,
+                    lblTanqueArla = Indicador("Digite a placa para consultar o ARLA 32.");
                     HorizontalTextAlignment =
                         TextAlignment.Center
                 },
