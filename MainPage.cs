@@ -1515,7 +1515,7 @@ for (int i = 0; i < 5; i++)
                 Text = nomesArla[i],
                 FontSize = 12,
                 FontAttributes = FontAttributes.Bold,
-                TextColor = Colors.White
+                TextColor = Color.FromArgb("#123B65")
             },
             new Label
             {
