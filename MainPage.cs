@@ -1368,7 +1368,7 @@ void AtualizarTanqueTexto(string nome)
                 {
                     Text = litrosMarca.ToString("N0", pt) + " L",
                     FontSize = 10,
-                    TextColor = Colors.White,
+                    TextColor = Color.FromArgb("#123B65"),
                     HorizontalTextAlignment =
                         TextAlignment.Center
                 }
