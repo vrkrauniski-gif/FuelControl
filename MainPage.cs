@@ -1521,7 +1521,7 @@ for (int i = 0; i < 5; i++)
             {
                 Text = litrosMarca.ToString("N0", pt) + " L",
                 FontSize = 10,
-                TextColor = Colors.White
+                TextColor = Color.FromArgb("#123B65")
             }
         }
     };
