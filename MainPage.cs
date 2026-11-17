@@ -829,6 +829,7 @@ graficoArla,
 Rotulo("Capacidade total Diesel (litros)"), capacidadeTanque,
 Rotulo("Combustível atual"), combustivelAtual,
 Rotulo("Capacidade do ARLA 32 (litros)"), capacidadeArla,
+Rotulo("Litros atuais de ARLA 32"), litrosArlaAtual,
 Rotulo("Alerta em percentual"), limiteAlerta,
 configurar, ajustar,
                 Titulo("HISTÓRICO DE ABASTECIMENTOS")
