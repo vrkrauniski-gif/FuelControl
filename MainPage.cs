@@ -723,6 +723,7 @@ if (ContextoTurno.EhAdministrador)
         litrosArla = Campo("Litros de Arla 32", Keyboard.Numeric);
         metaKmL = Campo("Meta de consumo do caminhão (km/l)");
         capacidadeArla = Campo("Capacidade do tanque ARLA 32 (litros)", Keyboard.Numeric);
+        litrosArlaAtual = Campo("Litros atuais no tanque ARLA 32", Keyboard.Numeric);
 
         capacidadeTanque = Campo("Capacidade total do tanque (litros)", Keyboard.Numeric);
         combustivelAtual = Campo("Litros atuais no tanque", Keyboard.Numeric);
