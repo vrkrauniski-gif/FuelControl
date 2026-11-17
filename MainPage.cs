@@ -750,9 +750,15 @@ graficoArla = new VerticalStackLayout
         string chaveArla = Id(e.NewTextValue ?? "");
 
     if (tanquesArla.TryGetValue(chaveArla, out var tanqueArla))
-        capacidadeArla.Text = tanqueArla.Capacidade.ToString("0.##", pt);
-    else
-        capacidadeArla.Text = "";
+{
+    capacidadeArla.Text = tanqueArla.Capacidade.ToString("0.##", pt);
+    litrosArlaAtual.Text = tanqueArla.LitrosEstimados.ToString("0.##", pt);
+}
+else
+{
+    capacidadeArla.Text = "";
+    litrosArlaAtual.Text = "";
+}
 
     if (abastecimentoEmEdicao == null)
     {
