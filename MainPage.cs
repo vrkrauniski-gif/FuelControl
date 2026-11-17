@@ -1238,6 +1238,7 @@ painel.Children.Add(card);
 
             SalvarDados();
             AtualizarTanqueTexto(veiculo.Text);
+            AtualizarTanqueArlaTexto(veiculo.Text);
             DisplayAlert("Salvo", "Configuração do tanque salva.", "OK");
         }
         catch (Exception ex)
