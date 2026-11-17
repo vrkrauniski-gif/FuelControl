@@ -1246,6 +1246,7 @@ painel.Children.Add(card);
 
     arla.Capacidade = capacidadeA;
     arla.LitrosEstimados = litrosAtuaisArla;
+    arla.KmUltimoAbastecimento = ObterUltimoKmRegistrado(veiculo.Text) ?? 0;
 }
 
             if (Ler(limiteAlerta.Text, out var alerta) &&
