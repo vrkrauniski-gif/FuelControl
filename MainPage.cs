@@ -2977,26 +2977,31 @@ x.Consumo.ToString("N2", pt) + " km/l");
                 y += 8;
             }
 
-            Linha("RELATORIO DE CARGAS / VIAGENS");
+            if (tipo != "Abastecimentos")
+{
+    Linha("RELATORIO DE CARGAS / VIAGENS");
 
-            foreach (var x in cg)
-            {
-                Linha($"{x.Data:dd/MM/yyyy} | {x.HoraInicial:hh\\:mm}-{x.HoraFinal:hh\\:mm} | Frente {x.Frente} | {x.Veiculo} | {x.Motorista}");
-                Linha("Carreta: " + x.AnoCarreta +
-      " | Bruto: " + x.PesoBruto.ToString("N1", pt) +
-      " kg | Tara: " + x.Tara.ToString("N1", pt) + " kg");
-                Linha("Liquido: " + x.PesoLiquido.ToString("N1", pt) +
-      " kg | Combustivel: " + x.LitrosConsumidos.ToString("N1", pt) + " L");
-                if (ViagemComKmValido(x))
-                    Linha($"KM inicial: {x.KmInicial.ToString("0.0", pt)} | KM final: {x.KmFinal.ToString("0.0", pt)} | Rodados: {ObterKmRodados(x).ToString("0.0", pt)} | Raio: {(ObterKmRodados(x)/2.0).ToString("N2", pt)} km");
-                Linha(VelocidadeMediaViagem(x) > 0
-                    ? "Velocidade média da viagem: " +
-  VelocidadeMediaViagem(x).ToString("N2", pt) + " km/h"
-  
-                    : "Velocidade média: não calculada (verifique KM e horários)");
-                Linha($"Consumo: {x.ConsumoKmL.ToString("N2", pt)} km/l | VE: {x.ValorEnergetico.ToString("N2", pt)} | Meta: {x.MetaEnergetica.ToString("N2", pt)}");
-                y += 8;
-            }
+    foreach (var x in cg)
+    {
+        Linha($"{x.Data:dd/MM/yyyy} | {x.HoraInicial:hh\\:mm}-{x.HoraFinal:hh\\:mm} | Frente {x.Frente} | {x.Veiculo} | {x.Motorista}");
+        Linha("Carreta: " + x.AnoCarreta +
+              " | Bruto: " + x.PesoBruto.ToString("N1", pt) +
+              " kg | Tara: " + x.Tara.ToString("N1", pt) + " kg");
+        Linha("Liquido: " + x.PesoLiquido.ToString("N1", pt) +
+              " kg | Combustivel: " + x.LitrosConsumidos.ToString("N1", pt) + " L");
+
+        if (ViagemComKmValido(x))
+            Linha($"KM inicial: {x.KmInicial.ToString("0.0", pt)} | KM final: {x.KmFinal.ToString("0.0", pt)} | Rodados: {ObterKmRodados(x).ToString("0.0", pt)} | Raio: {(ObterKmRodados(x)/2.0).ToString("N2", pt)} km");
+
+        Linha(VelocidadeMediaViagem(x) > 0
+            ? "Velocidade média da viagem: " +
+              VelocidadeMediaViagem(x).ToString("N2", pt) + " km/h"
+            : "Velocidade média: não calculada (verifique KM e horários)");
+
+        Linha($"Consumo: {x.ConsumoKmL.ToString("N2", pt)} km/l | VE: {x.ValorEnergetico.ToString("N2", pt)} | Meta: {x.MetaEnergetica.ToString("N2", pt)}");
+        y += 8;
+    }
+}
 
             if (pagina != null)
                 doc.FinishPage(pagina);
