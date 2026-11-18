@@ -2907,56 +2907,56 @@ painel.Children.Add(Cartao("Raio médio por viagem",
 
             Linha("RESUMO DO RELATORIO");
 
-            double kmTotal = SomarKmViagens(cg);
-
-            double toneladasTotal =
-                cg.Sum(x => x.PesoLiquido) / 1000.0;
-
-            double raioMedio =
-                CalcularRaioMedio(cg);
-
             Linha($"Abastecimentos: {ab.Count}");
-            Linha($"Viagens realizadas: {cg.Count}");
-            Linha("KM rodados: " + kmTotal.ToString("N1", pt) + " km");
 
-            Linha(cg.Count > 0
-                ? "Raio medio por viagem: " + raioMedio.ToString("N2", pt) + " km"
-                : "Raio medio por viagem: --");
+if (tipo != "Abastecimentos")
+{
+    double kmTotal = SomarKmViagens(cg);
+    double toneladasTotal = cg.Sum(x => x.PesoLiquido) / 1000.0;
+    double raioMedio = CalcularRaioMedio(cg);
 
-            Linha("Tonelagem liquida total: " + toneladasTotal.ToString("N2", pt) + " t");
-            Linha("Litros abastecidos: " + ab.Sum(x => x.Litros).ToString("N1", pt) + " L");
-            double mediaArlaPdf = CalcularMediaArlaKmL(ab);
-            double mediaArla100Pdf = CalcularMediaArla100Km(ab);
-            double litrosArlaPdf = AbastecimentosComArlaValidos(ab).Sum(x => x.LitrosArla);
-            Linha(litrosArlaPdf > 0
-             ? "Arla 32: " + litrosArlaPdf.ToString("N1", pt) +
-  " L | Media: " + mediaArlaPdf.ToString("N2", pt) +
-  " km/l (" + mediaArla100Pdf.ToString("N2", pt) + " L/100 km)"
-                : "Arla 32: sem registros no periodo");
-            Linha("Litros consumidos nas viagens: " +
-      cg.Sum(x => x.LitrosConsumidos).ToString("N1", pt) + " L");
-            Linha($"Total gasto: {ab.Sum(x => x.Valor):C2}");
+    Linha($"Viagens realizadas: {cg.Count}");
+    Linha("KM rodados: " + kmTotal.ToString("N1", pt) + " km");
+    Linha("Raio médio por viagem: " + raioMedio.ToString("N2", pt) + " km");
+    Linha("Tonelagem líquida total: " + toneladasTotal.ToString("N2", pt) + " t");
+}
 
-            y += 10;
+Linha("Litros abastecidos: " + ab.Sum(x => x.Litros).ToString("N1", pt) + " L");
 
-            // Resumo de tonelagem separado por dia.
-            Linha("TONELAGEM LIQUIDA POR DIA");
+double mediaArlaPdf = CalcularMediaArlaKmL(ab);
+double mediaArla100Pdf = CalcularMediaArla100Km(ab);
+double litrosArlaPdf = AbastecimentosComArlaValidos(ab).Sum(x => x.LitrosArla);
 
-            var resumoDiario = cg
-                .GroupBy(x => x.Data.Date)
-                .OrderBy(x => x.Key);
+Linha(litrosArlaPdf > 0
+    ? "Arla 32: " + litrosArlaPdf.ToString("N1", pt) +
+      " L | Média: " + mediaArlaPdf.ToString("N2", pt) +
+      " km/l (" + mediaArla100Pdf.ToString("N2", pt) + " L/100 km)"
+    : "Arla 32: sem registros no período");
 
-            foreach (var grupo in resumoDiario)
-            {
-                double toneladasDia =
-                    grupo.Sum(x => x.PesoLiquido) / 1000.0;
+if (tipo != "Abastecimentos")
+{
+    Linha("Litros consumidos nas viagens: " +
+          cg.Sum(x => x.LitrosConsumidos).ToString("N1", pt) + " L");
 
-                Linha($"{grupo.Key:dd/MM/yyyy} | " +
-                      $"Viagens: {grupo.Count()} | " +
-                      "KM: " + SomarKmViagens(grupo).ToString("N1", pt) +
-" | Raio: " + CalcularRaioMedio(grupo).ToString("N2", pt) + " km | " +
-                      "Tonelagem liquida: " + toneladasDia.ToString("N2", pt) + " t");
-            }
+    Linha("TONELAGEM LÍQUIDA POR DIA");
+
+    var resumoDiario = cg
+        .GroupBy(x => x.Data.Date)
+        .OrderBy(x => x.Key);
+
+    foreach (var grupo in resumoDiario)
+    {
+        double toneladasDia = grupo.Sum(x => x.PesoLiquido) / 1000.0;
+
+        Linha($"{grupo.Key:dd/MM/yyyy} | Viagens: {grupo.Count()} | " +
+              "KM: " + SomarKmViagens(grupo).ToString("N1", pt) +
+              " | Tonelagem líquida: " + toneladasDia.ToString("N2", pt) + " t");
+    }
+}
+
+Linha($"Total gasto: {ab.Sum(x => x.Valor):C2}");
+
+y += 10;
 
             y += 10;
 
