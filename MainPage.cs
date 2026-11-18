@@ -2954,7 +2954,6 @@ if (tipo != "Abastecimentos")
     }
 }
 
-Linha($"Total gasto: {ab.Sum(x => x.Valor):C2}");
 
 y += 10;
 
