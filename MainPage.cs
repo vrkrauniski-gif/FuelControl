@@ -1131,15 +1131,23 @@ else
                 TextColor = Color.FromArgb("#123B65")
             });
             card.Children.Add(new Label
-            {
-                Text = $"Motorista: {x.Motorista} | {x.Combustivel} | {x.Litros:N1} L"
-            });
-                        card.Children.Add(new Label
-            {
-                Text = $"KM: {x.KmAnterior.ToString("N1", pt)} → {x.KmAtual.ToString("N1", pt)} | Média: {x.Consumo.ToString("N2", pt)} km/l"
-            });
-            if (x.TemArla)
-                card.Children.Add(new Label { Text = "Arla 32: " + x.LitrosArla.ToString("N1", pt) + " L" });
+{
+    Text = $"Motorista: {x.Motorista} | {x.Combustivel} | {x.Litros:N1} L",
+    TextColor = Color.FromArgb("#123B65")
+});
+
+card.Children.Add(new Label
+{
+    Text = $"KM: {x.KmAnterior.ToString("N1", pt)} → {x.KmAtual.ToString("N1", pt)} | Média: {x.Consumo.ToString("N2", pt)} km/l",
+    TextColor = Color.FromArgb("#123B65")
+});
+
+if (x.TemArla)
+    card.Children.Add(new Label
+    {
+        Text = "Arla 32: " + x.LitrosArla.ToString("N1", pt) + " L",
+        TextColor = Color.FromArgb("#123B65")
+    });
 
             if (ContextoTurno.EhAdministrador ||
     string.Equals(
