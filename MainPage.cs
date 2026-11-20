@@ -1738,7 +1738,7 @@ iniciar.Clicked += IniciarViagem;
                 lblEnergetico,
                 Rotulo("Meta do valor energético"),
                 metaEnergetica,
-                                salvar,
+                                iniciar,
                 Titulo("VIAGEM EM PREENCHIMENTO"),
                 lblPreviaViagem,
                 Titulo("HISTÓRICO DE VIAGENS")
