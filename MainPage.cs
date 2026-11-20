@@ -2022,7 +2022,16 @@ HoraInicial = horaInicialViagem.Time ?? TimeSpan.Zero,
 HoraFinal = horaFinalViagem.Time ?? TimeSpan.Zero,
                 Frente = frenteSelecionada,
                 Veiculo = nomeVeiculo,
-                Motorista = cargaMotorista.Text?.Trim() ?? "",
+                Motorista = viagemEmEdicao?.Motorista
+    ?? cargaMotorista.Text?.Trim() ?? "",
+
+MotoristaAtual = viagemEmEdicao?.MotoristaAtual
+    ?? cargaMotorista.Text?.Trim() ?? "",
+
+Transferencias = viagemEmEdicao?.Transferencias
+    ?? new List<TransferenciaViagem>(),
+
+EmAndamento = false,
                 AnoCarreta = ano,
                 PesoBruto = bruto,
                 Tara = tara,
