@@ -3127,3 +3127,10 @@ public List<TransferenciaViagem> Transferencias { get; set; } = new();
     public bool EmAndamento { get; set; } = false;
     public bool Excluida { get; set; } = false;
 }
+public class TransferenciaViagem
+{
+    public string MotoristaAnterior { get; set; } = "";
+    public string MotoristaNovo { get; set; } = "";
+    public DateTime DataHora { get; set; }
+    public double Km { get; set; }
+}
