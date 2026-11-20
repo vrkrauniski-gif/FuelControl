@@ -2234,6 +2234,15 @@ detalhes.Children.Add(new Label
         });
 
         var botoesViagem = new HorizontalStackLayout { Spacing = 8 };
+        if (x.EmAndamento)
+{
+    var transferir = Botao("TRANSFERIR CAMINHÃO", "#2563EB");
+
+    transferir.Clicked += (s, e) =>
+        TransferirCaminhao(x);
+
+    botoesViagem.Children.Add(transferir);
+}
 
         if (ContextoTurno.EhAdministrador ||
             x.Turno == ContextoTurno.Turno)
