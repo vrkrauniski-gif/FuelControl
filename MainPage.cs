@@ -2388,7 +2388,9 @@ View CriarListaViagens()
 
         detalhes.Children.Add(new Label
         {
-            Text = $"{x.Data:dd/MM/yyyy} | {x.HoraInicial:hh\\:mm}–{x.HoraFinal:hh\\:mm} - {x.Veiculo} | Frente {x.Frente}",
+            Text = x.EmAndamento
+    ? $"{x.Data:dd/MM/yyyy} | {x.HoraInicial:hh\\:mm}–EM ANDAMENTO - {x.Veiculo} | Frente {x.Frente}"
+    : $"{x.Data:dd/MM/yyyy} | {x.HoraInicial:hh\\:mm}–{x.HoraFinal:hh\\:mm} - {x.Veiculo} | Frente {x.Frente}",
             FontAttributes = FontAttributes.Bold,
             TextColor = Color.FromArgb("#123B65")
         });
