@@ -1798,6 +1798,135 @@ cargaVeiculo.TextChanged += (s, e) =>
             ? TaraPorAno(ano)
             : 0;
     }
+    
+async void IniciarViagem(object? sender, EventArgs e)
+{
+    if (salvandoViagem)
+        return;
+
+    salvandoViagem = true;
+
+    try
+    {
+        string nomeVeiculo = cargaVeiculo.Text?.Trim() ?? "";
+        string nomeMotorista = cargaMotorista.Text?.Trim() ?? "";
+
+        if (string.IsNullOrWhiteSpace(nomeVeiculo) ||
+            string.IsNullOrWhiteSpace(nomeMotorista) ||
+            string.IsNullOrWhiteSpace(frenteSelecionada))
+        {
+            await DisplayAlert(
+                "Atenção",
+                "Informe o caminhão, o motorista e a frente de carregamento.",
+                "OK");
+            return;
+        }
+
+        bool jaExiste = viagens.Any(x =>
+            !x.Excluida &&
+            x.EmAndamento &&
+            Id(x.Veiculo) == Id(nomeVeiculo));
+
+        if (jaExiste)
+        {
+            await DisplayAlert(
+                "Viagem em andamento",
+                "Este caminhão já possui uma viagem em andamento. Finalize ou retome essa viagem antes de iniciar outra.",
+                "OK");
+            return;
+        }
+
+        double? ultimoKm = ObterUltimoKmRegistrado(nomeVeiculo);
+
+        double kmInicial;
+
+        if (ultimoKm.HasValue && ultimoKm.Value > 0)
+        {
+            kmInicial = ultimoKm.Value;
+        }
+        else if (!Ler(kmInicialViagem.Text, out kmInicial) ||
+                 kmInicial < 0)
+        {
+            await DisplayAlert(
+                "KM inicial",
+                "Não existe KM anterior registrado para este caminhão. Informe o KM inicial manualmente.",
+                "OK");
+            return;
+        }
+
+        kmInicialViagem.Text =
+            kmInicial.ToString("0.##", CultureInfo.InvariantCulture);
+
+        DateTime dataHoraInicio =
+            (dataViagem.Date ?? DateTime.Today).Date +
+            (horaInicialViagem.Time ?? DateTime.Now.TimeOfDay);
+
+        var viagem = new Viagem
+        {
+            Id = Guid.NewGuid().ToString(),
+            Turno = ContextoTurno.Turno,
+            CriadoEmUtc = DateTime.UtcNow,
+            CriadoPorDispositivo = ContextoTurno.Dispositivo,
+            EditadoEmUtc = DateTime.UtcNow,
+            EditadoPorDispositivo = ContextoTurno.Dispositivo,
+
+            Data = dataHoraInicio,
+            HoraInicial = dataHoraInicio.TimeOfDay,
+            HoraFinal = TimeSpan.Zero,
+
+            Frente = frenteSelecionada,
+            Veiculo = nomeVeiculo,
+            Motorista = nomeMotorista,
+            MotoristaAtual = nomeMotorista,
+
+            KmInicial = kmInicial,
+            EmAndamento = true,
+            TanqueDescontado = false,
+
+            Transferencias = new List<TransferenciaViagem>()
+        };
+
+        viagens.Insert(0, viagem);
+        SalvarDados();
+
+        bool sincronizada =
+            await FirebaseSyncService.SalvarViagemAsync(viagem);
+
+        if (!sincronizada)
+        {
+            await DisplayAlert(
+                "Viagem salva no celular",
+                "A viagem foi registrada localmente, mas não foi possível sincronizar com o Firebase.\n\n" +
+                FirebaseSyncService.UltimoErro,
+                "OK");
+        }
+        else
+        {
+            await DisplayAlert(
+                "Viagem iniciada",
+                "Saída registrada com sucesso!\n\n" +
+                "Caminhão: " + nomeVeiculo + "\n" +
+                "Motorista: " + nomeMotorista + "\n" +
+                "Frente: " + frenteSelecionada + "\n" +
+                "KM inicial: " + kmInicial.ToString("N1", pt),
+                "OK");
+        }
+
+        MostrarMenu("Cargas");
+    }
+    catch (Exception ex)
+    {
+        await DisplayAlert(
+            "Erro ao iniciar viagem",
+            ex.Message,
+            "OK");
+    }
+    finally
+    {
+        salvandoViagem = false;
+    }
+}
+
 
     async void SalvarViagem(object? sender, EventArgs e)
     {
