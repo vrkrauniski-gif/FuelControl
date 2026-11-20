@@ -2330,6 +2330,101 @@ detalhes.Children.Add(new Label
 }
 
 
+async void TransferirCaminhao(Viagem viagem)
+{
+    string motoristaAtual =
+        string.IsNullOrWhiteSpace(viagem.MotoristaAtual)
+            ? viagem.Motorista
+            : viagem.MotoristaAtual;
+
+    string novoMotorista = await DisplayPromptAsync(
+        "Transferir caminhão",
+        "Motorista que está recebendo o caminhão:",
+        "Continuar",
+        "Cancelar",
+        "Nome do parceiro",
+        80);
+
+    if (string.IsNullOrWhiteSpace(novoMotorista))
+        return;
+
+    novoMotorista = novoMotorista.Trim();
+
+    if (Id(novoMotorista) == Id(motoristaAtual))
+    {
+        await DisplayAlert(
+            "Atenção",
+            "Informe um parceiro diferente do motorista atual.",
+            "OK");
+        return;
+    }
+
+    string textoKm = await DisplayPromptAsync(
+        "KM da transferência",
+        "Informe a quilometragem atual do caminhão:",
+        "Registrar",
+        "Cancelar",
+        "KM atual",
+        20,
+        Keyboard.Numeric);
+
+    if (!Ler(textoKm, out double km))
+    {
+        await DisplayAlert(
+            "KM inválido",
+            "Informe uma quilometragem válida.",
+            "OK");
+        return;
+    }
+
+    double ultimoKm = viagem.Transferencias?.LastOrDefault()?.Km
+        ?? viagem.KmInicial;
+
+    if (km < ultimoKm)
+    {
+        await DisplayAlert(
+            "KM inválido",
+            "O KM da transferência não pode ser menor que o último KM registrado.",
+            "OK");
+        return;
+    }
+
+    string motoristaAnterior = motoristaAtual;
+
+    viagem.Transferencias ??= new List<TransferenciaViagem>();
+
+    viagem.Transferencias.Add(new TransferenciaViagem
+    {
+        MotoristaAnterior = motoristaAnterior,
+        MotoristaNovo = novoMotorista,
+        DataHora = DateTime.Now,
+        Km = km
+    });
+
+    viagem.MotoristaAtual = novoMotorista;
+    viagem.EditadoEmUtc = DateTime.UtcNow;
+    viagem.EditadoPorDispositivo = ContextoTurno.Dispositivo;
+
+    SalvarDados();
+
+    bool sincronizada =
+        await FirebaseSyncService.SalvarViagemAsync(viagem);
+
+    await DisplayAlert(
+        "Transferência registrada",
+        "Caminhão: " + viagem.Veiculo + "\n" +
+        "Entregue por: " + motoristaAnterior + "\n" +
+        "Recebido por: " + novoMotorista + "\n" +
+        "KM: " + km.ToString("N1", pt) + "\n" +
+        "Horário: " + DateTime.Now.ToString("dd/MM/yyyy HH:mm") +
+        (sincronizada
+            ? "\nSincronizado com Firebase."
+            : "\nSalvo no celular. Sincronização pendente."),
+        "OK");
+
+    MostrarMenu("Cargas");
+}
+
     bool ViagemComKmValido(Viagem v) => v.KmFinal > v.KmInicial && v.KmInicial >= 0;
     double ObterKmRodados(Viagem v) => ViagemComKmValido(v) ? v.KmFinal - v.KmInicial : 0;
     double SomarKmViagens(IEnumerable<Viagem> registros) =>
