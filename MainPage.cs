@@ -2459,6 +2459,12 @@ detalhes.Children.Add(new Label
         var botoesViagem = new HorizontalStackLayout { Spacing = 8 };
         if (x.EmAndamento)
 {
+var finalizar = Botao("FINALIZAR VIAGEM", "#15803D");
+
+finalizar.Clicked += (s, e) =>
+    FinalizarViagem(x);
+
+botoesViagem.Children.Add(finalizar);
     var transferir = Botao("TRANSFERIR CAMINHÃO", "#2563EB");
 
     transferir.Clicked += (s, e) =>
