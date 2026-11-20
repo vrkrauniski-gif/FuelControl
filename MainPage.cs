@@ -1709,8 +1709,8 @@ cargaVeiculo.TextChanged += (s, e) =>
         consumoViagem.TextChanged += (s, e) => AtualizarPeso();
         metaEnergetica.TextChanged += (s, e) => AtualizarPeso();
 
-        var salvar = Botao("SALVAR VIAGEM E DESCONTAR DO TANQUE");
-        salvar.Clicked += SalvarViagem;
+        var iniciar = Botao("INICIAR VIAGEM");
+iniciar.Clicked += IniciarViagem;
 
         var layout = new VerticalStackLayout
         {
