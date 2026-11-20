@@ -2439,18 +2439,27 @@ if (x.Transferencias != null && x.Transferencias.Any())
         });
 
     
+
+double ultimoKmTransferencia =
+    x.Transferencias?
+        .OrderBy(t => t.DataHora)
+        .LastOrDefault()?.Km ?? x.KmInicial;
+
+string textoKm = x.EmAndamento
+    ? $"KM inicial: {x.KmInicial.ToString("0.0", pt)} | Último KM registrado: {ultimoKmTransferencia.ToString("0.0", pt)}\n"
+    : (ViagemComKmValido(x)
+        ? $"KM inicial: {x.KmInicial.ToString("0.0", pt)} | KM final: {x.KmFinal.ToString("0.0", pt)} | Rodados: {ObterKmRodados(x).ToString("0.0", pt)} km | Raio: {(ObterKmRodados(x) / 2.0).ToString("N2", pt)} km\n"
+        : "Quilometragem não informada\n");
+
 detalhes.Children.Add(new Label
 {
-    Text = (ViagemComKmValido(x)
-        ? $"KM inicial: {x.KmInicial.ToString("0.0", pt)} | KM final: {x.KmFinal.ToString("0.0", pt)} | Rodados: {ObterKmRodados(x).ToString("0.0", pt)} km | Raio: {(ObterKmRodados(x) / 2.0).ToString("N2", pt)} km\n"
-        : "Quilometragem não informada\n") +
+    Text = textoKm +
         (VelocidadeMediaViagem(x) > 0
             ? "Velocidade média da viagem: " + VelocidadeMediaViagem(x).ToString("N2", pt) + " km/h\n"
             : "Velocidade média: não calculada (verifique KM e horários)\n") +
         $"Combustível: {x.LitrosConsumidos.ToString("N1", pt)} L | Consumo: {x.ConsumoKmL.ToString("N2", pt)} km/l",
     TextColor = Color.FromArgb("#123B65")
 });
-
 
         detalhes.Children.Add(new Label
         {
