@@ -1928,6 +1928,199 @@ async void IniciarViagem(object? sender, EventArgs e)
 }
 
 
+async void FinalizarViagem(Viagem viagem)
+{
+    if (salvandoViagem || !viagem.EmAndamento)
+        return;
+
+    bool confirmar = await DisplayAlert(
+        "Finalizar viagem",
+        "Confirma o retorno do caminhão " + viagem.Veiculo + "?",
+        "Continuar",
+        "Cancelar");
+
+    if (!confirmar)
+        return;
+
+    salvandoViagem = true;
+
+    try
+    {
+        string textoKm = await DisplayPromptAsync(
+            "KM final",
+            "Informe o KM atual do caminhão:",
+            "Continuar", "Cancelar",
+            "KM final", 20, Keyboard.Numeric);
+
+        if (!Ler(textoKm, out double kmFinal))
+        {
+            await DisplayAlert("Atenção", "KM final inválido.", "OK");
+            return;
+        }
+
+        double ultimoKm = viagem.Transferencias?.LastOrDefault()?.Km
+            ?? viagem.KmInicial;
+
+        if (kmFinal <= ultimoKm)
+        {
+            await DisplayAlert(
+                "KM inválido",
+                "O KM final deve ser maior que o último KM registrado (" +
+                ultimoKm.ToString("N1", pt) + ").",
+                "OK");
+            return;
+        }
+
+        string textoAno = await DisplayPromptAsync(
+            "Ano da carreta",
+            "Informe o ano da carreta:",
+            "Continuar", "Cancelar",
+            "Ano", 4, Keyboard.Numeric);
+
+        if (!int.TryParse(textoAno, out int ano))
+        {
+            await DisplayAlert("Atenção", "Ano inválido.", "OK");
+            return;
+        }
+
+        string textoBruto = await DisplayPromptAsync(
+            "Peso bruto",
+            "Informe o peso bruto da carga em kg:",
+            "Continuar", "Cancelar",
+            "Peso bruto", 15, Keyboard.Numeric);
+
+        if (!Ler(textoBruto, out double bruto) || bruto <= 0)
+        {
+            await DisplayAlert("Atenção", "Peso bruto inválido.", "OK");
+            return;
+        }
+
+        string textoLitros = await DisplayPromptAsync(
+            "Combustível consumido",
+            "Informe os litros consumidos na viagem:",
+            "Continuar", "Cancelar",
+            "Litros", 15, Keyboard.Numeric);
+
+        if (!Ler(textoLitros, out double litros) || litros <= 0)
+        {
+            await DisplayAlert("Atenção", "Litros inválidos.", "OK");
+            return;
+        }
+
+        string textoConsumo = await DisplayPromptAsync(
+            "Consumo médio",
+            "Informe o consumo médio em km/l:",
+            "Continuar", "Cancelar",
+            "Consumo km/l", 15, Keyboard.Numeric);
+
+        if (!Ler(textoConsumo, out double consumo) || consumo <= 0)
+        {
+            await DisplayAlert("Atenção", "Consumo inválido.", "OK");
+            return;
+        }
+
+        double tara = TaraPorAno(ano);
+
+        if (tara <= 0 || bruto <= tara)
+        {
+            await DisplayAlert(
+                "Peso inválido",
+                "Verifique o ano da carreta e o peso bruto. O peso bruto deve ser maior que a tara.",
+                "OK");
+            return;
+        }
+
+        var dados = ObterVeiculo(viagem.Veiculo);
+
+        if (dados.Capacidade > 0 &&
+            !viagem.TanqueDescontado &&
+            litros > dados.LitrosAtuais)
+        {
+            await DisplayAlert(
+                "Combustível insuficiente",
+                "O consumo informado é maior que o combustível disponível no tanque.",
+                "OK");
+            return;
+        }
+
+        double liquido = bruto - tara;
+        double valorEnergetico = consumo * liquido / 1000.0;
+        double meta = viagem.MetaEnergetica > 0
+            ? viagem.MetaEnergetica
+            : 82;
+
+        double litrosAntigos = dados.LitrosAtuais;
+        bool tanqueDescontadoAnterior = viagem.TanqueDescontado;
+
+        DateTime retorno = DateTime.Now;
+
+        viagem.HoraFinal = retorno.TimeOfDay;
+        viagem.AnoCarreta = ano;
+        viagem.PesoBruto = bruto;
+        viagem.Tara = tara;
+        viagem.PesoLiquido = liquido;
+        viagem.KmFinal = kmFinal;
+        viagem.LitrosConsumidos = litros;
+        viagem.ConsumoKmL = consumo;
+        viagem.ValorEnergetico = valorEnergetico;
+        viagem.MetaEnergetica = meta;
+        viagem.EmAndamento = false;
+
+        if (dados.Capacidade > 0 && !viagem.TanqueDescontado)
+        {
+            dados.LitrosAtuais -= litros;
+            viagem.TanqueDescontado = true;
+        }
+
+        viagem.EditadoEmUtc = DateTime.UtcNow;
+        viagem.EditadoPorDispositivo = ContextoTurno.Dispositivo;
+
+        try
+        {
+            SalvarDados();
+        }
+        catch
+        {
+            dados.LitrosAtuais = litrosAntigos;
+            viagem.TanqueDescontado = tanqueDescontadoAnterior;
+            viagem.EmAndamento = true;
+            throw;
+        }
+
+        bool sincronizada =
+            await FirebaseSyncService.SalvarViagemAsync(viagem);
+
+        await DisplayAlert(
+            "Viagem finalizada",
+            "Caminhão: " + viagem.Veiculo + "\n" +
+            "KM final: " + kmFinal.ToString("N1", pt) + "\n" +
+            "KM rodados: " + (kmFinal - viagem.KmInicial).ToString("N1", pt) + "\n" +
+            "Peso líquido: " + liquido.ToString("N1", pt) + " kg\n" +
+            "Consumo: " + consumo.ToString("N2", pt) + " km/l\n" +
+            "Combustível descontado: " +
+            (viagem.TanqueDescontado ? litros.ToString("N1", pt) : "não aplicado") +
+            " L\n" +
+            (sincronizada
+                ? "Sincronizado com Firebase."
+                : "Salvo no celular. Sincronização pendente."),
+            "OK");
+
+        AtualizarTanqueArlaTexto(viagem.Veiculo);
+        MostrarMenu("Cargas");
+    }
+    catch (Exception ex)
+    {
+        await DisplayAlert(
+            "Erro ao finalizar viagem",
+            ex.Message,
+            "OK");
+    }
+    finally
+    {
+        salvandoViagem = false;
+    }
+}
+
     async void SalvarViagem(object? sender, EventArgs e)
     {
         if (salvandoViagem)
