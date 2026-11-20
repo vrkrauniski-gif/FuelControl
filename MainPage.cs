@@ -2206,6 +2206,27 @@ View CriarListaViagens()
             Text = $"Motorista: {x.Motorista} | Carreta: {x.AnoCarreta}",
             TextColor = Color.FromArgb("#123B65")
         });
+        detalhes.Children.Add(new Label
+{
+    Text = "MOTORISTA ATUAL: " +
+        (string.IsNullOrWhiteSpace(x.MotoristaAtual)
+            ? x.Motorista
+            : x.MotoristaAtual),
+    FontAttributes = FontAttributes.Bold,
+    TextColor = Color.FromArgb("#0F766E")
+});
+
+if (x.Transferencias != null && x.Transferencias.Any())
+{
+    detalhes.Children.Add(new Label
+    {
+        Text = "HISTÓRICO DE TRANSFERÊNCIAS:\n" +
+            string.Join("\n", x.Transferencias.Select(t =>
+                $"{t.MotoristaAnterior} → {t.MotoristaNovo} | " +
+                $"{t.DataHora:dd/MM/yyyy HH:mm} | KM: {t.Km.ToString("N1", pt)}")),
+        TextColor = Color.FromArgb("#123B65")
+    });
+}
 
         detalhes.Children.Add(new Label
         {
