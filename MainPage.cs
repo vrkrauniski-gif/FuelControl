@@ -2036,157 +2036,158 @@ else
             "OK");
     }
 
-    View CriarListaViagens()
-    {
-        var painel = new VerticalStackLayout { Spacing = 8 };
-
-        if (!viagens.Any(v => !v.Excluida))
     
-        {
-            painel.Children.Add(new Label
-            {
-                Text = "Nenhuma viagem registrada.",
-                TextColor = Colors.Gray
-            });
-            return painel;
-        }
-
-        foreach (var x in viagens.Where(v => !v.Excluida).OrderByDescending(v => v.Data))
-        {
-            var detalhes = new VerticalStackLayout { Spacing = 3 };
-
-            detalhes.Children.Add(new Label
-            {
-                Text = $"{x.Data:dd/MM/yyyy} | {x.HoraInicial:hh\\:mm}–{x.HoraFinal:hh\\:mm} - {x.Veiculo} | Frente {x.Frente}",
-                FontAttributes = FontAttributes.Bold,
-                TextColor = Color.FromArgb("#123B65")
-            });
-
-            detalhes.Children.Add(new Label
-            {
-                Text = $"Motorista: {x.Motorista} | Carreta: {x.AnoCarreta}"
-            });
-
-            detalhes.Children.Add(new Label
-            {
-                Text = $"Bruto: {x.PesoBruto.ToString("N1", pt)} kg | Tara: {x.Tara.ToString("N1", pt)} kg | Líquido: {x.PesoLiquido.ToString("N1", pt)} kg"
-            });
-
-            detalhes.Children.Add(new Label
-            {
-                Text = (ViagemComKmValido(x)
-            ?  $"KM inicial: {x.KmInicial.ToString("0.0", pt)} | KM final: {x.KmFinal.ToString("0.0", pt)} | Rodados: {ObterKmRodados(x).ToString("0.0", pt)} km | Raio: {(ObterKmRodados(x)/2.0).ToString("N2", pt)} km\n"
-            : "Quilometragem não informada\n") +
-            (VelocidadeMediaViagem(x) > 0
-                ? "Velocidade média da viagem: " + VelocidadeMediaViagem(x).ToString("N2", pt) + " km/h\\n"
-                : "Velocidade média: não calculada (verifique KM e horários)\\n") +
-            $"Combustível: {x.LitrosConsumidos.ToString("N1", pt)} L | Consumo: {x.ConsumoKmL.ToString("N2", pt)} km/l"
-            });
-
-            detalhes.Children.Add(new Label
-            {
-                Text = $"Valor energético: {x.ValorEnergetico.ToString("N2", pt)} | Meta: {x.MetaEnergetica.ToString("N2", pt)}"
-
-            });
-            var botoesViagem = new HorizontalStackLayout { Spacing = 8 };
-
-            if (ContextoTurno.EhAdministrador ||
-    x.Turno == ContextoTurno.Turno)
-            {
-                var editarViagem = Botao("EDITAR VIAGEM", "#0F766E");
-                editarViagem.Clicked += (sender, args) =>
-                    CarregarViagemParaEdicao(x);
-
-                botoesViagem.Children.Add(editarViagem);
-
-                var excluir = Botao("EXCLUIR VIAGEM", "#B91C1C");
-
-                excluir.Clicked += async (s, e) =>
-                {
-                    bool ok = await DisplayAlert(
-                        "Excluir viagem",
-                        "Deseja excluir esta viagem? Os litros descontados serão devolvidos ao tanque cadastrado.",
-                        "Sim", "Não");
-
-                    if (!ok)
-                        return;
-
-                        if (!ContextoTurno.EhAdministrador &&
-    x.Turno != ContextoTurno.Turno)
+View CriarListaViagens()
 {
-    await DisplayAlert(
-        "Acesso restrito",
-        "Somente o turno que cadastrou esta viagem pode excluí-la.",
-        "OK");
-    return;
-}
+    var painel = new VerticalStackLayout { Spacing = 8 };
 
-x.Excluida = true;
-x.EditadoEmUtc = DateTime.UtcNow;
-x.EditadoPorDispositivo = ContextoTurno.Dispositivo;
-
-bool excluidaNuvem =
-    await FirebaseSyncService.SalvarViagemAsync(x);
-
-if (!excluidaNuvem)
-{
-    x.Excluida = false;
-
-    await DisplayAlert(
-        "Erro ao excluir",
-        FirebaseSyncService.UltimoErro,
-        "OK");
-
-    return;
-}
-
-                    double litrosAntigos = 0;
-                    DadosVeiculo? d = null;
-
-                    if (x.TanqueDescontado)
-                    {
-                        d = ObterVeiculo(x.Veiculo);
-                        litrosAntigos = d.LitrosAtuais;
-
-                        d.LitrosAtuais = Math.Min(
-                            d.Capacidade,
-                            d.LitrosAtuais + x.LitrosConsumidos);
-                    }
-
-                    
-
-                    try
-                    {
-                        SalvarDados();
-                        MostrarMenu("Cargas");
-                    }
-                    catch (Exception ex)
-                    {
-                        
-
-                        if (d != null)
-                            d.LitrosAtuais = litrosAntigos;
-
-                        await DisplayAlert("Erro", ex.Message, "OK");
-                    }
-                };
-
-                botoesViagem.Children.Add(excluir);
-            }
-
-            detalhes.Children.Add(botoesViagem);
-
-            painel.Children.Add(new Border
-            {
-                BackgroundColor = Colors.White,
-                Stroke = Color.FromArgb("#DCE4ED"),
-                Padding = 10,
-                Content = detalhes
-            });
-        }
-
+    if (!viagens.Any(v => !v.Excluida))
+    {
+        painel.Children.Add(new Label
+        {
+            Text = "Nenhuma viagem registrada.",
+            TextColor = Colors.Gray
+        });
         return painel;
     }
+
+    foreach (var x in viagens.Where(v => !v.Excluida).OrderByDescending(v => v.Data))
+    {
+        var detalhes = new VerticalStackLayout { Spacing = 3 };
+
+        detalhes.Children.Add(new Label
+        {
+            Text = $"{x.Data:dd/MM/yyyy} | {x.HoraInicial:hh\\:mm}–{x.HoraFinal:hh\\:mm} - {x.Veiculo} | Frente {x.Frente}",
+            FontAttributes = FontAttributes.Bold,
+            TextColor = Color.FromArgb("#123B65")
+        });
+
+        detalhes.Children.Add(new Label
+        {
+            Text = $"Motorista: {x.Motorista} | Carreta: {x.AnoCarreta}",
+            TextColor = Color.FromArgb("#123B65")
+        });
+
+        detalhes.Children.Add(new Label
+        {
+            Text = $"Bruto: {x.PesoBruto.ToString("N1", pt)} kg | Tara: {x.Tara.ToString("N1", pt)} kg | Líquido: {x.PesoLiquido.ToString("N1", pt)} kg",
+            TextColor = Color.FromArgb("#123B65")
+        });
+
+        detalhes.Children.Add(new Label
+        {
+            Text = (ViagemComKmValido(x)
+                ? $"KM inicial: {x.KmInicial.ToString("0.0", pt)} | KM final: {x.KmFinal.ToString("0.0", pt)} | Rodados: {ObterKmRodados(x).ToString("0.0", pt)} km | Raio: {(ObterKmRodados(x) / 2.0).ToString("N2", pt)} km\n"
+                : "Quilometragem não informada\n") +
+                (VelocidadeMediaViagem(x) > 0
+                    ? "Velocidade média da viagem: " + VelocidadeMediaViagem(x).ToString("N2", pt) + " km/h\\n"
+                    : "Velocidade média: não calculada (verifique KM e horários)\\n") +
+                $"Combustível: {x.LitrosConsumidos.ToString("N1", pt)} L | Consumo: {x.ConsumoKmL.ToString("N2", pt)} km/l",
+            TextColor = Color.FromArgb("#123B65")
+        });
+
+        detalhes.Children.Add(new Label
+        {
+            Text = $"Valor energético: {x.ValorEnergetico.ToString("N2", pt)} | Meta: {x.MetaEnergetica.ToString("N2", pt)}",
+            TextColor = Color.FromArgb("#123B65")
+        });
+
+        var botoesViagem = new HorizontalStackLayout { Spacing = 8 };
+
+        if (ContextoTurno.EhAdministrador ||
+            x.Turno == ContextoTurno.Turno)
+        {
+            var editarViagem = Botao("EDITAR VIAGEM", "#0F766E");
+            editarViagem.Clicked += (sender, args) =>
+                CarregarViagemParaEdicao(x);
+
+            botoesViagem.Children.Add(editarViagem);
+
+            var excluir = Botao("EXCLUIR VIAGEM", "#B91C1C");
+
+            excluir.Clicked += async (s, e) =>
+            {
+                bool ok = await DisplayAlert(
+                    "Excluir viagem",
+                    "Deseja excluir esta viagem? Os litros descontados serão devolvidos ao tanque cadastrado.",
+                    "Sim", "Não");
+
+                if (!ok)
+                    return;
+
+                if (!ContextoTurno.EhAdministrador &&
+                    x.Turno != ContextoTurno.Turno)
+                {
+                    await DisplayAlert(
+                        "Acesso restrito",
+                        "Somente o turno que cadastrou esta viagem pode excluí-la.",
+                        "OK");
+                    return;
+                }
+
+                x.Excluida = true;
+                x.EditadoEmUtc = DateTime.UtcNow;
+                x.EditadoPorDispositivo = ContextoTurno.Dispositivo;
+
+                bool excluidaNuvem =
+                    await FirebaseSyncService.SalvarViagemAsync(x);
+
+                if (!excluidaNuvem)
+                {
+                    x.Excluida = false;
+
+                    await DisplayAlert(
+                        "Erro ao excluir",
+                        FirebaseSyncService.UltimoErro,
+                        "OK");
+
+                    return;
+                }
+
+                double litrosAntigos = 0;
+                DadosVeiculo? d = null;
+
+                if (x.TanqueDescontado)
+                {
+                    d = ObterVeiculo(x.Veiculo);
+                    litrosAntigos = d.LitrosAtuais;
+
+                    d.LitrosAtuais = Math.Min(
+                        d.Capacidade,
+                        d.LitrosAtuais + x.LitrosConsumidos);
+                }
+
+                try
+                {
+                    SalvarDados();
+                    MostrarMenu("Cargas");
+                }
+                catch (Exception ex)
+                {
+                    if (d != null)
+                        d.LitrosAtuais = litrosAntigos;
+
+                    await DisplayAlert("Erro", ex.Message, "OK");
+                }
+            };
+
+            botoesViagem.Children.Add(excluir);
+        }
+
+        detalhes.Children.Add(botoesViagem);
+
+        painel.Children.Add(new Border
+        {
+            BackgroundColor = Colors.White,
+            Stroke = Color.FromArgb("#DCE4ED"),
+            Padding = 10,
+            Content = detalhes
+        });
+    }
+
+    return painel;
+}
+
 
     bool ViagemComKmValido(Viagem v) => v.KmFinal > v.KmInicial && v.KmInicial >= 0;
     double ObterKmRodados(Viagem v) => ViagemComKmValido(v) ? v.KmFinal - v.KmInicial : 0;
