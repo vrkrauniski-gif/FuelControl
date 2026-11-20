@@ -3110,6 +3110,9 @@ public class Viagem
     public string Frente { get; set; } = "";
     public string Veiculo { get; set; } = "";
     public string Motorista { get; set; } = "";
+    public string MotoristaAtual { get; set; } = "";
+
+public List<TransferenciaViagem> Transferencias { get; set; } = new();
     public int AnoCarreta { get; set; }
     public double PesoBruto { get; set; }
     public double Tara { get; set; }
