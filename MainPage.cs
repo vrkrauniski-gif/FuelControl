@@ -1932,6 +1932,20 @@ TransferenciasTurno = new List<TransferenciaTurno>()
 
 async void FinalizarViagem(Viagem viagem)
 {
+        string turnoResponsavel =
+            string.IsNullOrWhiteSpace(viagem.TurnoResponsavel)
+                ? viagem.Turno
+                : viagem.TurnoResponsavel;
+
+        if (!ContextoTurno.EhAdministrador &&
+            turnoResponsavel != ContextoTurno.Turno)
+        {
+            await DisplayAlert(
+                "Acesso negado",
+                "Somente o turno responsável pela viagem ou o administrador pode finalizar.",
+                "OK");
+            return;
+        }
     if (salvandoViagem || !viagem.EmAndamento)
         return;
 
