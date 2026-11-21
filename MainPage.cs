@@ -2597,6 +2597,20 @@ botoesViagem.Children.Add(finalizar);
 
 async void TransferirCaminhao(Viagem viagem)
 {
+    string turnoResponsavel =
+        string.IsNullOrWhiteSpace(viagem.TurnoResponsavel)
+            ? viagem.Turno
+            : viagem.TurnoResponsavel;
+
+    if (!ContextoTurno.EhAdministrador &&
+        turnoResponsavel != ContextoTurno.Turno)
+    {
+        await DisplayAlert(
+            "Acesso negado",
+            "Somente o turno responsável pela viagem ou o administrador pode trocar o motorista.",
+            "OK");
+        return;
+    }
     string motoristaAtual =
         string.IsNullOrWhiteSpace(viagem.MotoristaAtual)
             ? viagem.Motorista
