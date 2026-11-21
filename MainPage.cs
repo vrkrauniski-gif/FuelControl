@@ -3099,7 +3099,9 @@ Indicador($"Combustível consumido: {litrosTotal.ToString("N1", pt)} L"),
         : "--")));
 
         var viagensHojePremio = FiltrarViagensPorFrente(
-            viagens.Where(v => !v.Excluida && v.Data.Date == hoje));
+    viagens.Where(v =>
+        !v.Excluida &&
+        DataContabilizacaoViagem(v) == hoje));
         painel.Children.Add(CartaoPremioDiario(viagensHojePremio));
 
         painel.Children.Add(CartaoPeriodo("HOJE",
