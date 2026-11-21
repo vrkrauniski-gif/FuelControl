@@ -3619,3 +3619,10 @@ public class TransferenciaViagem
     public DateTime DataHora { get; set; }
     public double Km { get; set; }
 }
+public class TransferenciaTurno
+{
+    public string TurnoAnterior { get; set; } = "";
+    public string TurnoNovo { get; set; } = "";
+    public DateTime DataHora { get; set; }
+    public string Responsavel { get; set; } = "";
+}
