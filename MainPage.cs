@@ -3598,6 +3598,7 @@ public class Viagem
     public string MotoristaAtual { get; set; } = "";
 
 public List<TransferenciaViagem> Transferencias { get; set; } = new();
+    public List<TransferenciaTurno> TransferenciasTurno { get; set; } = new();
     public int AnoCarreta { get; set; }
     public double PesoBruto { get; set; }
     public double Tara { get; set; }
