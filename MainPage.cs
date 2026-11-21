@@ -3736,6 +3736,7 @@ foreach (var grupoPremioPdf in gruposPremiacaoPdf)
     }
 
 }
+}
 
 
 y += 10;
