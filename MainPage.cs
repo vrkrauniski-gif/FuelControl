@@ -3422,8 +3422,8 @@ painel.Children.Add(Cartao("Raio médio por viagem",
         });
 
         lista.Children.Add(new Label
-        {
-            lista.Children.Add(new Label
+        
+            
 {
     Text = "KM rodados: " + kmTotal.ToString("N1", pt) + " km",
     TextColor = Color.FromArgb("#123B65")
