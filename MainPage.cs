@@ -3754,8 +3754,9 @@ public class Viagem
     public string EditadoPorDispositivo { get; set; } = "";
         
     public DateTime Data { get; set; }
-    public TimeSpan HoraInicial { get; set; }
-    public TimeSpan HoraFinal { get; set; }
+public TimeSpan HoraInicial { get; set; }
+public TimeSpan HoraFinal { get; set; }
+public DateTime? DataHoraChegada { get; set; }
     public string Frente { get; set; } = "";
     public string Veiculo { get; set; } = "";
     public string Motorista { get; set; } = "";
