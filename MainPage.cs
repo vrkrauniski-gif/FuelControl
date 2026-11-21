@@ -275,7 +275,7 @@ if (viagensParaCorrigir.Count == 1)
     var viagemAntiga = viagensParaCorrigir[0];
 
     viagemAntiga.DataHoraChegada =
-        new DateTime(2026, 11, 21, 2, 42, 0);
+        new DateTime(2026, 11, 21, 3, 23, 0);
 
     viagemAntiga.EditadoEmUtc = DateTime.UtcNow;
     viagemAntiga.EditadoPorDispositivo = ContextoTurno.Dispositivo;
