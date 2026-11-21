@@ -2069,6 +2069,7 @@ async void FinalizarViagem(Viagem viagem)
         bool tanqueDescontadoAnterior = viagem.TanqueDescontado;
 
         DateTime retorno = DateTime.Now;
+        viagem.DataHoraChegada = retorno;
 
         viagem.HoraFinal = retorno.TimeOfDay;
         viagem.AnoCarreta = ano;
