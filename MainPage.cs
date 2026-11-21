@@ -2414,6 +2414,16 @@ View CriarListaViagens()
         {
             Text = x.EmAndamento
                 ? "STATUS: VIAGEM EM ANDAMENTO"
+                detalhes.Children.Add(new Label
+{
+    Text = "TURNO DE ORIGEM: " + x.Turno +
+        " | RESPONSÁVEL ATUAL: " +
+        (string.IsNullOrWhiteSpace(x.TurnoResponsavel)
+            ? x.Turno
+            : x.TurnoResponsavel),
+    FontAttributes = FontAttributes.Bold,
+    TextColor = Color.FromArgb("#7C3AED")
+});
                 : "STATUS: VIAGEM CONCLUÍDA",
             FontAttributes = FontAttributes.Bold,
             TextColor = x.EmAndamento
