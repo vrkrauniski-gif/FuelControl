@@ -2447,7 +2447,19 @@ if (x.Transferencias != null && x.Transferencias.Any())
         TextColor = Color.FromArgb("#123B65")
     });
 }
-
+if (x.TransferenciasTurno != null &&
+    x.TransferenciasTurno.Any())
+{
+    detalhes.Children.Add(new Label
+    {
+        Text = "HISTÓRICO DE TURNOS:\n" +
+            string.Join("\n", x.TransferenciasTurno.Select(t =>
+                $"Turno {t.TurnoAnterior} → Turno {t.TurnoNovo} | " +
+                $"{t.DataHora:dd/MM/yyyy HH:mm} | " +
+                $"Responsável: {t.Responsavel}")),
+        TextColor = Color.FromArgb("#7C3AED")
+    });
+}
         detalhes.Children.Add(new Label
         {
             Text = $"Bruto: {x.PesoBruto.ToString("N1", pt)} kg | Tara: {x.Tara.ToString("N1", pt)} kg | Líquido: {x.PesoLiquido.ToString("N1", pt)} kg",
