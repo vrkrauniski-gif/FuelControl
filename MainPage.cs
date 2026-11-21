@@ -2520,8 +2520,12 @@ detalhes.Children.Add(new Label
     }
 }
 
-        if (ContextoTurno.EhAdministrador ||
-            x.Turno == ContextoTurno.Turno)
+        
+if (!x.EmAndamento &&
+    (ContextoTurno.EhAdministrador ||
+     x.Turno == ContextoTurno.Turno))
+
+        
         {
             var editarViagem = Botao("EDITAR VIAGEM", "#0F766E");
             editarViagem.Clicked += (sender, args) =>
