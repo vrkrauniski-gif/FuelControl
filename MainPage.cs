@@ -262,6 +262,25 @@ private async Task SincronizarViagensAsync()
 
         viagens = todasViagens;
 
+        // Corrige a data de chegada da viagem antiga do turno C.
+var viagensParaCorrigir = viagens.Where(v =>
+    v.Turno == "C" &&
+    v.Data.Date == new DateTime(2026, 11, 20) &&
+    v.HoraInicial == new TimeSpan(21, 50, 0) &&
+    v.DataHoraChegada == null
+).ToList();
+
+if (viagensParaCorrigir.Count == 1)
+{
+    var viagemAntiga = viagensParaCorrigir[0];
+
+    viagemAntiga.DataHoraChegada =
+        new DateTime(2026, 11, 21, 2, 42, 0);
+
+    viagemAntiga.EditadoEmUtc = DateTime.UtcNow;
+    viagemAntiga.EditadoPorDispositivo = ContextoTurno.Dispositivo;
+}
+
         // Envia os registros consolidados ao Firebase.
         foreach (var viagem in viagens)
         {
