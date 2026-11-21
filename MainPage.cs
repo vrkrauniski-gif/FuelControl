@@ -2842,6 +2842,8 @@ async void TransferirCaminhao(Viagem viagem)
 
     bool ViagemComKmValido(Viagem v) => v.KmFinal > v.KmInicial && v.KmInicial >= 0;
     double ObterKmRodados(Viagem v) => ViagemComKmValido(v) ? v.KmFinal - v.KmInicial : 0;
+    DateTime DataContabilizacaoViagem(Viagem v) =>
+    (v.DataHoraChegada ?? v.Data).Date;
     double SomarKmViagens(IEnumerable<Viagem> registros) =>
         registros.Where(ViagemComKmValido).Sum(ObterKmRodados);
     double CalcularRaioMedio(IEnumerable<Viagem> registros)
