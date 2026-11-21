@@ -3471,6 +3471,43 @@ lista.Children.Add(new Label
     TextColor = Color.FromArgb("#123B65")
 });
 
+// Resultado da premiação diária
+int raioPremio = raioMedio > 0
+    ? (int)Math.Round(raioMedio, MidpointRounding.AwayFromZero)
+    : 0;
+
+if (raioPremio >= 5 && raioPremio <= 100 &&
+    metasPremioDiario.TryGetValue(raioPremio, out double metaPremio))
+{
+    double faltaPremio = Math.Max(0, metaPremio - toneladasTotal);
+    bool atingiuPremio = toneladasTotal >= metaPremio;
+
+    lista.Children.Add(new Label
+    {
+        Text = "PREMIAÇÃO DIÁRIA",
+        FontAttributes = FontAttributes.Bold,
+        TextColor = Color.FromArgb("#123B65"),
+        FontSize = 18
+    });
+
+    lista.Children.Add(new Label
+    {
+        Text = atingiuPremio
+            ? "✓ PRÊMIO DIÁRIO ATINGIDO!"
+            : "✗ PRÊMIO DIÁRIO NÃO ATINGIDO",
+        FontAttributes = FontAttributes.Bold,
+        TextColor = atingiuPremio ? Colors.Green : Colors.Red
+    });
+
+    lista.Children.Add(new Label
+    {
+        Text = atingiuPremio
+            ? "Excedente: " + (toneladasTotal - metaPremio).ToString("N2", pt) + " toneladas."
+            : "Faltam " + faltaPremio.ToString("N2", pt) + " toneladas para atingir o prêmio.",
+        FontAttributes = FontAttributes.Bold,
+        TextColor = Color.FromArgb("#123B65")
+    });
+}
         // Soma de tonelagem líquida agrupada por dia.
         var resumoDiario = cg
             .GroupBy(x => DataContabilizacaoViagem(x))
