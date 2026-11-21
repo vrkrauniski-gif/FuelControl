@@ -3453,20 +3453,23 @@ lista.Children.Add(new Label
         double mediaArlaRelatorio = CalcularMediaArlaKmL(ab);
         double mediaArla100Relatorio = CalcularMediaArla100Km(ab);
         double litrosArlaRelatorio = AbastecimentosComArlaValidos(ab).Sum(x => x.LitrosArla);
-        lista.Children.Add(new Label
-        {
-            Text = litrosArlaRelatorio > 0
-                ? "Arla 32: " + litrosArlaRelatorio.ToString("N1", pt) +
-  " L | Média: " + mediaArlaRelatorio.ToString("N2", pt) +
-  " km/l (" + mediaArla100Relatorio.ToString("N2", pt) + " L/100 km)"
-                : "Arla 32: sem registros no período"
-        });
 
         lista.Children.Add(new Label
-        {
-            Text = "Litros consumidos nas viagens: " +
-       cg.Sum(x => x.LitrosConsumidos).ToString("N1", pt) + " L"
-        });
+{
+    Text = litrosArlaRelatorio > 0
+        ? "Arla 32: " + litrosArlaRelatorio.ToString("N1", pt) +
+          " L | Média: " + mediaArlaRelatorio.ToString("N2", pt) +
+          " km/l (" + mediaArla100Relatorio.ToString("N2", pt) + " L/100 km)"
+        : "Arla 32: sem registros no período",
+    TextColor = Color.FromArgb("#123B65")
+});
+
+lista.Children.Add(new Label
+{
+    Text = "Litros consumidos nas viagens: " +
+           cg.Sum(x => x.LitrosConsumidos).ToString("N1", pt) + " L",
+    TextColor = Color.FromArgb("#123B65")
+});
 
         // Soma de tonelagem líquida agrupada por dia.
         var resumoDiario = cg
