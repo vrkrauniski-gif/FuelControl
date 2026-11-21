@@ -1865,6 +1865,7 @@ async void IniciarViagem(object? sender, EventArgs e)
         {
             Id = Guid.NewGuid().ToString(),
             Turno = ContextoTurno.Turno,
+            TurnoResponsavel = ContextoTurno.Turno,
             CriadoEmUtc = DateTime.UtcNow,
             CriadoPorDispositivo = ContextoTurno.Dispositivo,
             EditadoEmUtc = DateTime.UtcNow,
