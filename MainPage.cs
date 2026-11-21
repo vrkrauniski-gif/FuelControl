@@ -3423,26 +3423,32 @@ painel.Children.Add(Cartao("Raio médio por viagem",
 
         lista.Children.Add(new Label
         {
-            Text = "KM rodados: " + kmTotal.ToString("N1", pt) + " km"
-        });
+            lista.Children.Add(new Label
+{
+    Text = "KM rodados: " + kmTotal.ToString("N1", pt) + " km",
+    TextColor = Color.FromArgb("#123B65")
+});
 
-        lista.Children.Add(new Label
-        {
-            Text = cg.Count > 0
-                ? "Raio médio por viagem: " + raioMedio.ToString("N2", pt) + " km"
-                : "Raio médio por viagem: --"
-        });
+lista.Children.Add(new Label
+{
+    Text = cg.Count > 0
+        ? "Raio médio por viagem: " + raioMedio.ToString("N2", pt) + " km"
+        : "Raio médio por viagem: --",
+    TextColor = Color.FromArgb("#123B65")
+});
 
-        lista.Children.Add(new Label
-        {
-            Text = "Tonelagem líquida total: " + toneladasTotal.ToString("N2", pt) + " t"
-        });
+lista.Children.Add(new Label
+{
+    Text = "Tonelagem líquida total: " + toneladasTotal.ToString("N2", pt) + " t",
+    TextColor = Color.FromArgb("#123B65")
+});
 
-        lista.Children.Add(new Label
-        {
-            Text = $"Gasto: {ab.Sum(x => x.Valor):C2} | " +
-                   "Litros abastecidos: " + ab.Sum(x => x.Litros).ToString("N1", pt) + " L"
-        });
+lista.Children.Add(new Label
+{
+    Text = $"Gasto: {ab.Sum(x => x.Valor):C2} | " +
+           "Litros abastecidos: " + ab.Sum(x => x.Litros).ToString("N1", pt) + " L",
+    TextColor = Color.FromArgb("#123B65")
+});
 
         double mediaArlaRelatorio = CalcularMediaArlaKmL(ab);
         double mediaArla100Relatorio = CalcularMediaArla100Km(ab);
