@@ -1886,6 +1886,7 @@ async void IniciarViagem(object? sender, EventArgs e)
 
          Transferencias = new List<TransferenciaViagem>(),
 TransferenciasTurno = new List<TransferenciaTurno>()
+};
 
         viagens.Insert(0, viagem);
         SalvarDados();
