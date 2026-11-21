@@ -2507,7 +2507,7 @@ detalhes.Children.Add(new Label
             TextColor = Color.FromArgb("#123B65")
         });
 
-        var botoesViagem = new HorizontalStackLayout { Spacing = 8 };
+        var botoesViagem = new VerticalStackLayout { Spacing = 8 };
         if (x.EmAndamento)
 {
     string turnoResponsavel =
