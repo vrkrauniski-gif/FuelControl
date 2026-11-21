@@ -3471,42 +3471,72 @@ lista.Children.Add(new Label
     TextColor = Color.FromArgb("#123B65")
 });
 
-// Resultado da premiação diária
-int raioPremio = raioMedio > 0
-    ? (int)Math.Round(raioMedio, MidpointRounding.AwayFromZero)
-    : 0;
+// Premiação diária calculada separadamente por data
+var gruposPremiacao = cg
+    .GroupBy(v => DataContabilizacaoViagem(v))
+    .OrderBy(g => g.Key);
 
-if (raioPremio >= 5 && raioPremio <= 100 &&
-    metasPremioDiario.TryGetValue(raioPremio, out double metaPremio))
+foreach (var grupoPremio in gruposPremiacao)
 {
-    double faltaPremio = Math.Max(0, metaPremio - toneladasTotal);
-    bool atingiuPremio = toneladasTotal >= metaPremio;
+    double raioDia = CalcularRaioMedio(grupoPremio);
+    double toneladasDia = grupoPremio.Sum(v => v.PesoLiquido) / 1000.0;
+
+    int raioTabelaDia = raioDia > 0
+        ? (int)Math.Round(raioDia, MidpointRounding.AwayFromZero)
+        : 0;
 
     lista.Children.Add(new Label
     {
-        Text = "PREMIAÇÃO DIÁRIA",
+        Text = $"PREMIAÇÃO DIÁRIA - {grupoPremio.Key:dd/MM/yyyy}",
         FontAttributes = FontAttributes.Bold,
-        TextColor = Color.FromArgb("#123B65"),
-        FontSize = 18
-    });
-
-    lista.Children.Add(new Label
-    {
-        Text = atingiuPremio
-            ? "✓ PRÊMIO DIÁRIO ATINGIDO!"
-            : "✗ PRÊMIO DIÁRIO NÃO ATINGIDO",
-        FontAttributes = FontAttributes.Bold,
-        TextColor = atingiuPremio ? Colors.Green : Colors.Red
-    });
-
-    lista.Children.Add(new Label
-    {
-        Text = atingiuPremio
-            ? "Excedente: " + (toneladasTotal - metaPremio).ToString("N2", pt) + " toneladas."
-            : "Faltam " + faltaPremio.ToString("N2", pt) + " toneladas para atingir o prêmio.",
-        FontAttributes = FontAttributes.Bold,
+        FontSize = 18,
         TextColor = Color.FromArgb("#123B65")
     });
+
+    if (raioTabelaDia >= 5 && raioTabelaDia <= 100 &&
+        metasPremioDiario.TryGetValue(raioTabelaDia, out double metaDia))
+    {
+        bool atingiuDia = toneladasDia >= metaDia;
+        double faltaDia = Math.Max(0, metaDia - toneladasDia);
+
+        lista.Children.Add(new Label
+        {
+            Text = $"Raio médio: {raioDia:N2} km | Toneladas: {toneladasDia:N2} t",
+            TextColor = Color.FromArgb("#123B65")
+        });
+
+        lista.Children.Add(new Label
+        {
+            Text = $"Meta: {metaDia:N1} toneladas",
+            TextColor = Color.FromArgb("#123B65")
+        });
+
+        lista.Children.Add(new Label
+        {
+            Text = atingiuDia
+                ? "✓ PRÊMIO DIÁRIO ATINGIDO!"
+                : "✗ PRÊMIO DIÁRIO NÃO ATINGIDO",
+            FontAttributes = FontAttributes.Bold,
+            TextColor = atingiuDia ? Colors.Green : Colors.Red
+        });
+
+        lista.Children.Add(new Label
+        {
+            Text = atingiuDia
+                ? $"Excedente: {(toneladasDia - metaDia):N2} toneladas."
+                : $"Faltam {faltaDia:N2} toneladas para atingir o prêmio.",
+            FontAttributes = FontAttributes.Bold,
+            TextColor = Color.FromArgb("#123B65")
+        });
+    }
+    else
+    {
+        lista.Children.Add(new Label
+        {
+            Text = "Não foi possível calcular a premiação para esse dia.",
+            TextColor = Colors.DarkOrange
+        });
+    }
 }
         // Soma de tonelagem líquida agrupada por dia.
         var resumoDiario = cg
