@@ -3695,65 +3695,46 @@ if (tipo != "Abastecimentos")
     Linha("KM rodados: " + kmTotal.ToString("N1", pt) + " km");
     Linha("Raio médio por viagem: " + raioMedio.ToString("N2", pt) + " km");
     Linha("Tonelagem líquida total: " + toneladasTotal.ToString("N2", pt) + " t");
-    int raioPremioPdf = raioMedio > 0
-    ? (int)Math.Round(raioMedio, MidpointRounding.AwayFromZero)
-    : 0;
+    // Premiação calculada separadamente por dia no PDF
+var gruposPremiacaoPdf = cg
+    .GroupBy(v => DataContabilizacaoViagem(v))
+    .OrderBy(g => g.Key);
 
-Linha("PREMIAÇÃO DIÁRIA");
-
-if (raioPremioPdf >= 5 && raioPremioPdf <= 100 &&
-    metasPremioDiario.TryGetValue(raioPremioPdf, out double metaPremioPdf))
+foreach (var grupoPremioPdf in gruposPremiacaoPdf)
 {
-    bool atingiuPremioPdf = toneladasTotal >= metaPremioPdf;
-    double faltaPremioPdf = Math.Max(0, metaPremioPdf - toneladasTotal);
+    double raioDiaPdf = CalcularRaioMedio(grupoPremioPdf);
+    double toneladasDiaPdf =
+        grupoPremioPdf.Sum(v => v.PesoLiquido) / 1000.0;
 
-    Linha(atingiuPremioPdf
-        ? "PRÊMIO DIÁRIO ATINGIDO!"
-        : "PRÊMIO DIÁRIO NÃO ATINGIDO");
+    int raioTabelaPdf = raioDiaPdf > 0
+        ? (int)Math.Round(raioDiaPdf, MidpointRounding.AwayFromZero)
+        : 0;
 
-    Linha(atingiuPremioPdf
-        ? "Excedente: " + (toneladasTotal - metaPremioPdf).ToString("N2", pt) + " toneladas."
-        : "Faltam " + faltaPremioPdf.ToString("N2", pt) + " toneladas para atingir o prêmio.");
+    Linha("PREMIACAO DIARIA - " + grupoPremioPdf.Key.ToString("dd/MM/yyyy"));
 
-    Linha("Meta: " + metaPremioPdf.ToString("N1", pt) + " toneladas");
-}
-else
-{
-    Linha("Não foi possível calcular a premiação para este raio.");
-}
-}
-
-Linha("Litros abastecidos: " + ab.Sum(x => x.Litros).ToString("N1", pt) + " L");
-
-double mediaArlaPdf = CalcularMediaArlaKmL(ab);
-double mediaArla100Pdf = CalcularMediaArla100Km(ab);
-double litrosArlaPdf = AbastecimentosComArlaValidos(ab).Sum(x => x.LitrosArla);
-
-Linha(litrosArlaPdf > 0
-    ? "Arla 32: " + litrosArlaPdf.ToString("N1", pt) +
-      " L | Média: " + mediaArlaPdf.ToString("N2", pt) +
-      " km/l (" + mediaArla100Pdf.ToString("N2", pt) + " L/100 km)"
-    : "Arla 32: sem registros no período");
-
-if (tipo != "Abastecimentos")
-{
-    Linha("Litros consumidos nas viagens: " +
-          cg.Sum(x => x.LitrosConsumidos).ToString("N1", pt) + " L");
-
-    Linha("TONELAGEM LÍQUIDA POR DIA");
-
-    var resumoDiario = cg
-        .GroupBy(x => DataContabilizacaoViagem(x))
-        .OrderBy(x => x.Key);
-
-    foreach (var grupo in resumoDiario)
+    if (raioTabelaPdf >= 5 && raioTabelaPdf <= 100 &&
+        metasPremioDiario.TryGetValue(raioTabelaPdf, out double metaDiaPdf))
     {
-        double toneladasDia = grupo.Sum(x => x.PesoLiquido) / 1000.0;
+        bool atingiuDiaPdf = toneladasDiaPdf >= metaDiaPdf;
+        double faltaDiaPdf = Math.Max(0, metaDiaPdf - toneladasDiaPdf);
 
-        Linha($"{grupo.Key:dd/MM/yyyy} | Viagens: {grupo.Count()} | " +
-              "KM: " + SomarKmViagens(grupo).ToString("N1", pt) +
-              " | Tonelagem líquida: " + toneladasDia.ToString("N2", pt) + " t");
+        Linha("Raio medio: " + raioDiaPdf.ToString("N2", pt) + " km");
+        Linha("Toneladas: " + toneladasDiaPdf.ToString("N2", pt) + " t");
+        Linha("Meta: " + metaDiaPdf.ToString("N1", pt) + " toneladas");
+
+        Linha(atingiuDiaPdf
+            ? "PREMIO DIARIO ATINGIDO!"
+            : "PREMIO DIARIO NAO ATINGIDO");
+
+        Linha(atingiuDiaPdf
+            ? "Excedente: " + (toneladasDiaPdf - metaDiaPdf).ToString("N2", pt) + " toneladas."
+            : "Faltam " + faltaDiaPdf.ToString("N2", pt) + " toneladas.");
     }
+    else
+    {
+        Linha("Nao foi possivel calcular a premiacao deste dia.");
+    }
+
 }
 
 
