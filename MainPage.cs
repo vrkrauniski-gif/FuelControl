@@ -2411,7 +2411,7 @@ else
         AtualizarPeso();
 
         DisplayAlert("Editar viagem",
-            "Os dados foram carregados no formulário. Altere o que precisar e toque em SALVAR VIAGEM E DESCONTAR DO TANQUE.",
+            "Os dados foram carregados. Altere o que precisar e toque em SALVAR ALTERAÇÕES.",
             "OK");
     }
 
