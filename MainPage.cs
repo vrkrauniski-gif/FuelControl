@@ -2593,6 +2593,93 @@ botoesViagem.Children.Add(finalizar);
 
     return painel;
 }
+async void TransferirResponsabilidadeTurno(Viagem viagem)
+{
+    string turnoAtual =
+        string.IsNullOrWhiteSpace(viagem.TurnoResponsavel)
+            ? viagem.Turno
+            : viagem.TurnoResponsavel;
+
+    if (!viagem.EmAndamento)
+        return;
+
+    if (!ContextoTurno.EhAdministrador &&
+        turnoAtual != ContextoTurno.Turno)
+    {
+        await DisplayAlert(
+            "Acesso negado",
+            "Somente o turno responsável ou o administrador pode transferir a viagem.",
+            "OK");
+        return;
+    }
+
+    string novoTurno = await DisplayActionSheet(
+        "Transferir responsabilidade para:",
+        "Cancelar",
+        null,
+        "Turno A",
+        "Turno B",
+        "Turno C");
+
+    if (string.IsNullOrWhiteSpace(novoTurno) ||
+        novoTurno == "Cancelar")
+        return;
+
+    novoTurno = novoTurno.Replace("Turno ", "");
+
+    if (novoTurno == turnoAtual)
+    {
+        await DisplayAlert(
+            "Atenção",
+            "A viagem já está sob responsabilidade desse turno.",
+            "OK");
+        return;
+    }
+
+    bool confirmar = await DisplayAlert(
+        "Confirmar transferência",
+        "Transferir a responsabilidade do turno " +
+        turnoAtual + " para o turno " + novoTurno + "?",
+        "Confirmar",
+        "Cancelar");
+
+    if (!confirmar)
+        return;
+
+    viagem.TransferenciasTurno ??=
+        new List<TransferenciaTurno>();
+
+    viagem.TransferenciasTurno.Add(
+        new TransferenciaTurno
+        {
+            TurnoAnterior = turnoAtual,
+            TurnoNovo = novoTurno,
+            DataHora = DateTime.Now,
+            Responsavel = ContextoTurno.EhAdministrador
+                ? "ADMINISTRADOR"
+                : "TURNO " + ContextoTurno.Turno
+        });
+
+    viagem.TurnoResponsavel = novoTurno;
+    viagem.EditadoEmUtc = DateTime.UtcNow;
+    viagem.EditadoPorDispositivo = ContextoTurno.Dispositivo;
+
+    SalvarDados();
+
+    bool sincronizada =
+        await FirebaseSyncService.SalvarViagemAsync(viagem);
+
+    await DisplayAlert(
+        "Transferência registrada",
+        "Responsabilidade transferida para o turno " +
+        novoTurno +
+        (sincronizada
+            ? "\nSincronizado com Firebase."
+            : "\nSalvo no celular. Sincronização pendente."),
+        "OK");
+
+    MostrarMenu("Cargas");
+}
 
 
 async void TransferirCaminhao(Viagem viagem)
