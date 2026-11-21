@@ -3004,8 +3004,12 @@ async void TransferirCaminhao(Viagem viagem)
 
         List<Viagem> ViNoPeriodo(Func<DateTime, bool> filtro)
         {
-            return viagens.Where(x => !x.Excluida && filtro(x.Data)).ToList();
-        }
+            return viagens.Where(x =>
+    !x.Excluida &&
+    filtro(DataContabilizacaoViagem(x))
+).ToList();
+
+};
 
         View CartaoPeriodo(string titulo, Func<DateTime, bool> filtro)
         {
