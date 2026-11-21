@@ -3347,7 +3347,7 @@ painel.Children.Add(Cartao("Raio médio por viagem",
     {
         return viagens
     .Where(x => !x.Excluida)
-    .Where(x => DataNoPeriodo(x.Data))
+    .Where(x => DataNoPeriodo(DataContabilizacaoViagem(x)))
        
             .Where(x => PassaFiltro(x.Veiculo, x.Motorista))
             .OrderByDescending(x => x.Data)
