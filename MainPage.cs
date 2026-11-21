@@ -1765,7 +1765,7 @@ botaoAcaoViagem.Clicked += (s, e) =>
                 lblEnergetico,
                 Rotulo("Meta do valor energético"),
                 metaEnergetica,
-                                iniciar,
+                                botaoAcaoViagem,
                 Titulo("VIAGEM EM PREENCHIMENTO"),
                 lblPreviaViagem,
                 Titulo("HISTÓRICO DE VIAGENS")
