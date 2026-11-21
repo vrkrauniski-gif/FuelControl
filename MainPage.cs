@@ -3665,6 +3665,32 @@ if (tipo != "Abastecimentos")
     Linha("KM rodados: " + kmTotal.ToString("N1", pt) + " km");
     Linha("Raio médio por viagem: " + raioMedio.ToString("N2", pt) + " km");
     Linha("Tonelagem líquida total: " + toneladasTotal.ToString("N2", pt) + " t");
+    int raioPremioPdf = raioMedio > 0
+    ? (int)Math.Round(raioMedio, MidpointRounding.AwayFromZero)
+    : 0;
+
+Linha("PREMIAÇÃO DIÁRIA");
+
+if (raioPremioPdf >= 5 && raioPremioPdf <= 100 &&
+    metasPremioDiario.TryGetValue(raioPremioPdf, out double metaPremioPdf))
+{
+    bool atingiuPremioPdf = toneladasTotal >= metaPremioPdf;
+    double faltaPremioPdf = Math.Max(0, metaPremioPdf - toneladasTotal);
+
+    Linha(atingiuPremioPdf
+        ? "PRÊMIO DIÁRIO ATINGIDO!"
+        : "PRÊMIO DIÁRIO NÃO ATINGIDO");
+
+    Linha(atingiuPremioPdf
+        ? "Excedente: " + (toneladasTotal - metaPremioPdf).ToString("N2", pt) + " toneladas."
+        : "Faltam " + faltaPremioPdf.ToString("N2", pt) + " toneladas para atingir o prêmio.");
+
+    Linha("Meta: " + metaPremioPdf.ToString("N1", pt) + " toneladas");
+}
+else
+{
+    Linha("Não foi possível calcular a premiação para este raio.");
+}
 }
 
 Linha("Litros abastecidos: " + ab.Sum(x => x.Litros).ToString("N1", pt) + " L");
