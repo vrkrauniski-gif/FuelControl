@@ -3433,7 +3433,7 @@ painel.Children.Add(Cartao("Raio médio por viagem",
 
         // Soma de tonelagem líquida agrupada por dia.
         var resumoDiario = cg
-            .GroupBy(x => x.Data.Date)
+            .GroupBy(x => DataContabilizacaoViagem(x))
             .OrderBy(x => x.Key);
 
         foreach (var grupo in resumoDiario)
