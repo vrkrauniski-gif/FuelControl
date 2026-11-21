@@ -39,6 +39,7 @@ Entry litrosArlaAtual = new();
     Entry anoCarreta = new(), pesoBruto = new();
     Entry litrosViagem = new(), consumoViagem = new();
     Entry metaEnergetica = new();
+    Button botaoAcaoViagem = new();
     Entry kmInicialViagem = new(), kmFinalViagem = new();
 
     Entry filtroVeiculo = new(), filtroMotorista = new();
