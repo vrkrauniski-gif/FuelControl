@@ -2486,18 +2486,38 @@ detalhes.Children.Add(new Label
         var botoesViagem = new HorizontalStackLayout { Spacing = 8 };
         if (x.EmAndamento)
 {
-var finalizar = Botao("FINALIZAR VIAGEM", "#15803D");
+    string turnoResponsavel =
+        string.IsNullOrWhiteSpace(x.TurnoResponsavel)
+            ? x.Turno
+            : x.TurnoResponsavel;
 
-finalizar.Clicked += (s, e) =>
-    FinalizarViagem(x);
+    bool podeOperar =
+        ContextoTurno.EhAdministrador ||
+        turnoResponsavel == ContextoTurno.Turno;
 
-botoesViagem.Children.Add(finalizar);
-    var transferir = Botao("TRANSFERIR CAMINHÃO", "#2563EB");
+    if (podeOperar)
+    {
+        var finalizar = Botao("FINALIZAR VIAGEM", "#15803D");
+        finalizar.Clicked += (s, e) => FinalizarViagem(x);
+        botoesViagem.Children.Add(finalizar);
 
-    transferir.Clicked += (s, e) =>
-        TransferirCaminhao(x);
+        var trocarMotorista = Botao("TROCAR MOTORISTA", "#2563EB");
+        trocarMotorista.Clicked += (s, e) => TransferirCaminhao(x);
+        botoesViagem.Children.Add(trocarMotorista);
 
-    botoesViagem.Children.Add(transferir);
+        var transferirTurno = Botao("TRANSFERIR TURNO", "#7C3AED");
+        transferirTurno.Clicked += (s, e) =>
+            TransferirResponsabilidadeTurno(x);
+        botoesViagem.Children.Add(transferirTurno);
+    }
+    else
+    {
+        detalhes.Children.Add(new Label
+        {
+            Text = "RESPONSÁVEL: TURNO " + turnoResponsavel,
+            TextColor = Colors.DarkOrange
+        });
+    }
 }
 
         if (ContextoTurno.EhAdministrador ||
