@@ -2386,6 +2386,7 @@ else
     return;
 }
         viagemEmEdicao = x;
+        botaoAcaoViagem.Text = "SALVAR ALTERAÇÕES";
         cargaVeiculo.IsEnabled = false;
         dataViagem.Date = x.Data.Date;
         horaInicialViagem.Time = x.HoraInicial;
