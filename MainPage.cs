@@ -2268,7 +2268,10 @@ MotoristaAtual = viagemEmEdicao?.MotoristaAtual
 Transferencias = viagemEmEdicao?.Transferencias
     ?? new List<TransferenciaViagem>(),
 
-EmAndamento = false,
+EmAndamento = viagemEmEdicao?.EmAndamento ?? false,
+DataHoraChegada = viagemEmEdicao?.DataHoraChegada,
+TurnoResponsavel = viagemEmEdicao?.TurnoResponsavel,
+TransferenciasTurno = viagemEmEdicao?.TransferenciasTurno ?? new List<TransferenciaTurno>(),
                 AnoCarreta = ano,
                 PesoBruto = bruto,
                 Tara = tara,
