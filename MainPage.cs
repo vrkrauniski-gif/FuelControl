@@ -3582,6 +3582,7 @@ public class Viagem
 {
     public string Id { get; set; } = "";
     public string Turno { get; set; } = "";
+    public string TurnoResponsavel { get; set; } = "";
     public DateTime CriadoEmUtc { get; set; } = DateTime.UtcNow;
     public string CriadoPorDispositivo { get; set; } = "";
     public DateTime EditadoEmUtc { get; set; } = DateTime.UtcNow;
