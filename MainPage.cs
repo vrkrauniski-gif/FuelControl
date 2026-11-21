@@ -2431,12 +2431,7 @@ detalhes.Children.Add(new Label
     FontAttributes = FontAttributes.Bold,
     TextColor = Color.FromArgb("#7C3AED")
 });
-                : "STATUS: VIAGEM CONCLUÍDA",
-            FontAttributes = FontAttributes.Bold,
-            TextColor = x.EmAndamento
-                ? Colors.DarkOrange
-                : Colors.Green
-        });
+                
 
         detalhes.Children.Add(new Label
         {
