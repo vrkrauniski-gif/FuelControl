@@ -1012,7 +1012,8 @@ CriadoPorDispositivo = registroAnterior == null ||
 
 EditadoEmUtc = DateTime.UtcNow,
 EditadoPorDispositivo = ContextoTurno.Dispositivo,
-                Data = registroAnterior?.Data ?? DateTime.Now,
+                Data = dataAbastecimento.Date.Date.Add(
+    registroAnterior?.Data.TimeOfDay ?? DateTime.Now.TimeOfDay),
                 Veiculo = veiculo.Text.Trim(),
                 Motorista = motorista.Text?.Trim() ?? "",
                 TipoVeiculo = caminhao ? "Caminhão" : "Carro",
