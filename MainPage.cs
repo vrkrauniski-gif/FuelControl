@@ -1529,7 +1529,13 @@ else
 }
 
     double percentual = litros / arla.Capacidade * 100;
-    double reserva = arla.Capacidade * 2.0 / 20.0;
+    double alertaPercentualArla = veiculos.TryGetValue(chave, out var dadosVeiculoArla) &&
+    dadosVeiculoArla.AlertaPercentual > 0 &&
+    dadosVeiculoArla.AlertaPercentual < 100
+        ? dadosVeiculoArla.AlertaPercentual
+        : 20;
+
+double reserva = arla.Capacidade * alertaPercentualArla / 100.0;
 
     int partesPreenchidas = Math.Clamp(
         (int)Math.Ceiling(percentual / 5.0), 0, 20);
