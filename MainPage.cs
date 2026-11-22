@@ -2474,10 +2474,11 @@ else
     return;
 }
         viagemEmEdicao = x;
-        dataFinalViagem.Date = (x.DataHoraChegada ?? x.Data.Date.Add(x.HoraFinal)).Date;
+        
         botaoAcaoViagem.Text = "SALVAR ALTERAÇÕES";
         cargaVeiculo.IsEnabled = false;
         dataViagem.Date = x.Data.Date;
+        dataFinalViagem.Date = (x.DataHoraChegada ?? x.Data.Date.Add(x.HoraFinal)).Date;
         horaInicialViagem.Time = x.HoraInicial;
         horaFinalViagem.Time = x.HoraFinal;
         frenteSelecionada = x.Frente;
