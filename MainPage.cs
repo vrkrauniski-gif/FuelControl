@@ -1372,7 +1372,10 @@ void AtualizarTanqueTexto(string nome)
     double percentual = Math.Clamp(
         d.LitrosAtuais / d.Capacidade * 100, 0, 100);
 
-    double litrosReserva = d.Capacidade * 2.0 / 20.0;
+    double alertaPercentual = d.AlertaPercentual > 0 &&
+    d.AlertaPercentual < 100 ? d.AlertaPercentual : 20;
+
+double litrosReserva = d.Capacidade * alertaPercentual / 100.0;
 
     int partesPreenchidas = (int)Math.Ceiling(percentual / 5.0);
     partesPreenchidas = Math.Clamp(partesPreenchidas, 0, 20);
