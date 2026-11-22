@@ -46,6 +46,7 @@ Entry litrosArlaAtual = new();
 
     Picker tipoVeiculo = new(), tipoCombustivel = new();
     Picker periodoRelatorio = new(), tipoRelatorio = new();
+    Picker filtroTurnoRelatorio = new();
 
     DatePicker dataViagem = new() { Date = DateTime.Today, TextColor = Colors.Black, BackgroundColor = Colors.White };
     DatePicker dataFinalViagem = new()
