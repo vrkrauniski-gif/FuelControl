@@ -48,6 +48,12 @@ Entry litrosArlaAtual = new();
     Picker periodoRelatorio = new(), tipoRelatorio = new();
 
     DatePicker dataViagem = new() { Date = DateTime.Today, TextColor = Colors.Black, BackgroundColor = Colors.White };
+    DatePicker dataAbastecimento = new()
+{
+    Date = DateTime.Today,
+    TextColor = Colors.Black,
+    BackgroundColor = Colors.White
+};
     TimePicker horaInicialViagem = new() { Time = DateTime.Now.TimeOfDay, TextColor = Colors.Black, BackgroundColor = Colors.White };
     TimePicker horaFinalViagem = new() { Time = DateTime.Now.AddHours(1).TimeOfDay, TextColor = Colors.Black, BackgroundColor = Colors.White };
     VerticalStackLayout painelFrentes = new();
