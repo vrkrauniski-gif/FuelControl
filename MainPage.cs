@@ -2967,26 +2967,50 @@ async void TransferirCaminhao(Viagem viagem)
             : registros.Where(v => v.Frente == frenteFiltroIndicadores).ToList();
     }
 
-    // Média de consumo de Arla calculada somente com abastecimentos que
-    // possuem Arla informado e intervalo de KM válido.
-    List<Abastecimento> AbastecimentosComArlaValidos(IEnumerable<Abastecimento> registros) =>
-        registros.Where(x => x.TemArla && x.LitrosArla > 0 && x.KmAtual > x.KmAnterior).ToList();
+    
+// Média de consumo de Arla calculada somente com abastecimentos que
+// possuem Arla informado e intervalo de KM válido.
+List<Abastecimento> AbastecimentosComArlaValidos(IEnumerable<Abastecimento> registros) =>
+    registros.Where(x => x.TemArla && x.LitrosArla > 0 && x.KmAtual > x.KmAnterior).ToList();
 
-    double CalcularMediaArlaKmL(IEnumerable<Abastecimento> registros)
+double CalcularMediaArlaKmL(IEnumerable<Abastecimento> registros)
+{
+    double kmTotal = 0;
+    double litrosTotal = 0;
+
+    var grupos = registros
+        .Where(x => x.TemArla && x.LitrosArla > 0 && x.KmAtual > 0)
+        .GroupBy(x => Id(x.Veiculo));
+
+    foreach (var grupo in grupos)
     {
-        var validos = AbastecimentosComArlaValidos(registros);
-        double litros = validos.Sum(x => x.LitrosArla);
-        double km = validos.Sum(x => x.KmAtual - x.KmAnterior);
-        return litros > 0 ? km / litros : 0;
+        var eventos = grupo
+            .OrderBy(x => x.KmAtual)
+            .ThenBy(x => x.Data)
+            .ToList();
+
+        for (int i = 1; i < eventos.Count; i++)
+        {
+            double km = eventos[i].KmAtual - eventos[i - 1].KmAtual;
+            double litros = eventos[i].LitrosArla;
+
+            if (km > 0 && litros > 0)
+            {
+                kmTotal += km;
+                litrosTotal += litros;
+            }
+        }
     }
 
-    double CalcularMediaArla100Km(IEnumerable<Abastecimento> registros)
-    {
-        var validos = AbastecimentosComArlaValidos(registros);
-        double litros = validos.Sum(x => x.LitrosArla);
-        double km = validos.Sum(x => x.KmAtual - x.KmAnterior);
-        return km > 0 ? litros * 100.0 / km : 0;
-    }
+    return litrosTotal > 0 ? kmTotal / litrosTotal : 0;
+}
+
+double CalcularMediaArla100Km(IEnumerable<Abastecimento> registros)
+{
+    double mediaKmL = CalcularMediaArlaKmL(registros);
+    return mediaKmL > 0 ? 100.0 / mediaKmL : 0;
+}
+
 
     // Meta de toneladas em 24 horas conforme a tabela de raio médio enviada.
     // A chave é o raio arredondado para o inteiro mais próximo.
