@@ -3475,6 +3475,7 @@ double metaDieselVeiculo = veiculos.TryGetValue(
                 Rotulo("Data de referência"), dataFiltro,
                 Rotulo("Veículo"), filtroVeiculo,
                 Rotulo("Motorista"), filtroMotorista,
+                Rotulo("Turno"), filtroTurnoRelatorio,
                 aplicar, pdf,
                 Titulo("RESULTADO"), lista
             }
