@@ -1542,7 +1542,7 @@ if (mediaArlaAtual > 0 &&
 {
     litros = Math.Clamp(
     arla.LitrosEstimados -
-    (kmAtualArla.Value - arla.KmUltimoAbastecimento) / arla.MediaKmL,
+    (kmAtualArla.Value - arla.KmUltimoAbastecimento) / mediaArlaAtual,
     0,
     arla.Capacidade);
 }
