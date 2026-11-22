@@ -866,6 +866,8 @@ graficoTanque,
 Rotulo("TANQUE ARLA 32"),
 lblTanqueArla,
 graficoArla,
+
+                Rotulo("Data do abastecimento"), dataAbastecimento,
                 Rotulo("Motorista"), motorista,
                 Rotulo("KM anterior"), kmAnterior,
                 Rotulo("KM atual"), kmAtual,
