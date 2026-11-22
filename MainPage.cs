@@ -1634,8 +1634,8 @@ for (int i = 0; i < 5; i++)
 
 graficoArla.Children.Add(marcacoesArla);
 
-    double autonomiaArla = arla.MediaKmL > 0
-    ? litros * arla.MediaKmL
+    double autonomiaArla = mediaArlaAtual > 0
+    ? litros * mediaArlaAtual
     : 0;
 
 lblTanqueArla.Text =
