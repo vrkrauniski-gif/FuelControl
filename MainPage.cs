@@ -3308,7 +3308,19 @@ painel.Children.Add(Cartao("Raio médio por viagem",
                 .Where(x => Id(x.Veiculo) == Id(nome)).ToList();
             double mediaArlaVeiculo = CalcularMediaArlaKmL(abArlaVeiculo);
             double mediaArla100Veiculo = CalcularMediaArla100Km(abArlaVeiculo);
-            double litrosArlaVeiculo = abArlaVeiculo.Sum(x => x.LitrosArla);
+            double kmDieselVeiculo = abVeiculo.Sum(x =>
+    Math.Max(0, x.KmAtual - x.KmAnterior));
+
+double litrosDieselVeiculo = abVeiculo.Sum(x => x.Litros);
+
+double mediaDieselVeiculo = litrosDieselVeiculo > 0
+    ? kmDieselVeiculo / litrosDieselVeiculo
+    : 0;
+
+double metaDieselVeiculo = veiculos.TryGetValue(
+    Id(nome), out var dadosVeiculoIndicador)
+        ? dadosVeiculoIndicador.MetaKmL
+        : 0;
 
             var viVeiculo = viagensIndicadores
                 .Where(x => Id(x.Veiculo) == Id(nome)).ToList();
