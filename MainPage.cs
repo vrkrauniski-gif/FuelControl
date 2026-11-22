@@ -2354,7 +2354,8 @@ Transferencias = viagemEmEdicao?.Transferencias
     ?? new List<TransferenciaViagem>(),
 
 EmAndamento = viagemEmEdicao?.EmAndamento ?? false,
-DataHoraChegada = viagemEmEdicao?.DataHoraChegada,
+DataHoraChegada = (dataFinalViagem.Date ?? DateTime.Today).Date.Add(
+    horaFinalViagem.Time ?? TimeSpan.Zero),
 TurnoResponsavel = viagemEmEdicao?.TurnoResponsavel,
 TransferenciasTurno = viagemEmEdicao?.TransferenciasTurno ?? new List<TransferenciaTurno>(),
                 AnoCarreta = ano,
