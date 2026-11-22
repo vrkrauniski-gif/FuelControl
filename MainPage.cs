@@ -3524,7 +3524,7 @@ double metaDieselVeiculo = veiculos.TryGetValue(
     {
         return abastecimentos
             .Where(x => DataNoPeriodo(x.Data))
-            .Where(x => PassaFiltro(x.Veiculo, x.Motorista))
+            .Where(x => PassaFiltro(x.Veiculo, x.Motorista, x.Turno))
             .OrderByDescending(x => x.Data)
             .ToList();
     }
