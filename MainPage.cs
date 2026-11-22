@@ -3553,6 +3553,94 @@ double metaDieselVeiculo = veiculos.TryGetValue(
             return;
         }
 
+// RELATÓRIO INDIVIDUAL POR VEÍCULO
+var veiculosRelatorio = ab.Select(x => x.Veiculo)
+    .Concat(cg.Select(x => x.Veiculo))
+    .Where(x => !string.IsNullOrWhiteSpace(x))
+    .DistinctBy(x => Id(x))
+    .OrderBy(x => x)
+    .ToList();
+
+foreach (var nomeVeiculo in veiculosRelatorio)
+{
+    var abVeiculo = ab
+        .Where(x => Id(x.Veiculo) == Id(nomeVeiculo))
+        .ToList();
+
+    var cgVeiculo = cg
+        .Where(x => Id(x.Veiculo) == Id(nomeVeiculo))
+        .ToList();
+
+    double kmAbastecimento = abVeiculo.Sum(
+        x => Math.Max(0, x.KmAtual - x.KmAnterior));
+
+    double litrosCombustivel = abVeiculo.Sum(x => x.Litros);
+
+    double mediaCombustivel = litrosCombustivel > 0
+        ? kmAbastecimento / litrosCombustivel
+        : 0;
+
+    double litrosArla = abVeiculo
+        .Where(x => x.TemArla)
+        .Sum(x => x.LitrosArla);
+
+    double mediaArla = CalcularMediaArlaKmL(abVeiculo);
+    double mediaArla100 = CalcularMediaArla100Km(abVeiculo);
+
+    double kmViagens = SomarKmViagens(cgVeiculo);
+    double toneladas = cgVeiculo.Sum(x => x.PesoLiquido) / 1000.0;
+    double velocidade = CalcularVelocidadeMedia(cgVeiculo);
+    double raio = CalcularRaioMedio(cgVeiculo);
+
+    lista.Children.Add(new Label
+    {
+        Text = "VEÍCULO: " + nomeVeiculo,
+        FontAttributes = FontAttributes.Bold,
+        FontSize = 18,
+        TextColor = Color.FromArgb("#123B65")
+    });
+
+    lista.Children.Add(new Label
+    {
+        Text = $"Abastecimentos: {abVeiculo.Count} | Viagens: {cgVeiculo.Count}",
+        TextColor = Color.FromArgb("#123B65")
+    });
+
+    lista.Children.Add(new Label
+    {
+        Text = $"KM rodados nas viagens: {kmViagens:N1} km",
+        TextColor = Color.FromArgb("#123B65")
+    });
+
+    lista.Children.Add(new Label
+    {
+        Text = $"Combustível: {litrosCombustivel:N1} L | Média: " +
+            (mediaCombustivel > 0 ? $"{mediaCombustivel:N2} km/l" : "--"),
+        TextColor = Color.FromArgb("#123B65")
+    });
+
+    lista.Children.Add(new Label
+    {
+        Text = $"Arla 32: {litrosArla:N1} L | Média: " +
+            (mediaArla > 0
+                ? $"{mediaArla:N2} km/l ({mediaArla100:N2} L/100 km)"
+                : "--"),
+        TextColor = Color.FromArgb("#123B65")
+    });
+
+    lista.Children.Add(new Label
+    {
+        Text = $"Tonelagem líquida: {toneladas:N2} t",
+        TextColor = Color.FromArgb("#123B65")
+    });
+
+    lista.Children.Add(new Label
+    {
+        Text = $"Velocidade média: {velocidade:N2} km/h | Raio médio: {raio:N2} km",
+        TextColor = Color.FromArgb("#123B65")
+    });
+}
+
         double kmTotal = SomarKmViagens(cg);
 
         double toneladasTotal = cg.Sum(x => x.PesoLiquido) / 1000.0;
