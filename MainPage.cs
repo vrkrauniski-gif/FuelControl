@@ -3641,67 +3641,7 @@ foreach (var nomeVeiculo in veiculosRelatorio)
     });
 }
 
-        double kmTotal = SomarKmViagens(cg);
-
-        double toneladasTotal = cg.Sum(x => x.PesoLiquido) / 1000.0;
-        double raioMedio = CalcularRaioMedio(cg);
-
-        lista.Children.Add(new Label
-        {
-            Text = $"Abastecimentos: {ab.Count} | Viagens: {cg.Count}",
-            FontAttributes = FontAttributes.Bold,
-            TextColor = Color.FromArgb("#123B65")
-        });
-
-        lista.Children.Add(new Label
         
-            
-{
-    Text = "KM rodados: " + kmTotal.ToString("N1", pt) + " km",
-    TextColor = Color.FromArgb("#123B65")
-});
-
-lista.Children.Add(new Label
-{
-    Text = cg.Count > 0
-        ? "Raio médio por viagem: " + raioMedio.ToString("N2", pt) + " km"
-        : "Raio médio por viagem: --",
-    TextColor = Color.FromArgb("#123B65")
-});
-
-lista.Children.Add(new Label
-{
-    Text = "Tonelagem líquida total: " + toneladasTotal.ToString("N2", pt) + " t",
-    TextColor = Color.FromArgb("#123B65")
-});
-
-lista.Children.Add(new Label
-{
-    Text = $"Gasto: {ab.Sum(x => x.Valor):C2} | " +
-           "Litros abastecidos: " + ab.Sum(x => x.Litros).ToString("N1", pt) + " L",
-    TextColor = Color.FromArgb("#123B65")
-});
-
-        double mediaArlaRelatorio = CalcularMediaArlaKmL(ab);
-        double mediaArla100Relatorio = CalcularMediaArla100Km(ab);
-        double litrosArlaRelatorio = AbastecimentosComArlaValidos(ab).Sum(x => x.LitrosArla);
-
-        lista.Children.Add(new Label
-{
-    Text = litrosArlaRelatorio > 0
-        ? "Arla 32: " + litrosArlaRelatorio.ToString("N1", pt) +
-          " L | Média: " + mediaArlaRelatorio.ToString("N2", pt) +
-          " km/l (" + mediaArla100Relatorio.ToString("N2", pt) + " L/100 km)"
-        : "Arla 32: sem registros no período",
-    TextColor = Color.FromArgb("#123B65")
-});
-
-lista.Children.Add(new Label
-{
-    Text = "Litros consumidos nas viagens: " +
-           cg.Sum(x => x.LitrosConsumidos).ToString("N1", pt) + " L",
-    TextColor = Color.FromArgb("#123B65")
-});
 
 // Premiação diária calculada separadamente por data
 var gruposPremiacao = cg
