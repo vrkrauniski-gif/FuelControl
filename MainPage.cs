@@ -742,6 +742,12 @@ if (ContextoTurno.EhAdministrador)
     View TelaAbastecimentos()
     {
     tipoVeiculo = NovoPicker("Tipo de veículo", "Caminhão");
+    dataAbastecimento = new DatePicker
+{
+    Date = DateTime.Today,
+    TextColor = Colors.Black,
+    BackgroundColor = Colors.White
+};
     tipoCombustivel = NovoPicker("Combustível", "Diesel S10");
 
         veiculo = Campo("Placa ou identificação do veículo");
