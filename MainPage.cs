@@ -3498,20 +3498,27 @@ double metaDieselVeiculo = veiculos.TryGetValue(
         };
     }
 
-    bool PassaFiltro(string nome, string nomeMotorista)
-    {
-        bool veiculoOk =
-            string.IsNullOrWhiteSpace(filtroVeiculo.Text) ||
-            nome.Contains(filtroVeiculo.Text.Trim(),
-                StringComparison.OrdinalIgnoreCase);
+    bool PassaFiltro(string nome, string nomeMotorista, string turno)
+{
+    bool veiculoOk =
+        string.IsNullOrWhiteSpace(filtroVeiculo.Text) ||
+        nome.Contains(filtroVeiculo.Text.Trim(),
+            StringComparison.OrdinalIgnoreCase);
 
-        bool motoristaOk =
-            string.IsNullOrWhiteSpace(filtroMotorista.Text) ||
-            nomeMotorista.Contains(filtroMotorista.Text.Trim(),
-                StringComparison.OrdinalIgnoreCase);
+    bool motoristaOk =
+        string.IsNullOrWhiteSpace(filtroMotorista.Text) ||
+        nomeMotorista.Contains(filtroMotorista.Text.Trim(),
+            StringComparison.OrdinalIgnoreCase);
 
-        return veiculoOk && motoristaOk;
-    }
+    string turnoSelecionado =
+        filtroTurnoRelatorio.SelectedItem?.ToString() ?? "Todos";
+
+    bool turnoOk =
+        turnoSelecionado == "Todos" ||
+        turno == turnoSelecionado;
+
+    return veiculoOk && motoristaOk && turnoOk;
+}
 
     List<Abastecimento> FiltrarAbastecimentos()
     {
