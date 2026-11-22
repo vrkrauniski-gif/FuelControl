@@ -772,7 +772,23 @@ graficoArla = new VerticalStackLayout
     if (tanquesArla.TryGetValue(chaveArla, out var tanqueArla))
 {
     capacidadeArla.Text = tanqueArla.Capacidade.ToString("0.##", pt);
-    litrosArlaAtual.Text = tanqueArla.LitrosEstimados.ToString("0.##", pt);
+    double litrosArlaCalculados = tanqueArla.LitrosEstimados;
+double? kmAtualArlaConfig = ObterUltimoKmRegistrado(e.NewTextValue ?? "");
+
+if (tanqueArla.MediaKmL > 0 &&
+    tanqueArla.KmUltimoAbastecimento > 0 &&
+    kmAtualArlaConfig.HasValue &&
+    kmAtualArlaConfig.Value >= tanqueArla.KmUltimoAbastecimento)
+{
+    litrosArlaCalculados = Math.Clamp(
+        tanqueArla.LitrosEstimados -
+        (kmAtualArlaConfig.Value - tanqueArla.KmUltimoAbastecimento) /
+        tanqueArla.MediaKmL,
+        0,
+        tanqueArla.Capacidade);
+}
+
+litrosArlaAtual.Text = litrosArlaCalculados.ToString("0.##", pt);
 }
 else
 {
