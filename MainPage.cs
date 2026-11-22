@@ -1008,39 +1008,61 @@ EditadoPorDispositivo = ContextoTurno.Dispositivo,
                 MetaKmL = caminhao ? dados.MetaKmL : 0,
                 TanqueAdicionado = dados.Capacidade > 0
             };
-            if (caminhao && registroAnterior == null &&
+            
+if (caminhao &&
     tanquesArla.TryGetValue(Id(veiculo.Text), out var tanqueArlaSalvar))
 {
+    double nivelArlaAntes = Math.Clamp(
+        tanqueArlaSalvar.LitrosEstimados, 0, tanqueArlaSalvar.Capacidade);
+
+    double kmDesdeUltimoArla = tanqueArlaSalvar.KmUltimoAbastecimento > 0
+        ? Math.Max(0, atual - tanqueArlaSalvar.KmUltimoAbastecimento)
+        : 0;
+
+    double nivelArlaCalculado = nivelArlaAntes;
+
+    if (tanqueArlaSalvar.MediaKmL > 0 && kmDesdeUltimoArla > 0)
+    {
+        nivelArlaCalculado = Math.Clamp(
+            nivelArlaAntes - kmDesdeUltimoArla / tanqueArlaSalvar.MediaKmL,
+            0,
+            tanqueArlaSalvar.Capacidade);
+    }
+
     if (temArla)
     {
-        if (tanqueArlaSalvar.KmUltimoAbastecimento > 0 &&
-            atual > tanqueArlaSalvar.KmUltimoAbastecimento)
+        double litrosConsumidosEstimados = Math.Max(
+            0, nivelArlaAntes - nivelArlaCalculado);
+
+        if (litrosConsumidosEstimados > 0 && kmDesdeUltimoArla > 0)
         {
-            tanqueArlaSalvar.MediaKmL =
-                (atual - tanqueArlaSalvar.KmUltimoAbastecimento) / arla;
+            double mediaObservada = kmDesdeUltimoArla /
+                litrosConsumidosEstimados;
+
+            if (mediaObservada > 0 && double.IsFinite(mediaObservada))
+                tanqueArlaSalvar.MediaKmL = mediaObservada;
         }
 
-        tanqueArlaSalvar.LitrosEstimados = tanqueArlaSalvar.Capacidade;
+        tanqueArlaSalvar.LitrosEstimados = Math.Clamp(
+            nivelArlaCalculado + arla,
+            0,
+            tanqueArlaSalvar.Capacidade);
+
         tanqueArlaSalvar.KmUltimoAbastecimento = atual;
         tanqueArlaSalvar.AbastecerNoProximo = false;
     }
     else
     {
+        tanqueArlaSalvar.LitrosEstimados = nivelArlaCalculado;
         tanqueArlaSalvar.AbastecerNoProximo = true;
 
-        if (tanqueArlaSalvar.MediaKmL > 0 &&
-            tanqueArlaSalvar.KmUltimoAbastecimento > 0)
-        {
-            tanqueArlaSalvar.LitrosEstimados = Math.Clamp(
-                tanqueArlaSalvar.Capacidade -
-                (atual - tanqueArlaSalvar.KmUltimoAbastecimento) /
-                tanqueArlaSalvar.MediaKmL,
-                0,
-                tanqueArlaSalvar.Capacidade);
-        }
+        if (tanqueArlaSalvar.KmUltimoAbastecimento <= 0)
+            tanqueArlaSalvar.KmUltimoAbastecimento = atual;
     }
 }
 
+            
+            
             if (registroAnterior != null)
             {
                 int indice = abastecimentos.IndexOf(registroAnterior);
