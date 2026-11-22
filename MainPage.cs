@@ -1396,9 +1396,9 @@ double litrosReserva = d.Capacidade * alertaPercentual / 100.0;
         {
             HeightRequest = 26,
             Color = i < partesPreenchidas
-                ? (i < 2
-                    ? Color.FromArgb("#DC2626")
-                    : Color.FromArgb("#16A34A"))
+                ? (i < (int)Math.Ceiling(alertaPercentual / 5.0)
+    ? Color.FromArgb("#DC2626")
+    : Color.FromArgb("#16A34A"))
                 : Color.FromArgb("#334155"),
             Margin = new Thickness(1)
         };
