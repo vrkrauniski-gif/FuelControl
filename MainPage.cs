@@ -1831,6 +1831,7 @@ botaoAcaoViagem.Clicked += (s, e) =>
                 Titulo("REGISTRO DE CARGAS POR VIAGEM"),
                 Rotulo("Data da viagem"), dataViagem,
                 Rotulo("Hora inicial da viagem"), horaInicialViagem,
+                Rotulo("Data final / chegada"), dataFinalViagem,
                 Rotulo("Hora final da viagem"), horaFinalViagem,
                 Titulo("FRENTE DE CARREGAMENTO"), painelFrentes,
                 Rotulo("Caminhão"), cargaVeiculo,
