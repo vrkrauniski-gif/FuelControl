@@ -1260,6 +1260,7 @@ painel.Children.Add(card);
         return;
     }
         abastecimentoEmEdicao = x;
+        dataAbastecimento.Date = x.Data.Date;
         veiculo.IsEnabled = false;
         tipoVeiculo.SelectedItem = x.TipoVeiculo;
         tipoCombustivel.SelectedItem = x.Combustivel;
