@@ -1695,6 +1695,12 @@ lblTanqueArla.Text =
             TextColor = Colors.Black,
             BackgroundColor = Colors.White
         };
+        dataFinalViagem = new DatePicker
+{
+    Date = DateTime.Today,
+    TextColor = Colors.Black,
+    BackgroundColor = Colors.White
+};
         horaInicialViagem = new TimePicker
         {
             Time = DateTime.Now.TimeOfDay,
