@@ -3453,6 +3453,8 @@ double metaDieselVeiculo = veiculos.TryGetValue(
 
         filtroVeiculo = Campo("Veículo (vazio = todos)");
         filtroMotorista = Campo("Motorista (vazio = todos)");
+        filtroTurnoRelatorio = NovoPicker(
+    "Turno", "Todos", "A", "B", "C");
 
         var aplicar = Botao("APLICAR FILTROS");
         aplicar.Clicked += (s, e) => MostrarResultadoRelatorio();
