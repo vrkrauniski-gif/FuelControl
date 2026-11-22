@@ -1535,7 +1535,7 @@ if (mediaArlaAtual <= 0)
 
 double? kmAtualArla = ObterUltimoKmRegistrado(nome);
 
-if (arla.MediaKmL > 0 &&
+if (mediaArlaAtual > 0 &&
     arla.KmUltimoAbastecimento > 0 &&
     kmAtualArla.HasValue &&
     kmAtualArla.Value >= arla.KmUltimoAbastecimento)
