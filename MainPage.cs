@@ -1580,18 +1580,26 @@ for (int i = 0; i < 5; i++)
 
 graficoArla.Children.Add(marcacoesArla);
 
-    lblTanqueArla.Text =
-        "NÍVEL ARLA 32: " +
-        litros.ToString("N1", pt) + "/" +
-        arla.Capacidade.ToString("N1", pt) + " L (" +
-        percentual.ToString("N1", pt) + "%)\n" +
-        "Reserva: " + reserva.ToString("N1", pt) + " L\n" +
-(litros <= reserva
-    ? "ATENÇÃO: RESERVA DE ARLA ATINGIDA!\n"
-    : "Nível normal\n") +
-(arla.AbastecerNoProximo
-    ? "ATENÇÃO: ABASTECER ARLA NO PRÓXIMO ABASTECIMENTO DIESEL!"
-    : "Alternância de abastecimento normal.");
+    double autonomiaArla = arla.MediaKmL > 0
+    ? litros * arla.MediaKmL
+    : 0;
+
+lblTanqueArla.Text =
+    "NÍVEL ARLA 32: " +
+    litros.ToString("N1", pt) + "/" +
+    arla.Capacidade.ToString("N1", pt) + " L (" +
+    percentual.ToString("N1", pt) + "%)\n" +
+    "Reserva: " + reserva.ToString("N1", pt) + " L\n" +
+    "Autonomia estimada: " +
+    (autonomiaArla > 0
+        ? autonomiaArla.ToString("N1", pt) + " km"
+        : "Aguardando histórico de consumo") + "\n" +
+    (litros <= reserva
+        ? "ATENÇÃO: RESERVA DE ARLA ATINGIDA!\n"
+        : "Nível normal\n") +
+    (arla.AbastecerNoProximo
+        ? "ATENÇÃO: ABASTECER ARLA NO PRÓXIMO ABASTECIMENTO DIESEL!"
+        : "Alternância de abastecimento normal.");
 }
 
 
