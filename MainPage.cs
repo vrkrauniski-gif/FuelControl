@@ -1527,6 +1527,12 @@ void AtualizarTanqueArlaTexto(string nome)
 
     double litros = arla.LitrosEstimados;
 
+double mediaArlaAtual = CalcularMediaArlaKmL(
+    abastecimentos.Where(x => Id(x.Veiculo) == chave));
+
+if (mediaArlaAtual <= 0)
+    mediaArlaAtual = arla.MediaKmL;
+
 double? kmAtualArla = ObterUltimoKmRegistrado(nome);
 
 if (arla.MediaKmL > 0 &&
