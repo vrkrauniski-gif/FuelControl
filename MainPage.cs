@@ -1026,6 +1026,7 @@ EditadoPorDispositivo = ContextoTurno.Dispositivo,
             };
             
 if (caminhao &&
+    registroAnterior == null &&
     tanquesArla.TryGetValue(Id(veiculo.Text), out var tanqueArlaSalvar))
 {
     double nivelArlaAntes = Math.Clamp(
