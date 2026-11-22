@@ -3352,6 +3352,19 @@ double metaDieselVeiculo = veiculos.TryGetValue(
                             TextColor = Color.FromArgb("#123B65")
                         },
                         new Label { Text = $"KM registrados: {kmVeiculo.ToString("N1", pt)} km" },
+                        new Label
+{
+    Text = mediaDieselVeiculo > 0
+        ? "Média Diesel: " + mediaDieselVeiculo.ToString("N2", pt) +
+          " km/l | Meta: " + metaDieselVeiculo.ToString("N2", pt) +
+          " km/l | " +
+          (metaDieselVeiculo > 0
+              ? (mediaDieselVeiculo >= metaDieselVeiculo
+                  ? "META ATINGIDA"
+                  : "ABAIXO DA META")
+              : "META NÃO CONFIGURADA")
+        : "Média Diesel: sem registros"
+},
                         new Label { Text = $"Viagens realizadas: {viVeiculo.Count}" },
                         new Label
 {
